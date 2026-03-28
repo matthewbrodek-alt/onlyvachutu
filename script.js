@@ -114,20 +114,17 @@ async function getDog() {
 async function sendToTg() {
     const name = document.getElementById('tg-name').value;
     const msg = document.getElementById('tg-msg').value;
-    const btn = document.querySelector('#contact button'); // Хватаем кнопку
+    const btn = document.querySelector('#contact button');
 
     if (name && msg) {
-        btn.disabled = true; // Выключаем кнопку
+        btn.disabled = true;
         btn.textContent = "Отправляю...";
-    const TOKEN = "8664813567:AAEkqGdXuyrS43Pjfc1gB-KdVuOOReWrkGw";
-    const CHAT_ID = "7451263058";
-    
-    // Формируем текст сообщения
-    const fullText = `🚀 Новое сообщение с сайта!\nИмя: ${name}\nТекст: ${msg}`;
 
-    if (name && msg) {
+        const TOKEN = "8664813567:AAEkqGdXuyrS43Pjfc1gB-KdVuOOReWrkGw";
+        const CHAT_ID = "7451263058";
+        const fullText = `🚀 Новое сообщение с сайта!\nИмя: ${name}\nТекст: ${msg}`;
+
         try {
-            // Отправляем запрос на сервер Telegram
             const response = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -141,9 +138,15 @@ async function sendToTg() {
                 alert("Сообщение улетело! Проверь Telegram.");
                 document.getElementById('tg-name').value = "";
                 document.getElementById('tg-msg').value = "";
+            } else {
+                alert("Ошибка сервера Telegram. Проверь бота.");
             }
         } catch (error) {
-            alert("Ошибка при отправке!");
+            alert("Ошибка сети! Проверь интернет.");
+        } finally {
+            // Возвращаем кнопку в рабочее состояние в любом случае
+            btn.disabled = false;
+            btn.textContent = "Отправить в Telegram";
         }
     } else {
         alert("Заполни все поля!");
