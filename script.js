@@ -114,8 +114,11 @@ async function getDog() {
 async function sendToTg() {
     const name = document.getElementById('tg-name').value;
     const msg = document.getElementById('tg-msg').value;
-    
-    // ТВОИ ДАННЫЕ (ВСТАВЬ СВОИ!)
+    const btn = document.querySelector('#contact button'); // Хватаем кнопку
+
+    if (name && msg) {
+        btn.disabled = true; // Выключаем кнопку
+        btn.textContent = "Отправляю...";
     const TOKEN = "8664813567:AAEkqGdXuyrS43Pjfc1gB-KdVuOOReWrkGw";
     const CHAT_ID = "7451263058";
     
