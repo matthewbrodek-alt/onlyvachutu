@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Обо мне</title>
+    <link rel="stylesheet" href="style.css"> </head>
+<body>
+
+<button onclick="toggleSecret()">Показать/Скрыть секрет</button>
+<button onclick="toggleTheme()">Сменить тему</button>
+
+<div class="burger" onclick="toggleMenu()">☰</div>
+
+<nav id="mobileMenu" class="mobile-menu">
+    <a href="#about">О тебе</a>
+    <a href="#fav">Любимые вещи</a>
+    <a href="#photo">Фото</a>
+    <a href="#facts">Факты</a>
+    <a href="#goal">Цель</a>
+</nav>
+
+<p id="secret" class="secret-message">Я — секретное сообщение! 🤫</p>
+
+<div class="card" id="api-card">
+    <h2>Случайная собачка 🐶</h2>
+    
+    <img id="dog-image" src="" alt="Тут будет песик" style="max-width: 100%; border-radius: 10px; display: none; margin-bottom: 15px;">
+    
+    <br>
+    <button onclick="getDog()">Позвать собачку!</button>
+</div>
+
+<div class="card" id="about">
+    <h1>О тебе</h1>
+    <ol>
+        <li>Проснуться</li>
+        <li>Покушать</li>
+        <li>Написать код</li>
+    </ol>
+</div>
+
+<div class="card" id="fav">
+    <h2>Мои любимые вещи</h2>
+    
+    <div style="margin-bottom: 15px;">
+        <input type="text" id="fav-input" placeholder="Клавиши тыкай..." style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+        <button onclick="addFavorite()">Добавить</button>
+    </div>
+
+    <ul id="fav-list">
+        </ul>
+</div>
+
+<div class="card" id="photo">
+    <h2>Фото</h2>
+    <div class="flex-container">
+        <div class="flex-item"><p>Картошка — моя любимая еда!</p></div>
+        <div class="flex-item">
+            <img src="https://png.pngtree.com/thumb_back/fh260/background/20240717/pngtree-new-nature-beautiful-background-pictures-image_16017682.jpg">
+        </div>
+    </div>
+</div>
+
+<div class="card" id="facts">
+    <h2>Таблица фактов</h2>
+    <table>
+        <tr><th>Факт</th><th>Значение</th></tr>
+        <tr><td>Год</td><td>2024</td></tr>
+        <tr><td>Любимая еда</td><td>Картошка</td></tr>
+        <tr><td>Цель</td><td>Удалённая работа</td></tr>
+    </table>
+</div>
+
+<div class="card" id="goal">
+    <h2>Цель</h2>
+    <p>Необходимо работать дистанционно</p>
+    <p><a href="https://google.com">Перейти в Google</a></p>
+</div>
+
+<script src="script.js"></script> </body>
+</html>
