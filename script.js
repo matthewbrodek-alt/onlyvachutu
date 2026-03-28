@@ -111,6 +111,40 @@ async function getDog() {
     }
 }
 
+async function sendToTg() {
+    const name = document.getElementById('tg-name').value;
+    const msg = document.getElementById('tg-msg').value;
+    
+    // ТВОИ ДАННЫЕ (ВСТАВЬ СВОИ!)
+    const TOKEN = "8664813567:AAEkqGdXuyrS43Pjfc1gB-KdVuOOReWrkGw";
+    const CHAT_ID = "7451263058";
+    
+    // Формируем текст сообщения
+    const fullText = `🚀 Новое сообщение с сайта!\nИмя: ${name}\nТекст: ${msg}`;
 
+    if (name && msg) {
+        try {
+            // Отправляем запрос на сервер Telegram
+            const response = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: CHAT_ID,
+                    text: fullText
+                })
+            });
+
+            if (response.ok) {
+                alert("Сообщение улетело! Проверь Telegram.");
+                document.getElementById('tg-name').value = "";
+                document.getElementById('tg-msg').value = "";
+            }
+        } catch (error) {
+            alert("Ошибка при отправке!");
+        }
+    } else {
+        alert("Заполни все поля!");
+    }
+}
 
 
