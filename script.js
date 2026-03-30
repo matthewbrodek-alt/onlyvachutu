@@ -1,4 +1,4 @@
-// 1. КОНФИГУРАЦИЯ И ИНИЦИАЛИЗАЦИЯ
+// 1. КОНФИГУРАЦИЯ
 const firebaseConfig = {
   apiKey: "AIzaSyA_7n34vc1JM5PER6kvU9mMSzKfpu8s5YE",
   authDomain: "my-portfolio-auth-ff1ce.firebaseapp.com",
@@ -15,6 +15,27 @@ const db = firebase.firestore();
 
 let unsubscribeTodos = null;
 
+// 2. ФУНКЦИИ АВТОРИЗАЦИИ (Выносим наверх, чтобы кнопки их всегда видели)
+async function handleSignUp() {
+    const email = document.getElementById('auth-email').value;
+    const pass = document.getElementById('auth-pass').value;
+    try {
+        await auth.createUserWithEmailAndPassword(email, pass);
+        alert("Аккаунт создан!");
+    } catch (error) { document.getElementById('auth-error').innerText = error.message; }
+}
+
+async function handleLogin() {
+    const email = document.getElementById('auth-email').value;
+    const pass = document.getElementById('auth-pass').value;
+    try {
+        await auth.signInWithEmailAndPassword(email, pass);
+    } catch (error) { document.getElementById('auth-error').innerText = error.message; }
+}
+
+function handleLogout() { auth.signOut(); }
+
+// 3. ГЛАВНЫЙ СЛУШАТЕЛЬ
 auth.onAuthStateChanged(async (user) => {
     const loginForm = document.getElementById('login-form');
     const userInfo = document.getElementById('user-info');
@@ -28,11 +49,11 @@ auth.onAuthStateChanged(async (user) => {
         if (loginForm) loginForm.style.display = 'none';
         if (userInfo) userInfo.style.display = 'block';
         if (emailDisplay) emailDisplay.innerText = user.email;
-        if (authError) authError.innerText = "";
         
         privateCards.forEach(card => card.style.display = 'block');
+        loadTodos(user.uid);
 
-        // Загружаем тему
+        // Загрузка темы
         try {
             const doc = await db.collection("users").doc(user.uid).get();
             if (doc.exists && doc.data().theme === "dark") {
@@ -40,26 +61,20 @@ auth.onAuthStateChanged(async (user) => {
             }
         } catch (e) { console.error("Ошибка темы:", e); }
 
-        // ЗАПУСКАЕМ СПИСОК ДЕЛ
-        loadTodos(user.uid);
-
     } else {
         console.log("Никто не авторизован");
-        
-        // ОТПИСЫВАЕМСЯ ОТ ОБНОВЛЕНИЙ ПРИ ВЫХОДЕ (убирает ошибку прав)
         if (unsubscribeTodos) {
             unsubscribeTodos();
             unsubscribeTodos = null;
         }
-
         if (loginForm) loginForm.style.display = 'block';
         if (userInfo) userInfo.style.display = 'none';
         privateCards.forEach(card => card.style.display = 'none');
         if (todoList) todoList.innerHTML = "";
     }
-}); // <-- Важно! Эта скобка часто теряется
+});
 
-// 3. ФУНКЦИЯ ЗАГРУЗКИ ДЕЛ (с сохранением отписки)
+// 4. СПИСОК ДЕЛ (FIRESTORE)
 function loadTodos(userId) {
     if (unsubscribeTodos) unsubscribeTodos(); 
 
@@ -75,11 +90,10 @@ function loadTodos(userId) {
                 list.appendChild(li);
             });
         }, (error) => {
-            console.warn("Слушатель остановлен:", error.message);
+            console.warn("Доступ ограничен:", error.message);
         });
 }
 
-// 3. ФУНКЦИИ АВТОРИЗАЦИИ
 async function addTodo() {
     const input = document.getElementById('todo-input');
     const user = auth.currentUser;
@@ -92,55 +106,56 @@ async function addTodo() {
     }
 }
 
-function loadTodos(userId) {
-    // Если мы уже что-то слушали — выключаем старый слушатель
-    if (unsubscribeTodos) unsubscribeTodos(); 
-
-    // Сохраняем новый слушатель в переменную
-    unsubscribeTodos = db.collection("users").doc(userId).collection("todos")
-        .orderBy("timestamp", "desc")
-        .onSnapshot((snapshot) => {
-            const list = document.getElementById('todo-list');
-            if (!list) return;
-            list.innerHTML = "";
-            snapshot.forEach((doc) => {
-                const li = document.createElement('li');
-                li.innerHTML = `${doc.data().text} <button onclick="deleteTodo('${doc.id}')" style="background:none; color:red; border:none; cursor:pointer;">×</button>`;
-                list.appendChild(li);
-            });
-        }, (error) => {
-            // Добавляем обработку ошибки, чтобы она не "крашила" консоль
-            console.warn("Слушатель остановлен или доступ запрещен:", error.message);
-        });
-}
-
 async function deleteTodo(todoId) {
     const user = auth.currentUser;
     await db.collection("users").doc(user.uid).collection("todos").doc(todoId).delete();
 }
 
-
-// 4. ФУНКЦИИ ТЕМЫ И МЕНЮ
+// 5. ОСТАЛЬНЫЕ ФУНКЦИИ (Тема, Котики, TG)
 async function toggleTheme() {
     const isDark = document.body.classList.toggle('dark');
     const user = auth.currentUser;
     if (user) {
-        await db.collection("users").doc(user.uid).set({
-            theme: isDark ? "dark" : "light"
-        }, { merge: true });
+        await db.collection("users").doc(user.uid).set({ theme: isDark ? "dark" : "light" }, { merge: true });
     }
 }
 
 function toggleMenu() { document.getElementById("mobileMenu").classList.toggle("show"); }
 function toggleSecret() { document.getElementById("secret").classList.toggle("show"); }
 
-// 5. СПИСОК ДЕЛ (FIRESTORE)
+async function getDog() {
+    const loader = document.getElementById('loader');
+    const img = document.getElementById('dog-image');
+    loader.style.display = 'block';
+    img.style.display = 'none';
+    try {
+        const res = await fetch('https://api.thecatapi.com/v1/images/search');
+        const data = await res.json();
+        img.src = data[0].url;
+        img.onload = () => { loader.style.display = 'none'; img.style.display = 'block'; };
+    } catch (e) { loader.style.display = 'none'; }
+}
 
-// 6. ИЗБРАННОЕ (LOCALSTORAGE)
+async function sendToTg() {
+    const name = document.getElementById('tg-name').value;
+    const msg = document.getElementById('tg-msg').value;
+    if (!name || !msg) return alert("Заполни поля!");
+    const TOKEN = "8664813567:AAEkqGdXuyrS43Pjfc1gB-KdVuOOReWrkGw";
+    const CHAT_ID = "7451263058";
+    try {
+        await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: CHAT_ID, text: `🚀 Сообщение!\nИмя: ${name}\nТекст: ${msg}` })
+        });
+        alert("Отправлено!");
+    } catch (e) { alert("Ошибка!"); }
+}
+
+// 6. ИЗБРАННОЕ И АНИМАЦИИ
 let favorites = JSON.parse(localStorage.getItem('myFavs')) || ['Пицца', 'Картошка', 'Игры'];
-const listElement = document.getElementById('fav-list');
-
 function renderList() {
+    const listElement = document.getElementById('fav-list');
     if (!listElement) return;
     listElement.innerHTML = "";
     favorites.forEach((item, index) => {
@@ -166,39 +181,6 @@ function removeItem(index) {
     renderList();
 }
 
-// 7. API КОТИКОВ И TELEGRAM
-async function getDog() {
-    const loader = document.getElementById('loader');
-    const img = document.getElementById('dog-image');
-    loader.style.display = 'block';
-    img.style.display = 'none';
-    try {
-        const res = await fetch('https://api.thecatapi.com/v1/images/search');
-        const data = await res.json();
-        img.src = data[0].url;
-        img.onload = () => { loader.style.display = 'none'; img.style.display = 'block'; };
-    } catch (e) { loader.style.display = 'none'; }
-}
-
-async function sendToTg() {
-    const name = document.getElementById('tg-name').value;
-    const msg = document.getElementById('tg-msg').value;
-    if (!name || !msg) return alert("Заполни поля!");
-    
-    const TOKEN = "8664813567:AAEkqGdXuyrS43Pjfc1gB-KdVuOOReWrkGw";
-    const CHAT_ID = "7451263058";
-    
-    try {
-        await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: CHAT_ID, text: `🚀 Сообщение!\nИмя: ${name}\nТекст: ${msg}` })
-        });
-        alert("Отправлено!");
-    } catch (e) { alert("Ошибка!"); }
-}
-
-// 8. АНИМАЦИИ
 function revealCards() {
     const trigger = window.innerHeight * 0.85;
     document.querySelectorAll('.card').forEach(card => {
