@@ -44,14 +44,20 @@ auth.onAuthStateChanged(async (user) => {
         // Запускаем список дел
         loadTodos(user.uid);
 
-    } else {
+   } else {
         console.log("Никто не авторизован");
+        
+        // ВЫКЛЮЧАЕМ СЛУШАТЕЛЬ ПРИ ВЫХОДЕ
+        if (unsubscribeTodos) {
+            unsubscribeTodos();
+            unsubscribeTodos = null; 
+        }
+
         if (loginForm) loginForm.style.display = 'block';
         if (userInfo) userInfo.style.display = 'none';
         privateCards.forEach(card => card.style.display = 'none');
         if (todoList) todoList.innerHTML = "";
     }
-});
 
 let unsubscribeTodos = null; // Переменная для остановки прослушивания дел
 
