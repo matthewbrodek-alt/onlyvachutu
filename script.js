@@ -161,4 +161,10 @@ async function sendToTg() {
     }
 }
 
-
+auth.onAuthStateChanged(user => {
+    if (user) {
+        console.log("Пользователь вошел:", user.email);
+    } else {
+        console.log("Никто не авторизован");
+    }
+});
