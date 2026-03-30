@@ -14,6 +14,25 @@
 <button onclick="toggleSecret()">Показать/Скрыть секрет</button>
 <button onclick="toggleTheme()">Сменить тему</button>
 
+<div class="card" id="auth-section">
+    <div id="login-form">
+        <h2>Вход / Регистрация 🔐</h2>
+        <input type="email" id="auth-email" placeholder="Email">
+        <input type="password" id="auth-pass" placeholder="Пароль">
+        <div style="display: flex; gap: 10px;">
+            <button onclick="handleLogin()">Войти</button>
+            <button onclick="handleSignUp()" style="background-color: #2ecc71;">Создать аккаунт</button>
+        </div>
+    </div>
+    
+    <div id="user-info" style="display: none;">
+        <p>Привет, <span id="user-email-display"></span>! 👋</p>
+        <button onclick="handleLogout()" style="background: #95a5a6;">Выйти</button>
+    </div>
+    
+    <p id="auth-error" style="color: #e74c3c; font-size: 14px; margin-top: 10px;"></p>
+</div>
+    
 <div class="burger" onclick="toggleMenu()">☰</div>
 
 <nav id="mobileMenu" class="mobile-menu">
