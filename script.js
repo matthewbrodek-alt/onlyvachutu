@@ -268,3 +268,50 @@ auth.onAuthStateChanged(async (user) => {
         privateCards.forEach(card => card.style.display = 'none');
     }
 });
+
+// Функция добавления дела
+async function addTodo() {
+    const input = document.getElementById('todo-input');
+    const user = auth.currentUser;
+
+    if (user && input.value !== "") {
+        await db.collection("users").doc(user.uid).collection("todos").add({
+            text: input.value,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        input.value = ""; // Очищаем поле
+    }
+}
+
+// Функция отображения списка дел (в реальном времени!)
+function loadTodos(userId) {
+    db.collection("users").doc(userId).collection("todos")
+        .orderBy("timestamp", "desc")
+        .onSnapshot((snapshot) => {
+            const list = document.getElementById('todo-list');
+            list.innerHTML = ""; // Очищаем список перед обновлением
+            
+            snapshot.forEach((doc) => {
+                const li = document.createElement('li');
+                li.innerHTML = `${doc.data().text} <button onclick="deleteTodo('${doc.id}')" style="background:none; color:red; cursor:pointer;">×</button>`;
+                list.appendChild(li);
+            });
+        });
+}
+
+// Функция удаления
+async function deleteTodo(todoId) {
+    const user = auth.currentUser;
+    await db.collection("users").doc(user.uid).collection("todos").doc(todoId).delete();
+}
+
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        // ... твой прошлый код ...
+        loadTodos(user.uid); // Запускаем загрузку списка дел
+    } else {
+        document.getElementById('todo-list').innerHTML = ""; // Очищаем при выходе
+    }
+});
+
+
