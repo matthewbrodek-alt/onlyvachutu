@@ -236,3 +236,20 @@ async function toggleTheme() {
         }
     }
 }
+
+auth.onAuthStateChanged(async (user) => {
+    // ... твой старый код (формы, приветствие) ...
+
+    if (user) {
+        // Запрашиваем настройки пользователя из базы
+        const doc = await db.collection("users").doc(user.uid).get();
+        if (doc.exists) {
+            const data = doc.data();
+            if (data.theme === "dark") {
+                document.body.classList.add('dark');
+            } else {
+                document.body.classList.remove('dark');
+            }
+        }
+    }
+});
