@@ -53,6 +53,8 @@ auth.onAuthStateChanged(async (user) => {
     }
 });
 
+let unsubscribeTodos = null; // Переменная для остановки прослушивания дел
+
 // 3. ФУНКЦИИ АВТОРИЗАЦИИ
 async function handleSignUp() {
     const email = document.getElementById('auth-email').value;
@@ -101,7 +103,11 @@ async function addTodo() {
 }
 
 function loadTodos(userId) {
-    db.collection("users").doc(userId).collection("todos")
+    // Если мы уже что-то слушали — выключаем старый слушатель
+    if (unsubscribeTodos) unsubscribeTodos(); 
+
+    // Сохраняем новый слушатель в переменную
+    unsubscribeTodos = db.collection("users").doc(userId).collection("todos")
         .orderBy("timestamp", "desc")
         .onSnapshot((snapshot) => {
             const list = document.getElementById('todo-list');
@@ -112,6 +118,9 @@ function loadTodos(userId) {
                 li.innerHTML = `${doc.data().text} <button onclick="deleteTodo('${doc.id}')" style="background:none; color:red; border:none; cursor:pointer;">×</button>`;
                 list.appendChild(li);
             });
+        }, (error) => {
+            // Добавляем обработку ошибки, чтобы она не "крашила" консоль
+            console.warn("Слушатель остановлен или доступ запрещен:", error.message);
         });
 }
 
