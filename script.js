@@ -217,4 +217,22 @@ auth.onAuthStateChanged(user => {
     }
 });
 
+async function toggleTheme() {
+    const body = document.body;
+    body.classList.toggle('dark');
+    
+    const isDark = body.classList.contains('dark');
+    const user = auth.currentUser;
 
+    // Если пользователь вошел, сохраняем его выбор в базу
+    if (user) {
+        try {
+            await db.collection("users").doc(user.uid).set({
+                theme: isDark ? "dark" : "light"
+            }, { merge: true });
+            console.log("Тема сохранена в облаке");
+        } catch (e) {
+            console.error("Ошибка сохранения темы: ", e);
+        }
+    }
+}
