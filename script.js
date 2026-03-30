@@ -168,3 +168,48 @@ auth.onAuthStateChanged(user => {
         console.log("Никто не авторизован");
     }
 });
+
+// Регистрация
+async function handleSignUp() {
+    const email = document.getElementById('auth-email').value;
+    const pass = document.getElementById('auth-pass').value;
+    try {
+        await auth.createUserWithEmailAndPassword(email, pass);
+        alert("Аккаунт создан!");
+    } catch (error) {
+        document.getElementById('auth-error').innerText = error.message;
+    }
+}
+
+// Вход
+async function handleLogin() {
+    const email = document.getElementById('auth-email').value;
+    const pass = document.getElementById('auth-pass').value;
+    try {
+        await auth.signInWithEmailAndPassword(email, pass);
+    } catch (error) {
+        document.getElementById('auth-error').innerText = "Ошибка входа: " + error.message;
+    }
+}
+
+// Выход
+function handleLogout() {
+    auth.signOut();
+}
+
+// Слушатель состояния (автоматически меняет интерфейс)
+auth.onAuthStateChanged(user => {
+    const loginForm = document.getElementById('login-form');
+    const userInfo = document.getElementById('user-info');
+    const emailDisplay = document.getElementById('user-email-display');
+
+    if (user) {
+        loginForm.style.display = 'none';
+        userInfo.style.display = 'block';
+        emailDisplay.innerText = user.email;
+        document.getElementById('auth-error').innerText = "";
+    } else {
+        loginForm.style.display = 'block';
+        userInfo.style.display = 'none';
+    }
+});
