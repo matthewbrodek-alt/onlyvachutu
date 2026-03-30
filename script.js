@@ -81,32 +81,29 @@ function saveAndRender() {
 renderList();
 
 
-async function getDog() {
+async function getDog() { // Название можно оставить старым, чтобы не менять HTML
     const loader = document.getElementById('loader');
     const img = document.getElementById('dog-image');
 
-    // 1. Показываем лоадер, прячем старую картинку
     loader.style.display = 'block';
     img.style.display = 'none';
 
     try {
-        const response = await fetch('https://dog.ceo/api/breeds/image/random');
+        // API для случайных котиков
+        const response = await fetch('https://api.thecatapi.com/v1/images/search');
         const data = await response.json();
         
-        // 2. Устанавливаем новую картинку
-        img.src = data.message;
+        img.src = data[0].url; // У котиков структура ответа немного другая
 
-        // 3. Ждем, пока картинка РЕАЛЬНО скачается браузером
         img.onload = () => {
             loader.style.display = 'none';
             img.style.display = 'block';
         };
     } catch (error) {
         loader.style.display = 'none';
-        alert("Не удалось поймать собаку :(");
+        alert("Котик спрятался и не выходит :(");
     }
 }
-
 async function sendToTg() {
     const name = document.getElementById('tg-name').value;
     const msg = document.getElementById('tg-msg').value;
