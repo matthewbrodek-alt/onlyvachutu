@@ -80,40 +80,6 @@ function loadTodos(userId) {
 }
 
 // 3. ФУНКЦИИ АВТОРИЗАЦИИ
-async function handleSignUp() {
-    const email = document.getElementById('auth-email').value;
-    const pass = document.getElementById('auth-pass').value;
-    try {
-        await auth.createUserWithEmailAndPassword(email, pass);
-        alert("Аккаунт создан!");
-    } catch (error) { document.getElementById('auth-error').innerText = error.message; }
-}
-
-async function handleLogin() {
-    const email = document.getElementById('auth-email').value;
-    const pass = document.getElementById('auth-pass').value;
-    try {
-        await auth.signInWithEmailAndPassword(email, pass);
-    } catch (error) { document.getElementById('auth-error').innerText = error.message; }
-}
-
-function handleLogout() { auth.signOut(); }
-
-// 4. ФУНКЦИИ ТЕМЫ И МЕНЮ
-async function toggleTheme() {
-    const isDark = document.body.classList.toggle('dark');
-    const user = auth.currentUser;
-    if (user) {
-        await db.collection("users").doc(user.uid).set({
-            theme: isDark ? "dark" : "light"
-        }, { merge: true });
-    }
-}
-
-function toggleMenu() { document.getElementById("mobileMenu").classList.toggle("show"); }
-function toggleSecret() { document.getElementById("secret").classList.toggle("show"); }
-
-// 5. СПИСОК ДЕЛ (FIRESTORE)
 async function addTodo() {
     const input = document.getElementById('todo-input');
     const user = auth.currentUser;
@@ -152,6 +118,23 @@ async function deleteTodo(todoId) {
     const user = auth.currentUser;
     await db.collection("users").doc(user.uid).collection("todos").doc(todoId).delete();
 }
+
+
+// 4. ФУНКЦИИ ТЕМЫ И МЕНЮ
+async function toggleTheme() {
+    const isDark = document.body.classList.toggle('dark');
+    const user = auth.currentUser;
+    if (user) {
+        await db.collection("users").doc(user.uid).set({
+            theme: isDark ? "dark" : "light"
+        }, { merge: true });
+    }
+}
+
+function toggleMenu() { document.getElementById("mobileMenu").classList.toggle("show"); }
+function toggleSecret() { document.getElementById("secret").classList.toggle("show"); }
+
+// 5. СПИСОК ДЕЛ (FIRESTORE)
 
 // 6. ИЗБРАННОЕ (LOCALSTORAGE)
 let favorites = JSON.parse(localStorage.getItem('myFavs')) || ['Пицца', 'Картошка', 'Игры'];
