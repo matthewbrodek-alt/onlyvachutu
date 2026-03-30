@@ -106,7 +106,7 @@ input:focus {
 }
 
 .mobile-menu {
-    position: fixed; top: 0; right: -260px;
+    position: fixed; top: 0; right: -280px;
     width: 260px; height: 100%;
     background: rgba(30, 30, 30, 0.95);
     padding: 40px 20px; display: flex;
