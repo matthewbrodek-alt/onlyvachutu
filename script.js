@@ -1,3 +1,18 @@
+const firebaseConfig = {
+  apiKey: "AIzaSyA_7n34vc1JM5PER6kvU9mMSzKfpu8s5YE",
+  authDomain: "my-portfolio-auth-ff1ce.firebaseapp.com",
+  projectId: "my-portfolio-auth-ff1ce",
+  storageBucket: "my-portfolio-auth-ff1ce.firebasestorage.app",
+  messagingSenderId: "391088510675",
+  appId: "1:391088510675:web:ff1c4d866c37f921886626",
+  measurementId: "G-9Q1N2PQ51L"
+};
+
+// Инициализируем
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
 function toggleMenu() {
     document.getElementById("mobileMenu").classList.toggle("show");
 }
