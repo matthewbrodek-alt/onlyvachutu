@@ -1,3 +1,4 @@
+// 1. КОНФИГУРАЦИЯ И ИНИЦИАЛИЗАЦИЯ
 const firebaseConfig = {
   apiKey: "AIzaSyA_7n34vc1JM5PER6kvU9mMSzKfpu8s5YE",
   authDomain: "my-portfolio-auth-ff1ce.firebaseapp.com",
@@ -8,310 +9,186 @@ const firebaseConfig = {
   measurementId: "G-9Q1N2PQ51L"
 };
 
-// Инициализируем
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Регистрация
-async function handleSignUp() {
-    const email = document.getElementById('auth-email').value;
-    const pass = document.getElementById('auth-pass').value;
-    const errorElement = document.getElementById('auth-error');
-    
-    try {
-        await auth.createUserWithEmailAndPassword(email, pass);
-        alert("Аккаунт создан!");
-    } catch (error) {
-        errorElement.innerText = error.message;
-    }
-}
-
-// Вход
-async function handleLogin() {
-    const email = document.getElementById('auth-email').value;
-    const pass = document.getElementById('auth-pass').value;
-    const errorElement = document.getElementById('auth-error');
-    
-    try {
-        await auth.signInWithEmailAndPassword(email, pass);
-    } catch (error) {
-        errorElement.innerText = "Ошибка входа: " + error.message;
-    }
-}
-// Выход
-function handleLogout() {
-    auth.signOut();
-}
-
-// Слушатель состояния (автоматически меняет интерфейс)
-auth.onAuthStateChanged(user => {
+// 2. ГЛАВНЫЙ СЛУШАТЕЛЬ СОСТОЯНИЯ (ВСЁ В ОДНОМ)
+auth.onAuthStateChanged(async (user) => {
     const loginForm = document.getElementById('login-form');
     const userInfo = document.getElementById('user-info');
     const emailDisplay = document.getElementById('user-email-display');
+    const authError = document.getElementById('auth-error');
+    const privateCards = document.querySelectorAll('.private-card');
+    const todoList = document.getElementById('todo-list');
 
-    if (user) {
-        loginForm.style.display = 'none';
-        userInfo.style.display = 'block';
-        emailDisplay.innerText = user.email;
-        document.getElementById('auth-error').innerText = "";
-    } else {
-        loginForm.style.display = 'block';
-        userInfo.style.display = 'none';
-    }
-});
-
-function toggleMenu() {
-    document.getElementById("mobileMenu").classList.toggle("show");
-}
-
-function toggleSecret() {
-    const secret = document.getElementById("secret");
-    secret.classList.toggle("show");
-}
-
-function toggleTheme() {
-    document.body.classList.toggle("dark");
-}
-
-// Анимация карточек
-const cards = document.querySelectorAll('.card');
-
-function revealCards() {
-    const triggerBottom = window.innerHeight * 0.85;
-    cards.forEach(card => {
-        const cardTop = card.getBoundingClientRect().top;
-        if (cardTop < triggerBottom) {
-            card.classList.add('show');
-        }
-    });
-}
-
-window.addEventListener('scroll', revealCards);
-// Запускаем один раз при загрузке, чтобы показать верхние карточки
-window.addEventListener('load', revealCards);
-
-
-   // 1. Пытаемся загрузить данные из памяти. Если там пусто, используем стандартный набор.
-let favorites = JSON.parse(localStorage.getItem('myFavs')) || ['Пицца', 'Картошка', 'Игры','Програмировавывание'];
-
-const listElement = document.getElementById('fav-list');
-
-// Функция для отрисовки всего списка на экране
-function renderList() {
-    listElement.innerHTML = ""; // Очищаем список перед перерисовкой
-    favorites.forEach((item, index) => {
-        const li = document.createElement('li');
-        li.textContent = item;
-        
-        // Добавим кнопку удаления для красоты (бонус!)
-        const btn = document.createElement('button');
-        btn.textContent = '❌';
-        btn.style.marginLeft = '10px';
-        btn.style.padding = '2px 5px';
-        btn.onclick = () => removeItem(index);
-        
-        li.appendChild(btn);
-        listElement.appendChild(li);
-    });
-}
-
-// 2. Функция добавления
-function addFavorite() {
-    const input = document.getElementById('fav-input');
-    const newValue = input.value.trim();
-
-    if (newValue !== "") {
-        favorites.push(newValue); // Добавляем в массив
-        saveAndRender();          // Сохраняем и обновляем экран
-        input.value = "";
-    }
-}
-
-// 3. Функция удаления
-function removeItem(index) {
-    favorites.splice(index, 1); // Удаляем элемент из массива по индексу
-    saveAndRender();
-}
-
-// 4. Главная функция: сохраняет массив в память и обновляет экран
-function saveAndRender() {
-    localStorage.setItem('myFavs', JSON.stringify(favorites)); // Сохраняем как строку
-    renderList();
-}
-
-// Запускаем отрисовку при первой загрузке
-renderList();
-
-
-async function getDog() { // Название можно оставить старым, чтобы не менять HTML
-    const loader = document.getElementById('loader');
-    const img = document.getElementById('dog-image');
-
-    loader.style.display = 'block';
-    img.style.display = 'none';
-
-    try {
-        // API для случайных котиков
-        const response = await fetch('https://api.thecatapi.com/v1/images/search');
-        const data = await response.json();
-        
-        img.src = data[0].url; // У котиков структура ответа немного другая
-
-        img.onload = () => {
-            loader.style.display = 'none';
-            img.style.display = 'block';
-        };
-    } catch (error) {
-        loader.style.display = 'none';
-        alert("Котик спрятался и не выходит :(");
-    }
-}
-async function sendToTg() {
-    const name = document.getElementById('tg-name').value;
-    const msg = document.getElementById('tg-msg').value;
-    const btn = document.querySelector('#contact button');
-
-    if (name && msg) {
-        btn.disabled = true;
-        btn.textContent = "Отправляю...";
-
-        const TOKEN = "8664813567:AAEkqGdXuyrS43Pjfc1gB-KdVuOOReWrkGw";
-        const CHAT_ID = "7451263058";
-        const fullText = `🚀 Новое сообщение с сайта!\nИмя: ${name}\nТекст: ${msg}`;
-
-        try {
-            const response = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: CHAT_ID,
-                    text: fullText
-                })
-            });
-
-            if (response.ok) {
-                alert("Сообщение улетело! Проверь Telegram.");
-                document.getElementById('tg-name').value = "";
-                document.getElementById('tg-msg').value = "";
-            } else {
-                alert("Ошибка сервера Telegram. Проверь бота.");
-            }
-        } catch (error) {
-            alert("Ошибка сети! Проверь интернет.");
-        } finally {
-            // Возвращаем кнопку в рабочее состояние в любом случае
-            btn.disabled = false;
-            btn.textContent = "Отправить в Telegram";
-        }
-    } else {
-        alert("Заполни все поля!");
-    }
-}
-
-auth.onAuthStateChanged(user => {
     if (user) {
         console.log("Пользователь вошел:", user.email);
+        // Интерфейс
+        if (loginForm) loginForm.style.display = 'none';
+        if (userInfo) userInfo.style.display = 'block';
+        if (emailDisplay) emailDisplay.innerText = user.email;
+        if (authError) authError.innerText = "";
+        
+        // Показываем секреты
+        privateCards.forEach(card => card.style.display = 'block');
+
+        // Загружаем тему из облака
+        try {
+            const doc = await db.collection("users").doc(user.uid).get();
+            if (doc.exists && doc.data().theme === "dark") {
+                document.body.classList.add('dark');
+            }
+        } catch (e) { console.error("Ошибка темы:", e); }
+
+        // Запускаем список дел
+        loadTodos(user.uid);
+
     } else {
         console.log("Никто не авторизован");
+        if (loginForm) loginForm.style.display = 'block';
+        if (userInfo) userInfo.style.display = 'none';
+        privateCards.forEach(card => card.style.display = 'none');
+        if (todoList) todoList.innerHTML = "";
     }
 });
 
-async function toggleTheme() {
-    const body = document.body;
-    body.classList.toggle('dark');
-    
-    const isDark = body.classList.contains('dark');
-    const user = auth.currentUser;
+// 3. ФУНКЦИИ АВТОРИЗАЦИИ
+async function handleSignUp() {
+    const email = document.getElementById('auth-email').value;
+    const pass = document.getElementById('auth-pass').value;
+    try {
+        await auth.createUserWithEmailAndPassword(email, pass);
+        alert("Аккаунт создан!");
+    } catch (error) { document.getElementById('auth-error').innerText = error.message; }
+}
 
-    // Если пользователь вошел, сохраняем его выбор в базу
+async function handleLogin() {
+    const email = document.getElementById('auth-email').value;
+    const pass = document.getElementById('auth-pass').value;
+    try {
+        await auth.signInWithEmailAndPassword(email, pass);
+    } catch (error) { document.getElementById('auth-error').innerText = error.message; }
+}
+
+function handleLogout() { auth.signOut(); }
+
+// 4. ФУНКЦИИ ТЕМЫ И МЕНЮ
+async function toggleTheme() {
+    const isDark = document.body.classList.toggle('dark');
+    const user = auth.currentUser;
     if (user) {
-        try {
-            await db.collection("users").doc(user.uid).set({
-                theme: isDark ? "dark" : "light"
-            }, { merge: true });
-            console.log("Тема сохранена в облаке");
-        } catch (e) {
-            console.error("Ошибка сохранения темы: ", e);
-        }
+        await db.collection("users").doc(user.uid).set({
+            theme: isDark ? "dark" : "light"
+        }, { merge: true });
     }
 }
 
-auth.onAuthStateChanged(async (user) => {
-    // ... твой старый код (формы, приветствие) ...
+function toggleMenu() { document.getElementById("mobileMenu").classList.toggle("show"); }
+function toggleSecret() { document.getElementById("secret").classList.toggle("show"); }
 
-    if (user) {
-        // Запрашиваем настройки пользователя из базы
-        const doc = await db.collection("users").doc(user.uid).get();
-        if (doc.exists) {
-            const data = doc.data();
-            if (data.theme === "dark") {
-                document.body.classList.add('dark');
-            } else {
-                document.body.classList.remove('dark');
-            }
-        }
-    }
-});
-
-auth.onAuthStateChanged(async (user) => {
-    // Находим все приватные карточки
-    const privateCards = document.querySelectorAll('.private-card');
-
-    if (user) {
-        // Если пользователь вошел — показываем карточки
-        privateCards.forEach(card => card.style.display = 'block');
-        
-        // ... твой код загрузки темы ...
-    } else {
-        // Если вышел — прячем обратно
-        privateCards.forEach(card => card.style.display = 'none');
-    }
-});
-
-// Функция добавления дела
+// 5. СПИСОК ДЕЛ (FIRESTORE)
 async function addTodo() {
     const input = document.getElementById('todo-input');
     const user = auth.currentUser;
-
-    if (user && input.value !== "") {
+    if (user && input.value.trim() !== "") {
         await db.collection("users").doc(user.uid).collection("todos").add({
             text: input.value,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
-        input.value = ""; // Очищаем поле
+        input.value = "";
     }
 }
 
-// Функция отображения списка дел (в реальном времени!)
 function loadTodos(userId) {
     db.collection("users").doc(userId).collection("todos")
         .orderBy("timestamp", "desc")
         .onSnapshot((snapshot) => {
             const list = document.getElementById('todo-list');
-            list.innerHTML = ""; // Очищаем список перед обновлением
-            
+            if (!list) return;
+            list.innerHTML = "";
             snapshot.forEach((doc) => {
                 const li = document.createElement('li');
-                li.innerHTML = `${doc.data().text} <button onclick="deleteTodo('${doc.id}')" style="background:none; color:red; cursor:pointer;">×</button>`;
+                li.innerHTML = `${doc.data().text} <button onclick="deleteTodo('${doc.id}')" style="background:none; color:red; border:none; cursor:pointer;">×</button>`;
                 list.appendChild(li);
             });
         });
 }
 
-// Функция удаления
 async function deleteTodo(todoId) {
     const user = auth.currentUser;
     await db.collection("users").doc(user.uid).collection("todos").doc(todoId).delete();
 }
 
-auth.onAuthStateChanged((user) => {
-    if (user) {
-        // ... твой прошлый код ...
-        loadTodos(user.uid); // Запускаем загрузку списка дел
-    } else {
-        document.getElementById('todo-list').innerHTML = ""; // Очищаем при выходе
+// 6. ИЗБРАННОЕ (LOCALSTORAGE)
+let favorites = JSON.parse(localStorage.getItem('myFavs')) || ['Пицца', 'Картошка', 'Игры'];
+const listElement = document.getElementById('fav-list');
+
+function renderList() {
+    if (!listElement) return;
+    listElement.innerHTML = "";
+    favorites.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `${item} <button onclick="removeItem(${index})" style="margin-left:10px;">❌</button>`;
+        listElement.appendChild(li);
+    });
+}
+
+function addFavorite() {
+    const input = document.getElementById('fav-input');
+    if (input.value.trim()) {
+        favorites.push(input.value.trim());
+        localStorage.setItem('myFavs', JSON.stringify(favorites));
+        renderList();
+        input.value = "";
     }
-});
+}
 
+function removeItem(index) {
+    favorites.splice(index, 1);
+    localStorage.setItem('myFavs', JSON.stringify(favorites));
+    renderList();
+}
 
+// 7. API КОТИКОВ И TELEGRAM
+async function getDog() {
+    const loader = document.getElementById('loader');
+    const img = document.getElementById('dog-image');
+    loader.style.display = 'block';
+    img.style.display = 'none';
+    try {
+        const res = await fetch('https://api.thecatapi.com/v1/images/search');
+        const data = await res.json();
+        img.src = data[0].url;
+        img.onload = () => { loader.style.display = 'none'; img.style.display = 'block'; };
+    } catch (e) { loader.style.display = 'none'; }
+}
+
+async function sendToTg() {
+    const name = document.getElementById('tg-name').value;
+    const msg = document.getElementById('tg-msg').value;
+    if (!name || !msg) return alert("Заполни поля!");
+    
+    const TOKEN = "8664813567:AAEkqGdXuyrS43Pjfc1gB-KdVuOOReWrkGw";
+    const CHAT_ID = "7451263058";
+    
+    try {
+        await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: CHAT_ID, text: `🚀 Сообщение!\nИмя: ${name}\nТекст: ${msg}` })
+        });
+        alert("Отправлено!");
+    } catch (e) { alert("Ошибка!"); }
+}
+
+// 8. АНИМАЦИИ
+function revealCards() {
+    const trigger = window.innerHeight * 0.85;
+    document.querySelectorAll('.card').forEach(card => {
+        if (card.getBoundingClientRect().top < trigger) card.classList.add('show');
+    });
+}
+
+window.addEventListener('scroll', revealCards);
+window.addEventListener('load', () => { revealCards(); renderList(); });
