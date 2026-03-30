@@ -62,6 +62,18 @@ button {
     transition: 0.2s;
 }
 
+.secret-message {
+    color: var(--primary-color);
+    font-weight: bold;
+    display: none; /* Изначально скрыто */
+    transition: opacity 0.5s;
+}
+
+.secret-message.show {
+    display: block; /* Показывается при добавлении класса show */
+    opacity: 1;
+}
+
 button:hover {
     background-color: var(--primary-hover);
     transform: translateY(-2px);
