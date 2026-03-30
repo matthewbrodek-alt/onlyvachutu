@@ -253,3 +253,18 @@ auth.onAuthStateChanged(async (user) => {
         }
     }
 });
+
+auth.onAuthStateChanged(async (user) => {
+    // Находим все приватные карточки
+    const privateCards = document.querySelectorAll('.private-card');
+
+    if (user) {
+        // Если пользователь вошел — показываем карточки
+        privateCards.forEach(card => card.style.display = 'block');
+        
+        // ... твой код загрузки темы ...
+    } else {
+        // Если вышел — прячем обратно
+        privateCards.forEach(card => card.style.display = 'none');
+    }
+});
