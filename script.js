@@ -13,7 +13,8 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// 2. ГЛАВНЫЙ СЛУШАТЕЛЬ СОСТОЯНИЯ (ВСЁ В ОДНОМ)
+let unsubscribeTodos = null;
+
 auth.onAuthStateChanged(async (user) => {
     const loginForm = document.getElementById('login-form');
     const userInfo = document.getElementById('user-info');
@@ -24,16 +25,14 @@ auth.onAuthStateChanged(async (user) => {
 
     if (user) {
         console.log("Пользователь вошел:", user.email);
-        // Интерфейс
         if (loginForm) loginForm.style.display = 'none';
         if (userInfo) userInfo.style.display = 'block';
         if (emailDisplay) emailDisplay.innerText = user.email;
         if (authError) authError.innerText = "";
         
-        // Показываем секреты
         privateCards.forEach(card => card.style.display = 'block');
 
-        // Загружаем тему из облака
+        // Загружаем тему
         try {
             const doc = await db.collection("users").doc(user.uid).get();
             if (doc.exists && doc.data().theme === "dark") {
@@ -41,16 +40,16 @@ auth.onAuthStateChanged(async (user) => {
             }
         } catch (e) { console.error("Ошибка темы:", e); }
 
-        // Запускаем список дел
+        // ЗАПУСКАЕМ СПИСОК ДЕЛ
         loadTodos(user.uid);
 
-   } else {
+    } else {
         console.log("Никто не авторизован");
         
-        // ВЫКЛЮЧАЕМ СЛУШАТЕЛЬ ПРИ ВЫХОДЕ
+        // ОТПИСЫВАЕМСЯ ОТ ОБНОВЛЕНИЙ ПРИ ВЫХОДЕ (убирает ошибку прав)
         if (unsubscribeTodos) {
             unsubscribeTodos();
-            unsubscribeTodos = null; 
+            unsubscribeTodos = null;
         }
 
         if (loginForm) loginForm.style.display = 'block';
@@ -58,8 +57,27 @@ auth.onAuthStateChanged(async (user) => {
         privateCards.forEach(card => card.style.display = 'none');
         if (todoList) todoList.innerHTML = "";
     }
+}); // <-- Важно! Эта скобка часто теряется
 
-let unsubscribeTodos = null; // Переменная для остановки прослушивания дел
+// 3. ФУНКЦИЯ ЗАГРУЗКИ ДЕЛ (с сохранением отписки)
+function loadTodos(userId) {
+    if (unsubscribeTodos) unsubscribeTodos(); 
+
+    unsubscribeTodos = db.collection("users").doc(userId).collection("todos")
+        .orderBy("timestamp", "desc")
+        .onSnapshot((snapshot) => {
+            const list = document.getElementById('todo-list');
+            if (!list) return;
+            list.innerHTML = "";
+            snapshot.forEach((doc) => {
+                const li = document.createElement('li');
+                li.innerHTML = `${doc.data().text} <button onclick="deleteTodo('${doc.id}')" style="background:none; color:red; border:none; cursor:pointer;">×</button>`;
+                list.appendChild(li);
+            });
+        }, (error) => {
+            console.warn("Слушатель остановлен:", error.message);
+        });
+}
 
 // 3. ФУНКЦИИ АВТОРИЗАЦИИ
 async function handleSignUp() {
