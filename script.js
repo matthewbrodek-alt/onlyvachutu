@@ -80,34 +80,30 @@ function saveAndRender() {
 // Запускаем отрисовку при первой загрузке
 renderList();
 
+
 async function getDog() {
-    const imgElement = document.getElementById('dog-image');
-    const button = document.querySelector('#api-card button');
+    const loader = document.getElementById('loader');
+    const img = document.getElementById('dog-image');
 
-    // Пока ждем ответа, меняем текст на кнопке
-    button.textContent = "Ищу песика... 🔎";
+    // 1. Показываем лоадер, прячем старую картинку
+    loader.style.display = 'block';
+    img.style.display = 'none';
 
-  try {
-        // МЫ ЗАПРАШИВАЕМ ДАННЫЕ У СЕРВИСА (API), А НЕ ПРОСТО КАРТИНКУ
+    try {
         const response = await fetch('https://dog.ceo/api/breeds/image/random');
-        
-        // 2. Сервер присылает данные в текстовом формате JSON. 
-        // Мы переводим их в удобный для JavaScript формат (объект)
         const data = await response.json();
         
-        // В data.message сейчас лежит прямая ссылка на фото собаки!
-        // 3. Подставляем эту ссылку в атрибут src нашей картинки
-        imgElement.src = data.message;
-        
-        // 4. Делаем картинку видимой
-        imgElement.style.display = "block"; 
-        
+        // 2. Устанавливаем новую картинку
+        img.src = data.message;
+
+        // 3. Ждем, пока картинка РЕАЛЬНО скачается браузером
+        img.onload = () => {
+            loader.style.display = 'none';
+            img.style.display = 'block';
+        };
     } catch (error) {
-        // Если интернет пропал или сервер сломался, мы поймаем ошибку здесь
-        alert("Упс! Собачка убежала. Проверьте интернет.");
-    } finally {
-        // Этот код выполнится в любом случае в самом конце
-        button.textContent = "Позвать другую собачку!";
+        loader.style.display = 'none';
+        alert("Не удалось поймать собаку :(");
     }
 }
 
