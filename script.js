@@ -148,5 +148,5 @@ async function sendToTg() {
         alert("Заполни все поля!");
     }
 }
-}
+
 
