@@ -166,3 +166,18 @@ input:focus {
     h1 { font-size: 24px; }
     .flex-container { flex-direction: column; text-align: center; }
 }
+
+nav {
+    display: flex;
+    justify-content: flex-start; /* Выравнивание по левому краю */
+    align-items: center;
+    gap: 10px; /* Расстояние между кнопками */
+    padding: 10px;
+    background: #333;
+}
+
+nav button {
+    width: auto; /* Кнопка занимает место только под текст */
+    padding: 8px 15px;
+    white-space: nowrap; /* Чтобы текст не переносился */
+}
