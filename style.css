@@ -17,7 +17,7 @@ body {
     background-color: #f0f0f0; 
 
     /* Путь к твоему GIF файлу */
-    background-image: url('dancing_cat.gif');
+    background-image: url('dancing.cat.gif');
 
     /* Зацикливание (повторение) по горизонтали и вертикали */
     background-repeat: repeat;
