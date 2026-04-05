@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мое Портфолио</title>
+    <title>Портфолио с Котиком 🐱</title>
+    
+    <link rel="icon" type="image/png" href="cat_icon.png">
+    
     <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -13,7 +16,7 @@
 
     <nav>
         <div class="nav-links">
-            <button onclick="showPage('home')">Главная</button>
+            <button onclick="showPage('home')">Главная 🐱</button>
             <button onclick="showPage('todo-section')">Список дел</button>
             <button onclick="showPage('about')">Обо мне</button>
         </div>
@@ -23,24 +26,27 @@
     </nav>
 
     <div id="login-form" class="card show">
-        <input type="email" id="auth-email" placeholder="Email">
-        <input type="password" id="auth-pass" placeholder="Пароль">
+        <h2>Вход в систему</h2>
+        <input type="email" id="auth-email" placeholder="Твой Email">
+        <input type="password" id="auth-pass" placeholder="Твой Пароль">
         <button onclick="handleLogin()">Войти</button>
         <button onclick="handleSignUp()">Регистрация</button>
+        <p id="auth-error" style="color: red;"></p>
     </div>
 
     <div id="user-info" style="display: none;" class="user-bar">
-        <span id="user-email-display"></span>
-        <button onclick="handleLogout()">Выход</button>
+        <p>Привет, <span id="user-email-display"></span>! 🔥</p>
+        <button onclick="handleLogout()">Выйти</button>
     </div>
+
+    <hr>
 
     <section id="home" class="page">
         <div class="card show">
-            <h1>Добро пожаловать!</h1>
-            <p>Это твое обновленное портфолио.</p>
+            <h1>Главная</h1>
             <button onclick="toggleSecret()" class="action-btn">Открыть секрет 🔒</button>
             <div id="secret" style="display:none; margin-top:10px;">
-                <p>Твоя цель: Стать Senior разработчиком в 2026 году! 🚀</p>
+                <p>Твоя цель: Стать Senior разработчиком к 2026 году! 🚀</p>
             </div>
         </div>
 
@@ -53,10 +59,12 @@
     </section>
 
     <section id="todo-section" class="page" style="display:none;">
-        <div class="card show">
-            <h2>Мой список дел 📝</h2>
-            <input type="text" id="todo-input" placeholder="Новая задача">
-            <button onclick="addTodo()">Добавить</button>
+        <div class="card private-card show">
+            <h3>Мой список дел 📝</h3>
+            <div class="todo-input-group">
+                <input type="text" id="todo-input" placeholder="Что нужно сделать?">
+                <button onclick="addTodo()">Добавить</button>
+            </div>
             <ul id="todo-list"></ul>
         </div>
     </section>
@@ -64,11 +72,16 @@
     <section id="about" class="page" style="display:none;">
         <div class="card show">
             <h1>Обо мне</h1>
-            <p>Работа с Firebase, Telegram API и реставрация фото.</p>
+            <p>Технически подкованный Junior-разработчик.</p>
+            <p>Работаю с Firebase, Telegram API и занимаюсь реставрацией исторических фото.</p>
+        </div>
+
+        <div class="card show">
+            <h3>Написать мне напрямую🚀</h3>
             <div class="tg-form">
                 <input type="text" id="tg-name" placeholder="Твое имя">
-                <textarea id="tg-msg" placeholder="Сообщение"></textarea>
-                <button onclick="sendToTg()">Отправить в TG</button>
+                <textarea id="tg-msg" placeholder="Твое сообщение..."></textarea>
+                <button onclick="sendToTg()" class="action-btn">Отправить в Telegram</button>
             </div>
         </div>
     </section>
