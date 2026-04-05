@@ -44,24 +44,24 @@
     <main>
         <section id="home" class="page">
             <div class="card">
-                <h1 data-lang="welcomeTitle">Добро пожаловать!</h1>
-                <button onclick="toggleSecret()" class="action-btn" data-lang="secretBtn">Открыть секрет 🔒</button>
+                <h1 data-lang="welcomeTitle">Привет!</h1>
+                <button onclick="toggleSecret()" class="action-btn" data-lang="secretBtn">Секрет 🔒</button>
                 <div id="secret-msg" style="display:none; padding:10px; border-left: 3px solid #0088cc;">
-                    <p data-lang="secretText">Моя цель: Стать Senior разработчиком в 2026 году! 🚀</p>
+                    <p data-lang="secretText">Стать Senior в 2026 году! 🚀</p>
                 </div>
             </div>
 
             <div class="card">
-                <h3 data-lang="catTitle">Случайная киска 🐱</h3>
+                <h3 data-lang="catTitle">Котик дня 🐱</h3>
                 <div id="loader" style="display:none;">Loading...</div>
                 <img id="cat-image" src="" style="max-width:100%; border-radius:10px; display:none; margin-bottom:10px;">
-                <button onclick="getCat()" class="action-btn" data-lang="catBtn">Кыс-кыс-кыс!</button>
+                <button onclick="getCat()" class="action-btn" data-lang="catBtn">Кыс-кыс!</button>
             </div>
         </section>
 
         <section id="todo-section" class="page">
             <div class="card">
-                <h2 data-lang="todoTitle">Мой список дел 📝</h2>
+                <h2 data-lang="todoTitle">Список дел 📝</h2>
                 <div class="todo-input-group">
                     <input type="text" id="todo-input" placeholder="...">
                     <button onclick="addTodo()" class="action-btn" data-lang="addBtn">Добавить</button>
@@ -73,8 +73,8 @@
         <section id="about" class="page">
             <div class="card">
                 <h1 data-lang="navAbout">Обо мне</h1>
-                <p data-lang="aboutText">Работа с Firebase, Telegram API и реставрация фото.</p>
-                <h3 data-lang="tgTitle">Написать мне в TG 🚀</h3>
+                <p data-lang="aboutText">Firebase, Telegram API, Реставрация фото.</p>
+                <h3 data-lang="tgTitle">Написать в TG 🚀</h3>
                 <input type="text" id="tg-name" placeholder="Name">
                 <textarea id="tg-msg" placeholder="Message"></textarea>
                 <button onclick="sendToTg()" class="action-btn" data-lang="sendBtn">Отправить</button>
