@@ -12,60 +12,45 @@
 <body>
 
     <nav>
-        <div class="nav-container">
+        <div class="nav-links">
             <button onclick="showPage('home')">Главная</button>
             <button onclick="showPage('todo-section')">Список дел</button>
             <button onclick="showPage('about')">Обо мне</button>
-            <button onclick="toggleTheme()">🌓 Тема</button>
         </div>
+        <button id="theme-toggle" onclick="toggleTheme()" class="theme-btn">
+            <span id="theme-icon">🌙</span>
+        </button>
     </nav>
 
-    <div id="login-form" class="auth-container">
-        <h2>Вход в систему</h2>
+    <div id="login-form" class="auth-box">
         <input type="email" id="auth-email" placeholder="Email">
         <input type="password" id="auth-pass" placeholder="Пароль">
-        <div class="auth-buttons">
-            <button onclick="handleLogin()">Войти</button>
-            <button onclick="handleSignUp()">Регистрация</button>
-        </div>
-        <p id="auth-error" style="color: red;"></p>
+        <button onclick="handleLogin()">Войти</button>
+        <button onclick="handleSignUp()">Регистрация</button>
     </div>
 
-    <div id="user-info" style="display: none;" class="user-bar">
-        <p>Привет, <span id="user-email-display"></span>! 👋</p>
-        <button onclick="handleLogout()">Выйти</button>
+    <div id="user-info" style="display: none;">
+        <span id="user-email-display"></span>
+        <button onclick="handleLogout()">Выход</button>
     </div>
-
-    <hr>
 
     <section id="home" class="page">
-        <div class="card show">
-            <h1>Добро пожаловать!</h1>
-            <p>Это мое интерактивное портфолио. Здесь ты можешь проверить работу API, поиграть со списком дел или написать мне в Telegram.</p>
-        </div>
-
-        <div class="card show">
-            <h3>Случайная киска 🐱</h3>
-            <div id="loader" style="display:none;">Загрузка...</div>
-            <img id="dog-image" src="" alt="Котик" style="max-width:100%; border-radius:10px; display:none;">
-            <button onclick="getDog()" class="action-btn">Кыс-кыс-кыс!</button>
-        </div>
+        <h1>Главная страница</h1>
+        <p>Добро пожаловать в мое приложение!</p>
     </section>
 
     <section id="todo-section" class="page" style="display:none;">
-        <div class="card private-card show">
-            <h3>Мой список дел 📝</h3>
-            <div class="todo-controls">
-                <input type="text" id="todo-input" placeholder="Что нужно сделать?">
-                <button onclick="addTodo()">Добавить</button>
-            </div>
-            <ul id="todo-list"></ul>
-        </div>
+        <h2>Список дел</h2>
+        <input type="text" id="todo-input" placeholder="Новая задача">
+        <button onclick="addTodo()">Добавить</button>
+        <ul id="todo-list"></ul>
     </section>
 
     <section id="about" class="page" style="display:none;">
-        <div class="card show">
-            <h3>Обо мне</h3>
-            <p>Стать Senior разработчиком в 2026 году! 🚀</p>
-            <p>Работаю с Firebase, Telegram API и занимаюсь реставрацией фото.</p>
-        </div>
+        <h1>Обо мне</h1>
+        <p>Цель: Стать Senior разработчиком в 2026 году!</p>
+    </section>
+
+    <script src="script.js"></script>
+</body>
+</html>
