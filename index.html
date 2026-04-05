@@ -1,30 +1,81 @@
-<main class="container">
-  <section class="panel home-bg">
-    <div class="content">
-      <h1 data-lang="welcomeTitle">Привет!</h1>
-      <p>Стать Senior в 2026 году! 🚀</p>
-    </div>
-    <div class="buttons">
-      <button onclick="showPage('todo-section')" class="btn-primary">Задачи</button>
-      <button onclick="toggleSecret()" class="btn-secondary">Секрет</button>
-    </div>
-  </section>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio | Future Senior 2026</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-  <section class="panel cat-bg">
-    <div class="content">
-      <h2 data-lang="catTitle">Котик дня</h2>
-      <div id="loader" style="display:none;">Загрузка...</div>
-      <img id="cat-image" src="" style="display:none; max-width: 80%; border-radius: 20px;">
-    </div>
-    <div class="buttons">
-      <button onclick="getCat()" class="btn-primary">Кыс-кыс!</button>
-    </div>
-  </section>
+    <nav class="tesla-nav">
+        <div class="nav-brand">MY PORTFOLIO</div>
+        <div class="nav-center">
+            <button onclick="scrollToPanel('home')" data-lang="navHome">Главная</button>
+            <button onclick="scrollToPanel('todo')" data-lang="navTodo">Задачи</button>
+            <button onclick="scrollToPanel('about')" data-lang="navAbout">Связь</button>
+        </div>
+        <div class="nav-right">
+            <button onclick="toggleLang()" id="lang-btn">EN</button>
+            <button onclick="toggleTheme()" id="theme-icon">🌙</button>
+        </div>
+    </nav>
 
-  <section id="chat-panel" class="panel chat-bg" style="display: none;">
-    <div class="content">
-      <h2 data-lang="tgTitle">Чат со мной</h2>
-      <div id="chat-window" class="tesla-chat"></div>
-    </div>
-    </section>
-</main>
+    <main class="scroll-container">
+        <section id="home" class="panel section-1">
+            <div class="content-wrapper">
+                <h1 data-lang="welcomeTitle" class="fade-in">Привет!</h1>
+                <p data-lang="secretText" class="sub-text">Стать Senior в 2026 году! 🚀</p>
+            </div>
+            <div class="button-group">
+                <button onclick="scrollToPanel('todo')" class="btn-primary" data-lang="navTodo">Задачи</button>
+                <button onclick="toggleSecret()" class="btn-secondary" data-lang="secretBtn">Секрет 🔒</button>
+            </div>
+        </section>
+
+        <section id="todo" class="panel section-2">
+            <div class="content-wrapper">
+                <h2 data-lang="todoTitle">Список дел</h2>
+                <div id="login-form" class="auth-box">
+                    <input type="email" id="auth-email" placeholder="Email">
+                    <input type="password" id="auth-pass" placeholder="Password">
+                    <button onclick="handleLogin()" class="btn-primary" data-lang="loginBtn">Войти</button>
+                </div>
+                <div id="user-info" style="display:none;">
+                    <input type="text" id="todo-input" placeholder="...">
+                    <button onclick="addTodo()" class="btn-primary" data-lang="addBtn">Добавить</button>
+                    <ul id="todo-list"></ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="cat-section" class="panel section-3">
+            <div class="content-wrapper">
+                <h2 data-lang="catTitle">Котик 🐱</h2>
+                <div id="loader" style="display:none;">Loading...</div>
+                <img id="cat-image" src="" class="cat-img">
+            </div>
+            <div class="button-group">
+                <button onclick="getCat()" class="btn-primary" data-lang="catBtn">Кыс-кыс!</button>
+            </div>
+        </section>
+
+        <section id="about" class="panel section-4">
+            <div class="content-wrapper">
+                <h2 data-lang="tgTitle">Чат со мной</h2>
+                <div id="chat-window" class="tesla-chat"></div>
+                <div class="chat-inputs">
+                    <input type="text" id="chat-name" placeholder="Имя">
+                    <textarea id="chat-msg" placeholder="Сообщение..."></textarea>
+                    <button onclick="sendMessage()" class="btn-primary" data-lang="sendBtn">Отправить</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
