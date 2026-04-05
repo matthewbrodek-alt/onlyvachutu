@@ -14,7 +14,7 @@
 
     <nav>
         <div class="nav-links">
-            <button onclick="showPage('home')" data-lang="navHome" class="action-btn">Главная</button>
+            <button onclick="showPage('home')" data-lang="navHome">Главная</button>
             <button onclick="showPage('todo-section')" data-lang="navTodo">Задачи</button>
             <button onclick="showPage('about')" data-lang="navAbout">Обо мне</button>
         </div>
@@ -52,13 +52,11 @@
             </div>
 
             <div class="card">
-                 <h3 data-lang="catTitle">Котик дня 🐱</h3>
-                 <div id="loader" style="display:none; color: var(--accent-color);">Загрузка...</div>
-                 <img id="cat-image" src="" alt="Случайный кот" 
-                 style="max-width:100%; border-radius:10px; display:none; margin-bottom:10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-                 <button onclick="getCat()" class="action-btn" data-lang="catBtn">Кыс-кыс!</button>
+                <h3 data-lang="catTitle">Котик дня 🐱</h3>
+                <div id="loader" style="display:none;">Loading...</div>
+                <img id="cat-image" src="" style="max-width:100%; border-radius:10px; display:none; margin-bottom:10px;">
+                <button onclick="getCat()" class="action-btn" data-lang="catBtn">Кыс-кыс!</button>
             </div>
-        
         </section>
 
         <section id="todo-section" class="page">
@@ -76,10 +74,15 @@
             <div class="card">
                 <h1 data-lang="navAbout">Обо мне</h1>
                 <p data-lang="aboutText">Firebase, Telegram API, Реставрация фото.</p>
-                <h3 data-lang="tgTitle">Написать в TG 🚀</h3>
-                <input type="text" id="tg-name" placeholder="Name">
-                <textarea id="tg-msg" placeholder="Message"></textarea>
-                <button onclick="sendToTg()" class="action-btn" data-lang="sendBtn">Отправить</button>
+                
+                <h3 data-lang="tgTitle">Чат со мной 🚀</h3>
+                <div id="chat-window" class="chat-container"></div>
+
+                <div class="chat-input-group">
+                    <input type="text" id="chat-name" placeholder="Имя">
+                    <textarea id="chat-msg" placeholder="Сообщение..."></textarea>
+                    <button onclick="sendMessage()" class="action-btn" data-lang="sendBtn">Отправить</button>
+                </div>
             </div>
         </section>
     </main>
