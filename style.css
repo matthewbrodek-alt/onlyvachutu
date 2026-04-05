@@ -33,7 +33,11 @@ body, html {
 }
 
 /* Фоны (можешь заменить на свои реставрации) */
-.section-1 { background-image: url('https://images.tesla.com/tesla-v2/project-quicksilver/model-y-main-hero-desktop.jpg'); }
+.section-1 { 
+    /* Используем рабочую ссылку или цвет-заглушку, если картинка не грузится */
+    background-image: url('https://digitalassets.tesla.com/tesla-contents/image/upload/f_auto,q_auto/Homepage-Model-Y-Desktop-Global.png');
+    background-color: #333; 
+           }
 .section-2 { background-color: #f4f4f4; }
 .section-3 { background-color: #e2e2e2; }
 .section-4 { background-color: #ffffff; }
