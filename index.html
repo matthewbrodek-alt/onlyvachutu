@@ -14,8 +14,8 @@
 
     <nav>
         <div class="nav-links">
-            <button onclick="showPage('home')" data-lang="navHome">Главная</button>
-            <button onclick="showPage('todo-section')" data-lang="navTodo">Список дел</button>
+            <button onclick="showPage('home')" data-lang="navHome" class="action-btn">Главная</button>
+            <button onclick="showPage('todo-section')" data-lang="navTodo">Задачи</button>
             <button onclick="showPage('about')" data-lang="navAbout">Обо мне</button>
         </div>
         <div class="controls">
@@ -26,12 +26,14 @@
         </div>
     </nav>
 
-    <div id="login-form" class="card show">
+    <div id="login-form" class="card">
         <h2 data-lang="authTitle">Вход</h2>
         <input type="email" id="auth-email" placeholder="Email">
         <input type="password" id="auth-pass" placeholder="Password">
-        <button onclick="handleLogin()" data-lang="loginBtn">Войти</button>
-        <button onclick="handleSignUp()" data-lang="regBtn">Регистрация</button>
+        <div class="btn-group">
+            <button onclick="handleLogin()" class="action-btn" data-lang="loginBtn">Войти</button>
+            <button onclick="handleSignUp()" data-lang="regBtn">Регистрация</button>
+        </div>
     </div>
 
     <div id="user-info" style="display: none;" class="user-bar">
@@ -39,46 +41,46 @@
         <button onclick="handleLogout()" data-lang="logoutBtn">Выход</button>
     </div>
 
-    <section id="home" class="page">
-        <div class="card show">
-            <h1 data-lang="welcomeTitle">Добро пожаловать!</h1>
-            <button onclick="toggleSecret()" class="action-btn" data-lang="secretBtn">Открыть секрет 🔒</button>
-            <div id="secret-msg" style="display:none; margin-top:10px;">
-                <p data-lang="secretText">Моя цель: Стать Senior разработчиком в 2026 году! 🚀</p>
+    <main>
+        <section id="home" class="page">
+            <div class="card">
+                <h1 data-lang="welcomeTitle">Добро пожаловать!</h1>
+                <button onclick="toggleSecret()" class="action-btn" data-lang="secretBtn">Открыть секрет 🔒</button>
+                <div id="secret-msg" style="display:none; padding:10px; border-left: 3px solid #0088cc;">
+                    <p data-lang="secretText">Моя цель: Стать Senior разработчиком в 2026 году! 🚀</p>
+                </div>
             </div>
-        </div>
 
-        <div class="card show">
-            <h3 data-lang="catTitle">Случайная киска 🐱</h3>
-            <div id="loader" style="display:none;">Loading...</div>
-            <img id="cat-image" src="" style="max-width:100%; border-radius:10px; display:none;">
-            <button onclick="getCat()" class="action-btn" data-lang="catBtn">Кыс-кыс-кыс!</button>
-        </div>
-    </section>
-
-    <section id="todo-section" class="page" style="display:none;">
-        <div class="card show">
-            <h2 data-lang="todoTitle">Мой список дел 📝</h2>
-            <div class="todo-input-group">
-                <input type="text" id="todo-input" placeholder="...">
-                <button onclick="addTodo()" data-lang="addBtn">Добавить</button>
+            <div class="card">
+                <h3 data-lang="catTitle">Случайная киска 🐱</h3>
+                <div id="loader" style="display:none;">Loading...</div>
+                <img id="cat-image" src="" style="max-width:100%; border-radius:10px; display:none; margin-bottom:10px;">
+                <button onclick="getCat()" class="action-btn" data-lang="catBtn">Кыс-кыс-кыс!</button>
             </div>
-            <ul id="todo-list"></ul>
-        </div>
-    </section>
+        </section>
 
-    <section id="about" class="page" style="display:none;">
-        <div class="card show">
-            <h1 data-lang="navAbout">Обо мне</h1>
-            <p data-lang="aboutText">Работа с Firebase, Telegram API и реставрация фото.</p>
-            <div class="tg-form">
+        <section id="todo-section" class="page">
+            <div class="card">
+                <h2 data-lang="todoTitle">Мой список дел 📝</h2>
+                <div class="todo-input-group">
+                    <input type="text" id="todo-input" placeholder="...">
+                    <button onclick="addTodo()" class="action-btn" data-lang="addBtn">Добавить</button>
+                </div>
+                <ul id="todo-list" style="width:100%; padding:0; list-style:none;"></ul>
+            </div>
+        </section>
+
+        <section id="about" class="page">
+            <div class="card">
+                <h1 data-lang="navAbout">Обо мне</h1>
+                <p data-lang="aboutText">Работа с Firebase, Telegram API и реставрация фото.</p>
                 <h3 data-lang="tgTitle">Написать мне в TG 🚀</h3>
                 <input type="text" id="tg-name" placeholder="Name">
                 <textarea id="tg-msg" placeholder="Message"></textarea>
-                <button onclick="sendToTg()" data-lang="sendBtn">Отправить</button>
+                <button onclick="sendToTg()" class="action-btn" data-lang="sendBtn">Отправить</button>
             </div>
-        </div>
-    </section>
+        </section>
+    </main>
 
     <script src="script.js"></script>
 </body>
