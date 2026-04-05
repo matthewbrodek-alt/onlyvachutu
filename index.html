@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio | Future Senior 2026</title>
     
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/png" href="cat_icon.png">
 </head>
 <body class="light-theme">
 
@@ -29,68 +29,70 @@
     </nav>
 
     <main class="scroll-container">
-        <section id="home" class="panel section-1">
+        <section id="home" class="panel bg-image">
             <div class="content-wrapper fade-in">
                 <h1 data-lang="welcomeTitle">Привет!</h1>
-                <p class="sub-text">Junior Developer & Automation Specialist</p>
+                <p class="sub-text" data-lang="welcomeSub">Junior Developer & Automation Specialist</p>
             </div>
             <div class="button-group">
-                <button onclick="scrollToPanel('skills')" class="btn-primary" data-lang="navSkills">Мои навыки</button>
-                <button onclick="scrollToPanel('about')" class="btn-secondary" data-lang="navAbout">Связаться</button>
+                <button onclick="scrollToPanel('skills')" class="btn-primary" data-lang="navSkills">Навыки</button>
+                <button onclick="scrollToPanel('about')" class="btn-secondary" data-lang="navAbout">Связь</button>
             </div>
         </section>
 
-        <section id="skills" class="panel section-skills">
+        <section id="skills" class="panel bg-clean">
             <div class="skills-grid">
-                <div class="skill-card">
+                <div class="skill-card glass">
                     <h3 data-lang="skillIt">IT & Разработка</h3>
-                    <ul>
-                        <li><b>Frontend:</b> JS (UI/UX, Dark Mode, Anim)</li>
+                    <ul data-lang="skillItList">
+                        <li><b>Frontend:</b> JS (UI/UX, Анимации)</li>
                         <li><b>Backend:</b> Firebase, Telegram API</li>
-                        <li><b>Automation:</b> Market Bots, Userbots</li>
+                        <li><b>Automation:</b> Маркет-боты, Юзерботы</li>
                     </ul>
                 </div>
-                <div class="skill-card">
+                <div class="skill-card glass">
                     <h3 data-lang="skillProjects">Проекты</h3>
-                    <ul>
+                    <ul data-lang="skillProjectsList">
                         <li><b>Web-Portfolio:</b> Firebase Auth & Firestore</li>
-                        <li><b>Userbot:</b> Human-like (3-4h cycles)</li>
+                        <li><b>Userbot:</b> Имитация поведения (циклы 3-4ч)</li>
                     </ul>
                 </div>
-                <div class="skill-card">
+                <div class="skill-card glass">
                     <h3 data-lang="skillSoft">Soft Skills</h3>
-                    <p>Адаптивность, аналитика, тайм-менеджмент.</p>
+                    <p data-lang="skillSoftDesc">Адаптивность, аналитическое мышление, дисциплина и тайм-менеджмент.</p>
                 </div>
-                <div class="skill-card">
-                    <h3 data-lang="skillStack">Stack</h3>
-                    <p>JavaScript, Python, Firebase, Pyrogram, Git.</p>
+                <div class="skill-card glass">
+                    <h3 data-lang="skillStack">Стек</h3>
+                    <p><b>Languages:</b> JavaScript, Python<br><b>Tools:</b> Firebase, Pyrogram, Git</p>
                 </div>
             </div>
         </section>
 
-        <section id="todo" class="panel section-2">
-            <div class="content-wrapper">
+        <section id="todo" class="panel bg-image alt-pos">
+            <div class="content-wrapper glass auth-container">
                 <h2 data-lang="todoTitle">Список дел</h2>
-                <div id="login-form" class="auth-box">
+                <div id="login-form">
                     <input type="email" id="auth-email" placeholder="Email">
                     <input type="password" id="auth-pass" placeholder="Password">
-                    <button onclick="handleLogin()" class="btn-primary-small">Войти</button>
+                    <button onclick="handleLogin()" class="btn-primary" data-lang="loginBtn">Войти</button>
                 </div>
                 <div id="user-info" style="display:none;">
-                    <input type="text" id="todo-input" placeholder="...">
-                    <button onclick="addTodo()" class="btn-primary-small">Добавить</button>
+                    <div class="todo-input-row">
+                        <input type="text" id="todo-input" data-placeholder="todoPlaceholder" placeholder="Что нужно сделать?">
+                        <button onclick="addTodo()" class="btn-primary" data-lang="addBtn">+</button>
+                    </div>
                     <ul id="todo-list"></ul>
                 </div>
             </div>
         </section>
 
-        <section id="about" class="panel section-4">
-            <div class="content-wrapper">
+        <section id="about" class="panel bg-clean">
+            <div class="chat-container glass">
                 <h2 data-lang="tgTitle">Чат со мной</h2>
                 <div id="chat-window" class="tesla-chat"></div>
                 <div class="chat-inputs">
-                    <input type="text" id="chat-name" placeholder="Имя">
-                    <textarea id="chat-msg" placeholder="Сообщение..."></textarea>
+                    <input type="text" id="chat-name" data-placeholder="chatName" placeholder="Ваше имя">
+                    <textarea id="chat-msg" data-placeholder="chatMsg" placeholder="Сообщение..."></textarea>
                     <button onclick="sendMessage()" class="btn-primary" data-lang="sendBtn">Отправить</button>
                 </div>
             </div>
