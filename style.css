@@ -1,5 +1,4 @@
 :root {
-    /* Основные цвета */
     --bg-light: rgba(255, 255, 255, 0.92);
     --bg-dark: rgba(20, 20, 20, 0.9);
     --accent-color: #0088cc;
@@ -8,7 +7,7 @@
     
     /* Настройки фона с котом */
     --cat-size: 120px;
-    --cat-url: url('dancing_cat.gif');
+    --cat-url: url('dancing.cat.gif');
 }
 
 /* Базовые настройки */
