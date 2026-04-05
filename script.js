@@ -173,3 +173,15 @@ window.onload = () => {
     showPage('home');
     listenChats();
 };
+
+function toggleSecret() {
+    const chatContainer = document.getElementById('chat-window');
+    // Пример логики: переключение видимости чата или секретного режима
+    if (chatContainer.style.display === "none") {
+        chatContainer.style.display = "block";
+        console.log("Секретный чат показан");
+    } else {
+        chatContainer.style.display = "none";
+        console.log("Секретный чат скрыт");
+    }
+}
