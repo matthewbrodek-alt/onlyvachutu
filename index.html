@@ -4,10 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio | Tesla Edition</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="light-theme">
@@ -28,7 +31,7 @@
 
     <main class="scroll-container">
         <section id="home" class="panel">
-            <div class="glass-box fade-in">
+            <div class="glass-box">
                 <h1 data-lang="welcomeTitle">Привет!</h1>
                 <p class="sub-text" data-lang="welcomeSub">Junior Developer & Automation Specialist</p>
                 <div class="button-group">
@@ -64,6 +67,7 @@
                 <div id="login-form">
                     <input type="email" id="auth-email" placeholder="Email">
                     <input type="password" id="auth-pass" placeholder="Password">
+                    <br><br>
                     <button onclick="handleLogin()" class="btn-primary" data-lang="loginBtn">Войти</button>
                 </div>
                 <div id="user-info" style="display:none;">
