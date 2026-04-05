@@ -175,13 +175,23 @@ window.onload = () => {
 };
 
 function toggleSecret() {
+    const aboutPage = document.getElementById('about'); // Родительская секция
     const chatContainer = document.getElementById('chat-window');
-    if (!chatContainer) return;
 
+    if (!aboutPage || !chatContainer) return;
+
+    // 1. Показываем саму страницу "Связь со мной", если она скрыта
+    aboutPage.style.display = "block";
+
+    // 2. Переключаем видимость самого чата
     if (chatContainer.style.display === "none" || chatContainer.style.display === "") {
         chatContainer.style.display = "block";
-        chatContainer.style.position = "relative"; // Гарантируем, что он в потоке
-        chatContainer.style.zIndex = "1000";      // Поверх котиков
+        chatContainer.style.position = "relative"; 
+        chatContainer.style.zIndex = "1000";      
+        
+        // Плавно прокручиваем экран к чату, чтобы его сразу было видно
+        chatContainer.scrollIntoView({ behavior: 'smooth' }); 
+        
         console.log("Секретный чат показан");
     } else {
         chatContainer.style.display = "none";
