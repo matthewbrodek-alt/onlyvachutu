@@ -96,19 +96,27 @@ async function sendMessage() {
 }
 
 function listenChats() {
-    db.collection("public_chats").orderBy("timestamp", "asc").onSnapshot(snap => {
+    // Убираем orderBy на время теста, чтобы увидеть все сообщения
+    db.collection("public_chats").onSnapshot(snap => {
         const win = document.getElementById('chat-window');
         if (!win) return;
         win.innerHTML = "";
+        
+        console.log("Найдено сообщений в базе:", snap.size); // Это появится в консоли F12
+
         snap.forEach(doc => {
             const data = doc.data();
             const div = document.createElement('div');
             const isAdmin = data.sender === "admin";
+            
             div.className = `msg ${isAdmin ? 'msg-admin' : 'msg-user'}`;
-            div.innerHTML = `<b>${data.username}:</b> ${data.message}`;
+            // Добавляем проверку на случай, если данных нет
+            div.innerHTML = `<b>${data.username || 'Аноним'}:</b> ${data.message || '...'}`;
             win.appendChild(div);
         });
         win.scrollTop = win.scrollHeight;
+    }, err => {
+        console.error("Ошибка слушателя чата:", err); // Поможет понять, в чем затык
     });
 }
 
