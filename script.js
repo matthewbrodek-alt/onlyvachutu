@@ -176,9 +176,12 @@ window.onload = () => {
 
 function toggleSecret() {
     const chatContainer = document.getElementById('chat-window');
-    // Пример логики: переключение видимости чата или секретного режима
-    if (chatContainer.style.display === "none") {
+    if (!chatContainer) return;
+
+    if (chatContainer.style.display === "none" || chatContainer.style.display === "") {
         chatContainer.style.display = "block";
+        chatContainer.style.position = "relative"; // Гарантируем, что он в потоке
+        chatContainer.style.zIndex = "1000";      // Поверх котиков
         console.log("Секретный чат показан");
     } else {
         chatContainer.style.display = "none";
