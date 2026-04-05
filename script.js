@@ -64,14 +64,30 @@ function toggleSecret() {
 }
 
 async function getCat() {
-    const loader = document.getElementById('loader'), img = document.getElementById('cat-image');
-    loader.style.display = 'block'; img.style.display = 'none';
+    const loader = document.getElementById('loader');
+    const img = document.getElementById('cat-image');
+    
+    // Показываем лоадер, прячем старую картинку
+    loader.style.display = 'block';
+    img.style.display = 'none';
+    
     try {
-        const res = await fetch('https://api.thecatapi.com/v1/images/search');
-        const data = await res.json();
+        // Запрос к публичному API
+        const response = await fetch('https://api.thecatapi.com/v1/images/search');
+        const data = await response.json();
+        
+        // Устанавливаем новую ссылку
         img.src = data[0].url;
-        img.onload = () => { loader.style.display = 'none'; img.style.display = 'block'; };
-    } catch (e) { loader.style.display = 'none'; }
+        
+        // Ждем, пока браузер реально загрузит файл, прежде чем показать
+        img.onload = () => {
+            loader.style.display = 'none';
+            img.style.display = 'block';
+        };
+    } catch (error) {
+        console.error("Ошибка при получении котика:", error);
+        loader.innerText = "Ошибка загрузки 😿";
+    }
 }
 
 async function sendToTg() {
