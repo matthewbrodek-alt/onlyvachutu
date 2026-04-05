@@ -13,34 +13,64 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 let unsubscribeTodos = null;
 
-// НАВИГАЦИЯ
-function showPage(pageId) {
-    document.querySelectorAll('.page').forEach(page => page.style.display = 'none');
-    const activePage = document.getElementById(pageId);
-    if (activePage) activePage.style.display = 'block';
+// ПЕРЕВОДЫ
+const translations = {
+    ru: {
+        navHome: "Главная", navTodo: "Список дел", navAbout: "Обо мне",
+        authTitle: "Вход", loginBtn: "Войти", regBtn: "Регистрация", logoutBtn: "Выход",
+        welcomeTitle: "Добро пожаловать!", secretBtn: "Открыть секрет 🔒",
+        secretText: "Моя цель: Стать Senior разработчиком в 2026 году! 🚀",
+        catTitle: "Случайная киска 🐱", catBtn: "Кыс-кыс-кыс!",
+        todoTitle: "Мой список дел 📝", addBtn: "Добавить",
+        tgTitle: "Написать мне в TG 🚀", sendBtn: "Отправить",
+        aboutText: "Работа с Firebase, Telegram API и реставрация фото."
+    },
+    en: {
+        navHome: "Home", navTodo: "Tasks", navAbout: "About Me",
+        authTitle: "Login", loginBtn: "Login", regBtn: "Sign Up", logoutBtn: "Logout",
+        welcomeTitle: "Welcome!", secretBtn: "Open Secret 🔒",
+        secretText: "My goal: Become a Senior Developer by 2026! 🚀",
+        catTitle: "Random Cat 🐱", catBtn: "Pspsps!",
+        todoTitle: "My To-Do List 📝", addBtn: "Add",
+        tgTitle: "Message me on TG 🚀", sendBtn: "Send",
+        aboutText: "Firebase, Telegram API and Photo Restoration."
+    }
+};
+
+let currentLang = 'ru';
+
+function toggleLang() {
+    currentLang = (currentLang === 'ru') ? 'en' : 'ru';
+    document.getElementById('lang-btn').innerText = (currentLang === 'ru') ? 'EN' : 'RU';
+    document.querySelectorAll('[data-lang]').forEach(el => {
+        const key = el.getAttribute('data-lang');
+        if (translations[currentLang][key]) el.innerText = translations[currentLang][key];
+    });
 }
 
-// ТЕМА
+// НАВИГАЦИЯ И ТЕМА
+function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+    const p = document.getElementById(pageId);
+    if (p) p.style.display = 'block';
+}
+
 function toggleTheme() {
     const isDark = document.body.classList.toggle('dark');
     const icon = document.getElementById('theme-icon');
     if (icon) icon.innerText = isDark ? "☀️" : "🌙";
-    if (auth.currentUser) {
-        db.collection("users").doc(auth.currentUser.uid).set({ theme: isDark ? "dark" : "light" }, { merge: true });
-    }
+    if (auth.currentUser) db.collection("users").doc(auth.currentUser.uid).set({ theme: isDark ? "dark" : "light" }, { merge: true });
 }
 
-// СЕКРЕТ И КОТИКИ
+// ФУНКЦИИ КОНТЕНТА
 function toggleSecret() {
-    const s = document.getElementById('secret');
+    const s = document.getElementById('secret-msg');
     s.style.display = (s.style.display === 'none') ? 'block' : 'none';
 }
 
-async function getDog() {
-    const loader = document.getElementById('loader');
-    const img = document.getElementById('dog-image');
-    loader.style.display = 'block';
-    img.style.display = 'none';
+async function getCat() {
+    const loader = document.getElementById('loader'), img = document.getElementById('cat-image');
+    loader.style.display = 'block'; img.style.display = 'none';
     try {
         const res = await fetch('https://api.thecatapi.com/v1/images/search');
         const data = await res.json();
@@ -49,44 +79,34 @@ async function getDog() {
     } catch (e) { loader.style.display = 'none'; }
 }
 
-// TELEGRAM
 async function sendToTg() {
-    const name = document.getElementById('tg-name').value;
-    const msg = document.getElementById('tg-msg').value;
-    if (!name || !msg) return alert("Заполни поля!");
-    const TOKEN = "8664813567:AAEkqGdXuyrS43Pjfc1gB-KdVuOOReWrkGw";
-    const CHAT_ID = "7451263058";
+    const name = document.getElementById('tg-name').value, msg = document.getElementById('tg-msg').value;
+    if (!name || !msg) return alert("Fill fields!");
+    const TOKEN = "8664813567:AAEkqGdXuyrS43Pjfc1gB-KdVuOOReWrkGw", CHAT_ID = "7451263058";
     try {
         await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: CHAT_ID, text: `🚀 Сообщение!\nИмя: ${name}\nТекст: ${msg}` })
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: CHAT_ID, text: `👤 ${name}\n📝 ${msg}` })
         });
-        alert("Отправлено!");
-    } catch (e) { alert("Ошибка!"); }
+        alert("Success!");
+    } catch (e) { alert("Error!"); }
 }
 
-// АВТОРИЗАЦИЯ
+// АВТОРИЗАЦИЯ И FIRESTORE
 async function handleLogin() {
-    const email = document.getElementById('auth-email').value;
-    const pass = document.getElementById('auth-pass').value;
-    try { await auth.signInWithEmailAndPassword(email, pass); } catch (e) { alert(e.message); }
+    const e = document.getElementById('auth-email').value, p = document.getElementById('auth-pass').value;
+    try { await auth.signInWithEmailAndPassword(e, p); } catch (err) { alert(err.message); }
 }
 
 async function handleSignUp() {
-    const email = document.getElementById('auth-email').value;
-    const pass = document.getElementById('auth-pass').value;
-    try { await auth.createUserWithEmailAndPassword(email, pass); alert("Успех!"); } catch (e) { alert(e.message); }
+    const e = document.getElementById('auth-email').value, p = document.getElementById('auth-pass').value;
+    try { await auth.createUserWithEmailAndPassword(e, p); alert("Account created!"); } catch (err) { alert(err.message); }
 }
 
-function handleLogout() { 
-    if (unsubscribeTodos) { unsubscribeTodos(); unsubscribeTodos = null; }
-    auth.signOut(); 
-}
+function handleLogout() { if (unsubscribeTodos) { unsubscribeTodos(); unsubscribeTodos = null; } auth.signOut(); }
 
 auth.onAuthStateChanged(async (user) => {
-    const loginForm = document.getElementById('login-form');
-    const userInfo = document.getElementById('user-info');
+    const loginForm = document.getElementById('login-form'), userInfo = document.getElementById('user-info');
     if (user) {
         if (loginForm) loginForm.style.display = 'none';
         if (userInfo) userInfo.style.display = 'block';
@@ -104,36 +124,33 @@ auth.onAuthStateChanged(async (user) => {
     }
 });
 
-// СПИСОК ДЕЛ
-function loadTodos(userId) {
+function loadTodos(uid) {
     if (unsubscribeTodos) unsubscribeTodos();
-    unsubscribeTodos = db.collection("users").doc(userId).collection("todos")
-        .orderBy("timestamp", "desc")
-        .onSnapshot((snapshot) => {
+    unsubscribeTodos = db.collection("users").doc(uid).collection("todos").orderBy("timestamp", "desc")
+        .onSnapshot(snap => {
             const list = document.getElementById('todo-list');
             if (!list) return;
             list.innerHTML = "";
-            snapshot.forEach((doc) => {
+            snap.forEach(doc => {
                 const li = document.createElement('li');
                 li.innerHTML = `${doc.data().text} <button onclick="deleteTodo('${doc.id}')">×</button>`;
                 list.appendChild(li);
             });
-        }, (error) => { console.warn("Выход из системы"); });
+        }, err => console.warn("Logged out"));
 }
 
 async function addTodo() {
     const input = document.getElementById('todo-input');
-    if (auth.currentUser && input.value.trim() !== "") {
+    if (auth.currentUser && input.value.trim()) {
         await db.collection("users").doc(auth.currentUser.uid).collection("todos").add({
-            text: input.value,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            text: input.value, timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
         input.value = "";
     }
 }
 
-async function deleteTodo(todoId) {
-    if (auth.currentUser) await db.collection("users").doc(auth.currentUser.uid).collection("todos").doc(todoId).delete();
+async function deleteTodo(id) {
+    if (auth.currentUser) await db.collection("users").doc(auth.currentUser.uid).collection("todos").doc(id).delete();
 }
 
 window.onload = () => showPage('home');
