@@ -13,14 +13,36 @@
 }
 
 body {
-    font-family: Arial, sans-serif;
-    background: url('https://s.auto.drom.ru/i24237/c/photos/fullsize/gac/gs8/gac_gs8_917218.jpg') no-repeat center center fixed;
-    background-size: cover;
-    color: var(--text-color);
-    margin: 20px;
-    transition: background-color 0.3s;
+    /* Основной цвет фона (чтобы сайт не был белым, пока загружается GIF) */
+    background-color: #f0f0f0; 
+
+    /* Путь к твоему GIF файлу */
+    background-image: url('dancing_cat.gif');
+
+    /* Зацикливание (повторение) по горизонтали и вертикали */
+    background-repeat: repeat;
+
+    /* Сделать фон неподвижным при прокрутке страницы */
+    background-attachment: fixed;
+
+    /* Настройка размера кота.
+       Если 'auto', он будет оригинального размера.
+       Если коты слишком большие, попробуй поставить размер в пикселях, например: '100px auto'
+    */
+    background-size: 150px auto; 
+    
+    /* Сдвинуть котов, чтобы они не перекрывали текст (опционально) */
+    background-position: center;
 }
 
+/* Если у тебя включена темная тема */
+body.dark {
+    background-color: #1a1a1a;
+    /* Если GIF прозрачный, он будет хорошо смотреться и здесь.
+       Если нет, можно добавить затемняющий слой поверх:
+       background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('dancing_cat.gif');
+    */
+}
 .card {
     background-color: var(--card-bg);
     color: var(--text-color);
