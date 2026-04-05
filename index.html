@@ -22,33 +22,55 @@
         </button>
     </nav>
 
-    <div id="login-form" class="auth-box">
+    <div id="login-form" class="card show">
         <input type="email" id="auth-email" placeholder="Email">
         <input type="password" id="auth-pass" placeholder="Пароль">
         <button onclick="handleLogin()">Войти</button>
         <button onclick="handleSignUp()">Регистрация</button>
     </div>
 
-    <div id="user-info" style="display: none;">
+    <div id="user-info" style="display: none;" class="user-bar">
         <span id="user-email-display"></span>
         <button onclick="handleLogout()">Выход</button>
     </div>
 
     <section id="home" class="page">
-        <h1>Главная страница</h1>
-        <p>Добро пожаловать в мое приложение!</p>
+        <div class="card show">
+            <h1>Добро пожаловать!</h1>
+            <p>Это твое обновленное портфолио.</p>
+            <button onclick="toggleSecret()" class="action-btn">Открыть секрет 🔒</button>
+            <div id="secret" style="display:none; margin-top:10px;">
+                <p>Твоя цель: Стать Senior разработчиком в 2026 году! 🚀</p>
+            </div>
+        </div>
+
+        <div class="card show">
+            <h3>Случайная киска 🐱</h3>
+            <div id="loader" style="display:none;">Загрузка...</div>
+            <img id="dog-image" src="" style="max-width:100%; border-radius:10px; display:none;">
+            <button onclick="getDog()" class="action-btn">Кыс-кыс-кыс!</button>
+        </div>
     </section>
 
     <section id="todo-section" class="page" style="display:none;">
-        <h2>Список дел</h2>
-        <input type="text" id="todo-input" placeholder="Новая задача">
-        <button onclick="addTodo()">Добавить</button>
-        <ul id="todo-list"></ul>
+        <div class="card show">
+            <h2>Мой список дел 📝</h2>
+            <input type="text" id="todo-input" placeholder="Новая задача">
+            <button onclick="addTodo()">Добавить</button>
+            <ul id="todo-list"></ul>
+        </div>
     </section>
 
     <section id="about" class="page" style="display:none;">
-        <h1>Обо мне</h1>
-        <p>Цель: Стать Senior разработчиком в 2026 году!</p>
+        <div class="card show">
+            <h1>Обо мне</h1>
+            <p>Работа с Firebase, Telegram API и реставрация фото.</p>
+            <div class="tg-form">
+                <input type="text" id="tg-name" placeholder="Твое имя">
+                <textarea id="tg-msg" placeholder="Сообщение"></textarea>
+                <button onclick="sendToTg()">Отправить в TG</button>
+            </div>
+        </div>
     </section>
 
     <script src="script.js"></script>
