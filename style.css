@@ -1,85 +1,101 @@
 :root {
-    --tesla-dark: #171a20;
-    --card-bg: rgba(255, 255, 255, 0.7);
-    --text-color: #171a20;
+    --tesla-black: #171a20;
+    --tesla-white: #f4f4f4;
+    --glass-bg: rgba(255, 255, 255, 0.4);
+    --text-main: #171a20;
+    --btn-primary: rgba(23, 26, 32, 0.8);
+    --btn-secondary: rgba(255, 255, 255, 0.5);
 }
 
-/* Темная тема */
 body.dark-theme {
-    --tesla-dark: #f4f4f4;
-    --card-bg: rgba(30, 30, 30, 0.8);
-    --text-color: #ffffff;
-    background-color: #111;
+    --tesla-white: #111111;
+    --glass-bg: rgba(0, 0, 0, 0.6);
+    --text-main: #ffffff;
+    --btn-primary: rgba(244, 244, 244, 0.9);
+    --btn-secondary: rgba(255, 255, 255, 0.1);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body, html { font-family: 'Segoe UI', sans-serif; overflow: hidden; color: var(--text-color); }
+body { 
+    font-family: 'Inter', sans-serif; 
+    color: var(--text-main); 
+    background-color: var(--tesla-white);
+    transition: background 0.5s ease;
+}
 
 .scroll-container {
-    height: 100vh;
-    overflow-y: scroll;
-    scroll-snap-type: y mandatory;
-    scroll-behavior: smooth;
+    height: 100vh; overflow-y: scroll;
+    scroll-snap-type: y mandatory; scroll-behavior: smooth;
 }
 
 .panel {
-    height: 100vh;
-    width: 100%;
+    height: 100vh; width: 100%;
     scroll-snap-align: start;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    background-size: cover;
-    background-position: center;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    padding: 80px 20px;
+    position: relative;
 }
 
-.section-1 { background-image: url('https://digitalassets.tesla.com/tesla-contents/image/upload/f_auto,q_auto/Homepage-Model-Y-Desktop-Global.png'); }
-
-/* Сетка навыков */
-.skills-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    width: 100%;
-    max-width: 1000px;
+/* ФОНЫ: Чередование */
+.bg-image {
+    background-image: url('https://digitalassets.tesla.com/tesla-contents/image/upload/f_auto,q_auto/Homepage-Model-Y-Desktop-Global.png');
+    background-size: cover; background-position: center;
 }
+.bg-image.alt-pos { background-position: bottom; } /* Чередование через позицию */
 
-.skill-card {
-    background: var(--card-bg);
-    backdrop-filter: blur(10px);
-    padding: 30px;
+.bg-clean { background-color: var(--tesla-white); }
+
+/* Glassmorphism эффект */
+.glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    transition: 0.3s;
 }
-
-.skill-card:hover { transform: translateY(-5px); }
-
-.skill-card h3 { margin-bottom: 15px; font-size: 1.2rem; }
-.skill-card ul { list-style: none; }
-.skill-card li { margin-bottom: 8px; font-size: 0.9rem; }
-
-/* Кнопки */
-.btn-primary, .btn-secondary {
-    width: 260px; height: 40px; border-radius: 100px;
-    border: none; cursor: pointer; text-transform: uppercase; font-size: 12px; font-weight: 600;
-    margin: 10px;
-}
-.btn-primary { background: rgba(23, 26, 32, 0.8); color: white; }
-.btn-secondary { background: rgba(244, 244, 244, 0.65); color: #393c41; }
 
 /* Навигация */
 .tesla-nav {
-    position: fixed; top: 0; width: 100%; display: flex; 
-    justify-content: space-between; padding: 20px 40px; z-index: 100;
+    position: fixed; top: 0; width: 100%; z-index: 1000;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 40px;
 }
-.tesla-nav button { background: none; border: none; cursor: pointer; color: var(--text-color); font-weight: 600; margin: 0 10px; }
+.nav-brand { font-weight: 600; letter-spacing: 2px; font-size: 14px; }
+.tesla-nav button {
+    background: none; border: none; font-weight: 600;
+    margin: 0 10px; cursor: pointer; color: var(--text-main);
+}
+
+/* Карточки навыков */
+.skills-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px; width: 100%; max-width: 1100px;
+}
+.skill-card { padding: 40px; text-align: left; }
+.skill-card h3 { font-weight: 600; margin-bottom: 20px; text-transform: uppercase; font-size: 0.9rem; }
+.skill-card li { margin-bottom: 10px; list-style: none; font-size: 0.95rem; opacity: 0.8; }
+
+/* Кнопки */
+.btn-primary, .btn-secondary {
+    width: 280px; height: 40px; border-radius: 100px;
+    border: none; cursor: pointer; text-transform: uppercase;
+    font-size: 12px; font-weight: 600; transition: 0.3s;
+}
+.btn-primary { background: var(--btn-primary); color: var(--tesla-white); }
+.btn-secondary { background: var(--btn-secondary); color: var(--text-main); }
+.btn-primary:hover { opacity: 0.7; }
 
 /* Чат */
+.chat-container { width: 100%; max-width: 600px; padding: 30px; }
 .tesla-chat {
-    width: 100%; max-width: 500px; height: 300px;
-    background: var(--card-bg); border-radius: 15px;
-    overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px;
+    height: 300px; overflow-y: auto; display: flex; flex-direction: column;
+    gap: 15px; margin: 20px 0; padding-right: 10px;
+}
+.msg-user { align-self: flex-start; font-size: 0.9rem; border-left: 2px solid var(--text-main); padding-left: 10px; }
+.msg-admin { align-self: flex-end; font-size: 0.9rem; text-align: right; border-right: 2px solid #3e6ae1; padding-right: 10px; }
+
+.chat-inputs input, .chat-inputs textarea {
+    width: 100%; padding: 12px; border-radius: 10px; border: none;
+    background: rgba(0,0,0,0.05); margin-bottom: 10px; color: var(--text-main);
 }
