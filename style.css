@@ -1,17 +1,33 @@
-/* БАЗОВЫЕ СТИЛИ */
+:root {
+    /* Основные цвета */
+    --bg-light: rgba(255, 255, 255, 0.92);
+    --bg-dark: rgba(20, 20, 20, 0.9);
+    --accent-color: #0088cc;
+    --text-main: #000000;
+    --text-white: #ffffff;
+    
+    /* Настройки фона с котом */
+    --cat-size: 120px;
+    --cat-url: url('dancing_cat.gif');
+}
+
+/* Базовые настройки */
 body {
     font-family: 'Segoe UI', sans-serif;
     margin: 0;
     transition: 0.3s;
-    background-image: url('dancing_cat.gif');
+    background-image: var(--cat-url);
     background-repeat: repeat;
     background-attachment: fixed;
-    background-size: 120px auto;
+    background-size: var(--cat-size) auto;
 }
 
-body.dark { background-color: #1a1a1a; color: white; }
+body.dark { 
+    background-color: #1a1a1a; 
+    color: var(--text-white); 
+}
 
-/* НАВИГАЦИЯ */
+/* Навигация */
 nav {
     display: flex;
     justify-content: space-between;
@@ -24,46 +40,49 @@ nav {
 }
 
 .nav-links { display: flex; gap: 8px; }
-.controls { display: flex; gap: 5px; }
 
-/* КАРТОЧКИ */
+/* Карточки используют переменные из :root */
 .card {
-    background: rgba(255, 255, 255, 0.92);
+    background: var(--bg-light);
     padding: 20px;
     margin: 15px auto;
     width: 90%;
     max-width: 450px;
     border-radius: 12px;
-    color: black;
+    color: var(--text-main);
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: flex-start; /* Выравнивание влево сохранено */
     gap: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-body.dark .card { background: rgba(20, 20, 20, 0.9); color: white; border: 1px solid #444; }
+body.dark .card { 
+    background: var(--bg-dark); 
+    color: var(--text-white); 
+    border: 1px solid #444; 
+}
 
-/* КНОПКИ И ИНПУТЫ */
+/* Кнопки */
 button {
     cursor: pointer;
     padding: 8px 15px;
     border-radius: 6px;
     border: none;
     font-weight: 600;
-    width: fit-content;
+    width: fit-content; 
 }
 
-.action-btn { background: #0088cc; color: white; }
-input, textarea { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; }
+.action-btn { 
+    background: var(--accent-color); 
+    color: var(--text-white); 
+}
 
-.page { display: none; }
-.btn-group { display: flex; gap: 10px; }
-
-/* МОБИЛЬНАЯ ВЕРСИЯ */
+/* Адаптивность для мобильных */
 @media (max-width: 600px) {
+    :root {
+        --cat-size: 80px; /* Уменьшаем котов на мобилках */
+    }
     nav { flex-direction: column; gap: 10px; }
-    .nav-links { width: 100%; justify-content: center; }
-    .card { padding: 15px; width: 95%; }
-    button { padding: 10px; font-size: 14px; }
+    .nav-links { width: 100%; justify-content: center; flex-wrap: wrap; }
+    .card { width: 95%; padding: 15px; }
 }
