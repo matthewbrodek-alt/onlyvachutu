@@ -13,14 +13,13 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 let unsubscribeTodos = null;
 
-// ЛОКАЛИЗАЦИЯ
 const translations = {
     ru: {
         navHome: "Главная", navTodo: "Задачи", navAbout: "Обо мне",
         authTitle: "Вход", loginBtn: "Войти", regBtn: "Регистрация", logoutBtn: "Выход",
         welcomeTitle: "Привет!", secretBtn: "Секрет 🔒",
         secretText: "Стать Senior в 2026 году! 🚀",
-        catTitle: "Котик дня 🐱", catBtn: "Кыс-кыс!",
+        catTitle: "Котик 🐱", catBtn: "Кыс-кыс!",
         todoTitle: "Список дел 📝", addBtn: "Добавить",
         tgTitle: "Написать в TG 🚀", sendBtn: "Отправить",
         aboutText: "Firebase, Telegram API, Реставрация фото."
@@ -30,7 +29,7 @@ const translations = {
         authTitle: "Login", loginBtn: "Login", regBtn: "Sign Up", logoutBtn: "Logout",
         welcomeTitle: "Welcome!", secretBtn: "Secret 🔒",
         secretText: "Become Senior by 2026! 🚀",
-        catTitle: "Cat of the day 🐱", catBtn: "Pspsps!",
+        catTitle: "Cat 🐱", catBtn: "Pspsps!",
         todoTitle: "To-Do List 📝", addBtn: "Add",
         tgTitle: "TG Message 🚀", sendBtn: "Send",
         aboutText: "Firebase, Telegram API, Photo Restoration."
@@ -48,7 +47,6 @@ function toggleLang() {
     });
 }
 
-// НАВИГАЦИЯ И ТЕМА
 function showPage(pageId) {
     document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
     const p = document.getElementById(pageId);
@@ -58,10 +56,8 @@ function showPage(pageId) {
 function toggleTheme() {
     const isDark = document.body.classList.toggle('dark');
     document.getElementById('theme-icon').innerText = isDark ? "☀️" : "🌙";
-    if (auth.currentUser) db.collection("users").doc(auth.currentUser.uid).set({ theme: isDark ? "dark" : "light" }, { merge: true });
 }
 
-// КОНТЕНТ
 function toggleSecret() {
     const s = document.getElementById('secret-msg');
     s.style.display = (s.style.display === 'none') ? 'block' : 'none';
@@ -91,7 +87,7 @@ async function sendToTg() {
     } catch (e) { alert("Error!"); }
 }
 
-// FIREBASE ЛОГИКА
+// FIREBASE
 async function handleLogin() {
     const e = document.getElementById('auth-email').value, p = document.getElementById('auth-pass').value;
     try { await auth.signInWithEmailAndPassword(e, p); } catch (err) { alert(err.message); }
@@ -102,7 +98,7 @@ async function handleSignUp() {
     try { await auth.createUserWithEmailAndPassword(e, p); alert("Welcome!"); } catch (err) { alert(err.message); }
 }
 
-function handleLogout() { if (unsubscribeTodos) { unsubscribeTodos(); unsubscribeTodos = null; } auth.signOut(); }
+function handleLogout() { if (unsubscribeTodos) unsubscribeTodos(); auth.signOut(); }
 
 auth.onAuthStateChanged(async (user) => {
     const loginForm = document.getElementById('login-form'), userInfo = document.getElementById('user-info');
@@ -111,11 +107,6 @@ auth.onAuthStateChanged(async (user) => {
         if (userInfo) userInfo.style.display = 'flex';
         document.getElementById('user-email-display').innerText = user.email;
         loadTodos(user.uid);
-        const doc = await db.collection("users").doc(user.uid).get();
-        if (doc.exists && doc.data().theme === "dark") {
-            document.body.classList.add('dark');
-            document.getElementById('theme-icon').innerText = "☀️";
-        }
     } else {
         if (loginForm) loginForm.style.display = 'flex';
         if (userInfo) userInfo.style.display = 'none';
