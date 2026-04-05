@@ -1,183 +1,69 @@
-:root {
-    --primary-color: #e74c3c;
-    --primary-hover: #c0392b;
-    --card-bg: rgba(255, 255, 255, 0.8);
-    --text-color: #333333;
-    --transition-speed: 0.3s;
-} 
-
-.dark {
-    --card-bg: rgba(40, 40, 40, 0.9);
-    --text-color: #f3f3f3;
-    background-color: #1e1e1e;
-}
-
+/* БАЗОВЫЕ СТИЛИ */
 body {
-    /* Основной цвет фона (чтобы сайт не был белым, пока загружается GIF) */
-    background-color: #f0f0f0; 
-
-    /* Путь к твоему GIF файлу */
-    background-image: url('dancing.cat.gif');
-
-    /* Зацикливание (повторение) по горизонтали и вертикали */
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    transition: 0.3s;
+    background-image: url('dancing_cat.gif');
     background-repeat: repeat;
-
-    /* Сделать фон неподвижным при прокрутке страницы */
     background-attachment: fixed;
-
-    /* Настройка размера кота.
-       Если 'auto', он будет оригинального размера.
-       Если коты слишком большие, попробуй поставить размер в пикселях, например: '100px auto'
-    */
-    background-size: 150px auto; 
-    
-    /* Сдвинуть котов, чтобы они не перекрывали текст (опционально) */
-    background-position: center;
+    background-size: 120px auto;
 }
 
-/* Если у тебя включена темная тема */
-body.dark {
-    background-color: #1a1a1a;
-    /* Если GIF прозрачный, он будет хорошо смотреться и здесь.
-       Если нет, можно добавить затемняющий слой поверх:
-       background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('dancing_cat.gif');
-    */
-}
-.card {
-    background-color: var(--card-bg);
-    color: var(--text-color);
-    backdrop-filter: blur(8px);
-    border-radius: 15px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-    opacity: 1; /* Карточки видны сразу */
-    transform: translateY(0);
-    transition: all 0.5s ease;
-}
+body.dark { background-color: #1a1a1a; color: white; }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-
-table, th, td {
-    border: 1px solid #333;
-    padding: 10px;
-    text-align: left;
-}
-
-.dark table, .dark th, .dark td {
-    border-color: #555;
-}
-
-button {
-    padding: 10px 20px;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-bottom: 10px;
-    width: 100%; /* По умолчанию на всю ширину для мобилок */
-    transition: 0.2s;
-}
-
-.secret-message {
-    color: var(--primary-color);
-    font-weight: bold;
-    display: none; /* Изначально скрыто */
-    transition: opacity 0.5s;
-}
-
-.secret-message.show {
-    display: block; /* Показывается при добавлении класса show */
-    opacity: 1;
-}
-
-button:hover {
-    background-color: var(--primary-hover);
-    transform: translateY(-2px);
-}
-
-button:active {
-    transform: translateY(0);
-}
-
-input, textarea {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    outline: none;
-    box-sizing: border-box; /* Чтобы padding не раздувал ширину */
-}
-
-input:focus {
-    border-color: var(--primary-color) !important;
-}
-
-/* Меню и бургер */
-.burger {
-    position: fixed; top: 20px; right: 20px;
-    font-size: 32px; cursor: pointer; z-index: 1000;
-    background: rgba(0,0,0,0.4); color: white;
-    padding: 8px 12px; border-radius: 8px;
-}
-
-.mobile-menu {
-    position: fixed; top: 0; right: -280px;
-    width: 260px; height: 100%;
-    background: rgba(30, 30, 30, 0.95);
-    padding: 40px 20px; display: flex;
-    flex-direction: column; gap: 20px;
-    transition: right 0.3s ease; z-index: 999;
-}
-
-.mobile-menu.show { right: 0; }
-.mobile-menu a { color: white; text-decoration: none; font-size: 20px; }
-
-/* Спиннер загрузки */
-.loader {
-    border: 5px solid #f3f3f3;
-    border-top: 5px solid #3498db;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-    margin: 20px auto;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateX(-10px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-/* Адаптивность для мобилок */
-@media (max-width: 600px) {
-    body { margin: 10px; }
-    h1 { font-size: 24px; }
-    .flex-container { flex-direction: column; text-align: center; }
-}
-
+/* НАВИГАЦИЯ */
 nav {
     display: flex;
-    justify-content: flex-start; /* Выравнивание по левому краю */
+    justify-content: space-between;
     align-items: center;
-    gap: 10px; /* Расстояние между кнопками */
-    padding: 10px;
-    background: #333;
+    padding: 10px 15px;
+    background: rgba(30, 30, 30, 0.95);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
-nav button {
-    width: auto; /* Кнопка занимает место только под текст */
+.nav-links { display: flex; gap: 8px; }
+.controls { display: flex; gap: 5px; }
+
+/* КАРТОЧКИ */
+.card {
+    background: rgba(255, 255, 255, 0.92);
+    padding: 20px;
+    margin: 15px auto;
+    width: 90%;
+    max-width: 450px;
+    border-radius: 12px;
+    color: black;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+body.dark .card { background: rgba(20, 20, 20, 0.9); color: white; border: 1px solid #444; }
+
+/* КНОПКИ И ИНПУТЫ */
+button {
+    cursor: pointer;
     padding: 8px 15px;
-    white-space: nowrap; /* Чтобы текст не переносился */
+    border-radius: 6px;
+    border: none;
+    font-weight: 600;
+    width: fit-content;
+}
+
+.action-btn { background: #0088cc; color: white; }
+input, textarea { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; }
+
+.page { display: none; }
+.btn-group { display: flex; gap: 10px; }
+
+/* МОБИЛЬНАЯ ВЕРСИЯ */
+@media (max-width: 600px) {
+    nav { flex-direction: column; gap: 10px; }
+    .nav-links { width: 100%; justify-content: center; }
+    .card { padding: 15px; width: 95%; }
+    button { padding: 10px; font-size: 14px; }
 }
