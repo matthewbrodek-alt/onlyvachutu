@@ -17,7 +17,7 @@ let currentLang = 'ru';
 
 const translations = {
     ru: {
-        navHome: "Главная", navTodo: "Задачи", navAbout: "Обо мне",
+        navHome: "Главная", navTodo: "Задачи", navAbout: "Связь со мной",
         authTitle: "Вход", loginBtn: "Войти", regBtn: "Регистрация", logoutBtn: "Выход",
         welcomeTitle: "Привет!", secretBtn: "Секрет 🔒", secretText: "Стать Senior в 2026 году! 🚀",
         catTitle: "Котик 🐱", catBtn: "Кыс-кыс!",
@@ -26,7 +26,7 @@ const translations = {
         aboutText: "Firebase, Telegram API, Реставрация фото."
     },
     en: {
-        navHome: "Home", navTodo: "Tasks", navAbout: "About",
+        navHome: "Home", navTodo: "Tasks", navAbout: "Сontact me",
         authTitle: "Login", loginBtn: "Login", regBtn: "Sign Up", logoutBtn: "Logout",
         welcomeTitle: "Welcome!", secretBtn: "Secret 🔒", secretText: "Become Senior by 2026! 🚀",
         catTitle: "Cat 🐱", catBtn: "Pspsps!",
