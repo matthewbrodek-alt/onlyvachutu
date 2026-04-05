@@ -10,7 +10,7 @@ body {
     font-family: 'Segoe UI', sans-serif;
     margin: 0;
     transition: 0.3s;
-    background-image: url('dancing_cat.gif');
+    background-image: url('dancing.cat.gif');
     background-repeat: repeat;
     background-attachment: fixed;
     background-size: var(--cat-size) auto;
