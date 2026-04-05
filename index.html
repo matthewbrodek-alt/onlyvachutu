@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio | Future Senior 2026</title>
-    
+    <title>Portfolio | Tesla Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="light-theme">
@@ -23,53 +21,45 @@
             <button onclick="scrollToPanel('about')" data-lang="navAbout">Связь</button>
         </div>
         <div class="nav-right">
-            <button onclick="toggleLang()" id="lang-btn">EN</button>
+            <button onclick="toggleLang()" id="lang-btn" class="flag-btn">🇺🇸</button>
             <button onclick="toggleTheme()" id="theme-icon">🌙</button>
         </div>
     </nav>
 
     <main class="scroll-container">
-        <section id="home" class="panel bg-image">
-            <div class="content-wrapper fade-in">
+        <section id="home" class="panel">
+            <div class="glass-box fade-in">
                 <h1 data-lang="welcomeTitle">Привет!</h1>
                 <p class="sub-text" data-lang="welcomeSub">Junior Developer & Automation Specialist</p>
-            </div>
-            <div class="button-group">
-                <button onclick="scrollToPanel('skills')" class="btn-primary" data-lang="navSkills">Навыки</button>
-                <button onclick="scrollToPanel('about')" class="btn-secondary" data-lang="navAbout">Связь</button>
+                <div class="button-group">
+                    <button onclick="scrollToPanel('skills')" class="btn-primary" data-lang="navSkills">Навыки</button>
+                    <button onclick="scrollToPanel('about')" class="btn-secondary" data-lang="navAbout">Связь</button>
+                </div>
             </div>
         </section>
 
-        <section id="skills" class="panel bg-clean">
+        <section id="skills" class="panel">
             <div class="skills-grid">
-                <div class="skill-card glass">
+                <div class="skill-card glass-box">
                     <h3 data-lang="skillIt">IT & Разработка</h3>
                     <ul data-lang="skillItList">
-                        <li><b>Frontend:</b> JS (UI/UX, Анимации)</li>
-                        <li><b>Backend:</b> Firebase, Telegram API</li>
-                        <li><b>Automation:</b> Маркет-боты, Юзерботы</li>
+                        <li>Frontend: JS (UI/UX)</li>
+                        <li>Backend: Firebase</li>
+                        <li>Automation: Telegram API</li>
                     </ul>
                 </div>
-                <div class="skill-card glass">
+                <div class="skill-card glass-box">
                     <h3 data-lang="skillProjects">Проекты</h3>
                     <ul data-lang="skillProjectsList">
-                        <li><b>Web-Portfolio:</b> Firebase Auth & Firestore</li>
-                        <li><b>Userbot:</b> Имитация поведения (циклы 3-4ч)</li>
+                        <li>Web-Portfolio (Firebase)</li>
+                        <li>Userbot (Cycle 3-4h)</li>
                     </ul>
-                </div>
-                <div class="skill-card glass">
-                    <h3 data-lang="skillSoft">Soft Skills</h3>
-                    <p data-lang="skillSoftDesc">Адаптивность, аналитическое мышление, дисциплина и тайм-менеджмент.</p>
-                </div>
-                <div class="skill-card glass">
-                    <h3 data-lang="skillStack">Стек</h3>
-                    <p><b>Languages:</b> JavaScript, Python<br><b>Tools:</b> Firebase, Pyrogram, Git</p>
                 </div>
             </div>
         </section>
 
-        <section id="todo" class="panel bg-image alt-pos">
-            <div class="content-wrapper glass auth-container">
+        <section id="todo" class="panel">
+            <div class="glass-box auth-container">
                 <h2 data-lang="todoTitle">Список дел</h2>
                 <div id="login-form">
                     <input type="email" id="auth-email" placeholder="Email">
@@ -79,15 +69,15 @@
                 <div id="user-info" style="display:none;">
                     <div class="todo-input-row">
                         <input type="text" id="todo-input" data-placeholder="todoPlaceholder" placeholder="Что нужно сделать?">
-                        <button onclick="addTodo()" class="btn-primary" data-lang="addBtn">+</button>
+                        <button onclick="addTodo()" class="btn-primary">+</button>
                     </div>
                     <ul id="todo-list"></ul>
                 </div>
             </div>
         </section>
 
-        <section id="about" class="panel bg-clean">
-            <div class="chat-container glass">
+        <section id="about" class="panel">
+            <div class="glass-box chat-container">
                 <h2 data-lang="tgTitle">Чат со мной</h2>
                 <div id="chat-window" class="tesla-chat"></div>
                 <div class="chat-inputs">
