@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tavern Portfolio | Усталый Путник</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Marcellus&display=swap" rel="stylesheet">
+    <title>Modern Light Tavern</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
@@ -12,89 +12,76 @@
 </head>
 <body>
 
-    <div class="fireplace-bg">
-        <div class="fire-glow"></div>
-        <div class="sparks">
-            <span></span><span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span><span></span>
+    <div class="light-bg">
+        <div class="blob"></div>
+        <div class="blob"></div>
+        <div class="people-layer">
+            <div class="person p1"></div>
+            <div class="person p2"></div>
         </div>
     </div>
 
-    <nav class="tavern-nav">
-        <div class="nav-brand" data-lang="navLogo">УСТАЛЫЙ ПУТНИК</div>
-        <div class="nav-center">
-            <button onclick="scrollToPanel('home')" data-lang="navHome">Таверна</button>
-            <button onclick="scrollToPanel('portfolio')" data-lang="navPortfolio">Свитки</button>
-            <button onclick="scrollToPanel('skills')" data-lang="navSkills">Навыки</button>
-            <button onclick="scrollToPanel('todo')" data-lang="navRoom">Комната</button>
+    <nav class="modern-nav">
+        <div class="nav-logo" data-lang="navLogo">TAVERN.HUB</div>
+        <div class="nav-links">
+            <button onclick="scrollToPanel('home')">●</button>
+            <button onclick="scrollToPanel('portfolio')">●</button>
+            <button onclick="scrollToPanel('todo')">●</button>
+            <button onclick="scrollToPanel('cats')">●</button>
         </div>
-        <div class="nav-right">
-            <button onclick="toggleLang()" id="lang-btn" class="magic-btn">🇺🇸 EN</button>
-        </div>
+        <button onclick="toggleLang()" id="lang-btn" class="lang-toggle">EN</button>
     </nav>
 
     <main class="scroll-container">
+        
         <section id="home" class="panel">
-            <div class="wood-board">
-                <h1 class="flicker-text" data-lang="welcomeTitle">Добро пожаловать!</h1>
-                <p class="sub-text" data-lang="welcomeSub">Разработчик и Маг Автоматизации</p>
-                <button onclick="scrollToPanel('portfolio')" class="btn-tavern" data-lang="exploreBtn">Смотреть квесты</button>
+            <div class="hero-card">
+                <h1 class="reveal-text" data-lang="welcomeTitle">Утро в Таверне</h1>
+                <p data-lang="welcomeSub">Современные решения для старых задач</p>
+                <div class="scroll-badge">↓</div>
             </div>
         </section>
 
         <section id="portfolio" class="panel">
-            <div class="wood-board">
-                <h2 data-lang="portfolioTitle" class="section-title">Выполненные квесты</h2>
-                <div class="gallery-grid">
-                    <a href="javascript:void(0)" onclick="scrollToPanel('skills')" class="gallery-item">
-                        <img src="https://images.unsplash.com/photo-1618472609777-b038f1f04b8d?q=80&w=500">
-                        <div class="overlay" data-lang="proj1">Магия Сайтов</div>
-                    </a>
-                    <a href="javascript:void(0)" onclick="scrollToPanel('todo')" class="gallery-item">
-                        <img src="https://images.unsplash.com/photo-1552820728-8b83bb6b773f?q=80&w=500">
-                        <div class="overlay" data-lang="proj2">Боты и Заклинания</div>
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <section id="skills" class="panel">
-            <div class="wood-board">
-                <h2 data-lang="navSkills" class="section-title">Навыки</h2>
-                <div class="skills-list">
-                    <p>🔥 <b>JavaScript</b> — Создание живых миров</p>
-                    <p>🐍 <b>Python</b> — Дрессировка Telegram-воронов</p>
-                    <p>💎 <b>Firebase</b> — Хранение магических данных</p>
+            <div class="glass-panel">
+                <h2 class="section-title" data-lang="portfolioTitle">Проекты</h2>
+                <div class="modern-grid">
+                    <div class="project-card" onclick="scrollToPanel('skills')">
+                        <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=400')"></div>
+                        <span data-lang="proj1">WEB</span>
+                    </div>
+                    <div class="project-card" onclick="scrollToPanel('todo')">
+                        <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=400')"></div>
+                        <span data-lang="proj2">BOTS</span>
+                    </div>
                 </div>
             </div>
         </section>
 
         <section id="todo" class="panel">
-            <div class="wood-board auth-board">
-                <h2 data-lang="todoTitle" class="section-title">Тайная комната</h2>
+            <div class="glass-panel chat-container">
                 <div id="login-form">
-                    <input type="email" id="auth-email" class="tavern-input" placeholder="traveler@mail.com">
-                    <input type="password" id="auth-pass" class="tavern-input" placeholder="******" style="margin-top:10px">
-                    <button onclick="handleLogin()" class="btn-tavern" style="margin-top:15px" data-lang="loginBtn">Открыть дверь</button>
+                    <h2 data-lang="todoTitle">Вход</h2>
+                    <input type="email" id="auth-email" placeholder="Email" class="m-input">
+                    <input type="password" id="auth-pass" placeholder="Password" class="m-input">
+                    <button onclick="handleLogin()" class="m-btn">Войти</button>
                 </div>
-                <div id="user-info" style="display:none;">
-                    <div id="chat-window" class="tavern-chat"></div>
-                    <div class="chat-inputs">
-                        <textarea id="chat-msg" data-lang-placeholder="chatPlaceholder" placeholder="Послать ворона..."></textarea>
-                        <button onclick="sendMessage()" class="btn-tavern" data-lang="sendBtn">Отправить</button>
+                <div id="user-info" style="display:none; width: 100%;">
+                    <div id="chat-window" class="modern-chat"></div>
+                    <div class="input-group">
+                        <input type="text" id="chat-msg" data-lang-placeholder="chatPlaceholder" placeholder="Написать...">
+                        <button onclick="sendMessage()">→</button>
                     </div>
                 </div>
             </div>
         </section>
 
         <section id="cats" class="panel">
-            <div class="wood-board cat-board">
-                <h2 data-lang="catsTitle" class="section-title">Коты Таверны</h2>
-                <div class="cat-carousel-wrapper">
-                    <div id="cat-container" class="cat-carousel">
-                        </div>
-                </div>
-                <button onclick="fetchCats()" class="btn-tavern" style="margin-top:15px;" data-lang="catsBtn">Приманить еще</button>
+            <div class="cats-section">
+                <h2 class="section-title" data-lang="catsTitle">Кото-терапия</h2>
+                <div id="cat-container" class="stack-carousel">
+                    </div>
+                <button onclick="fetchCats()" class="refresh-cats">♻</button>
             </div>
         </section>
     </main>
