@@ -2,108 +2,56 @@
     --bg-dark: #060a11;
     --panel-dark: #121620;
     --accent: #ff9f43; 
-    --neon-blue: #00d2ff;
-    --text-main: #fff;
-    --text-sec: #94a3b8;
     --border: rgba(255, 255, 255, 0.1);
 }
 
 body, html {
     margin: 0; padding: 0; height: 100%; width: 100%;
-    background-color: var(--bg-dark); color: var(--text-main);
-    font-family: 'Poppins', sans-serif;
-    overflow: hidden;
+    background-color: var(--bg-dark); color: #fff;
+    font-family: 'Poppins', sans-serif; overflow: hidden;
 }
 
-/* ФОН */
 .forest-bg {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-    background: url('https://img.freepik.com/free-photo/mystical-dark-forest-night_23-2150913217.jpg');
-    background-size: cover; background-position: center; filter: brightness(0.4) saturate(1.2);
+    position: fixed; inset: 0; z-index: -1;
+    background: url('https://img.freepik.com/free-photo/mystical-dark-forest-night_23-2150913217.jpg') center/cover;
+    filter: brightness(0.3);
 }
+
 .runes-overlay { position: fixed; inset: 0; z-index: -1; background: url('https://www.transparenttextures.com/patterns/p5.png'); opacity: 0.1; }
 
-/* ЭФФЕКТ ИСКР */
-.embers span {
-    position: absolute; bottom: -10px; width: 3px; height: 3px;
-    background: var(--accent); border-radius: 50%;
-    box-shadow: 0 0 10px var(--accent);
-    animation: floatUp infinite ease-in; opacity: 0;
-}
-@keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100vh); opacity: 0; } }
-
-/* НАВИГАЦИЯ */
 .tavern-header {
     position: fixed; top: 0; width: 100%; height: 70px;
     display: flex; justify-content: space-between; align-items: center;
-    padding: 0 50px; box-sizing: border-box; z-index: 100;
-    background: rgba(0,0,0,0.6); backdrop-filter: blur(10px);
+    padding: 0 50px; z-index: 100; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px);
 }
-.nav-links { display: flex; gap: 25px; }
-.nav-links a { text-decoration: none; color: #fff; font-family: 'Cinzel'; font-size: 0.85rem; transition: 0.3s; }
-.nav-links a:hover { color: var(--accent); text-shadow: 0 0 8px var(--accent); }
 
-/* ПАНЕЛИ И СКРОЛЛ */
+.nav-links a { text-decoration: none; color: #fff; font-family: 'Cinzel'; margin-left: 20px; font-size: 0.8rem; }
+
 .scroll-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
 .panel { height: 100vh; scroll-snap-align: start; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
 
-.arcane-panel {
-    background: var(--panel-dark); border-radius: 20px; border: 1px solid var(--border);
-    box-shadow: 0 15px 50px rgba(0,0,0,0.8); padding: 35px; position: relative;
-}
-
-/* РАСШИРЕННЫЙ ЧАТ */
-.chat-panel { 
-    width: 750px; /* Было 500, теперь просторно */
-    max-width: 95%; 
-}
+/* ЧАТ (850px) */
+.chat-panel { width: 850px; max-width: 95%; }
 .arcane-chat { 
-    height: 400px; 
-    overflow-y: auto; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 12px; 
-    padding: 20px;
-    background: rgba(0,0,0,0.2);
-    border-radius: 15px;
-    margin-bottom: 20px;
-    border: 1px solid rgba(255,255,255,0.03);
+    height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 25px;
+    background: rgba(0,0,0,0.3); border-radius: 20px; margin-bottom: 20px; border: 1px solid var(--border);
 }
-.msg-box { max-width: 70%; padding: 12px 18px; border-radius: 12px; font-size: 14px; line-height: 1.4; }
+.msg-box { max-width: 75%; padding: 12px 18px; border-radius: 12px; font-size: 14px; }
 .sent { align-self: flex-end; background: var(--accent); color: #000; font-weight: 500; }
-.received { align-self: flex-start; background: rgba(255,255,255,0.07); color: #ddd; }
+.received { align-self: flex-start; background: rgba(255,255,255,0.08); border: 1px solid var(--border); }
 
-.chat-inputs { display: flex; gap: 10px; }
-#chat-msg { flex-grow: 1; height: 55px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 10px; color: #fff; padding: 12px; resize: none; outline: none; }
-.send-btn { width: 55px; height: 55px; background: var(--accent); border: none; border-radius: 10px; cursor: pointer; font-size: 20px; }
-
-/* КОТИКИ (МНОГО МЕСТА) */
-.cats-panel.wide { max-width: 1000px; }
+/* КОТИКИ (БЕЗ ПЕРЕКРЫТИЙ) */
 .cat-grid {
-    display: grid; 
-    grid-template-columns: repeat(3, 1fr); 
-    gap: 25px; 
-    width: 100%;
-    margin: 25px 0 40px 0; /* Огромный отступ до кнопки */
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; 
+    width: 100%; margin: 30px 0 50px 0;
 }
-.cat-pic {
-    width: 100%; height: 220px; 
-    object-fit: cover; border-radius: 15px; border: 2px solid var(--border);
-    transition: 0.4s ease;
-}
-.cat-pic:hover { border-color: var(--accent); transform: scale(1.03); }
+.cat-pic { width: 100%; height: 230px; object-fit: cover; border-radius: 15px; border: 1px solid var(--border); }
 
-/* КНОПКИ */
-.arcane-btn {
-    padding: 14px 35px; background: none; border: 1px solid var(--accent);
-    color: var(--accent); font-family: 'Cinzel'; font-weight: 700;
-    border-radius: 10px; cursor: pointer; transition: 0.3s;
+.arcane-input, #chat-msg {
+    width: 100%; padding: 15px; background: rgba(0,0,0,0.5); border: 1px solid var(--border);
+    border-radius: 10px; color: #fff; margin-bottom: 12px; outline: none;
 }
-.arcane-btn:hover { background: var(--accent); color: #000; box-shadow: 0 0 25px var(--accent); }
-
-/* Адаптив для телефонов */
-@media (max-width: 768px) {
-    .chat-panel { width: 95%; }
-    .cat-grid { grid-template-columns: repeat(2, 1fr); }
-    .cat-pic { height: 150px; }
-}
+.chat-inputs { display: flex; gap: 12px; width: 100%; }
+.send-btn { width: 65px; height: 60px; background: var(--accent); border: none; border-radius: 10px; cursor: pointer; font-size: 22px; }
+.arcane-btn { padding: 14px 35px; background: none; border: 1px solid var(--accent); color: var(--accent); font-family: 'Cinzel'; cursor: pointer; border-radius: 10px; font-weight: bold; }
+.arcane-btn:hover { background: var(--accent); color: #000; box-shadow: 0 0 15px var(--accent); }
