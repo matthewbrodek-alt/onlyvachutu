@@ -1,4 +1,4 @@
-const TELEGRAM_BOT_TOKEN = "8664813567:AAEkqGdXuyrS43Pjfc1gB-KdVuOOReWrkGw"; 
+const TELEGRAM_BOT_TOKEN = "8664813567:AAEkqGdXuyrS43Pjfc1gB-KdVuOOReWrkGw";
 const TELEGRAM_CHAT_ID = "7451263058";
 
 const firebaseConfig = {
@@ -17,10 +17,11 @@ const auth = firebase.auth();
 let currentUser = null;
 let chatListener = null;
 
-// Вход
 async function handleLogin() {
     const email = document.getElementById('auth-email').value;
     const pass = document.getElementById('auth-pass').value;
+    if(!email || !pass) return alert("Введите данные");
+
     try {
         const userCred = await auth.signInWithEmailAndPassword(email, pass)
             .catch(() => auth.createUserWithEmailAndPassword(email, pass));
@@ -32,37 +33,27 @@ async function handleLogin() {
     } catch (e) { alert(e.message); }
 }
 
-// Отправка сообщения
 async function sendMessage() {
     if (!currentUser) return;
     const msgInput = document.getElementById('chat-msg');
     const text = msgInput.value.trim();
     if (!text) return;
 
-    // 1. В Firebase
     await db.collection("users").doc(currentUser.uid).collection("messages").add({
         message: text,
         sender: "user",
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // 2. В Telegram (передаем UID в скрытом виде или текстом для ответа)
-    const botText = `👤 <b>Юзер:</b> ${currentUser.email}\n🆔 <b>ID:</b> <code>${currentUser.uid}</code>\n\n💬 ${text}`;
-    
+    const botText = `👤 <b>Юзер:</b> ${currentUser.email}\n🆔 <code>${currentUser.uid}</code>\n\n💬 ${text}`;
     await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            chat_id: TELEGRAM_CHAT_ID,
-            text: botText,
-            parse_mode: 'HTML'
-        })
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: botText, parse_mode: 'HTML' })
     });
-
     msgInput.value = "";
 }
 
-// Слушатель чата
 function startChatListener(uid) {
     if (chatListener) chatListener();
     chatListener = db.collection("users").doc(uid).collection("messages")
@@ -80,5 +71,10 @@ function startChatListener(uid) {
         });
 }
 
-function scrollToPanel(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth' }); }
+function scrollToPanel(id) {
+    const el = document.getElementById(id);
+    if(el) el.scrollIntoView({ behavior: 'smooth' });
+}
+
 function toggleTheme() { document.body.classList.toggle('dark-theme'); }
+function toggleLang() { alert("Смена языка"); } // Заглушка для теста
