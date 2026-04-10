@@ -19,36 +19,51 @@ let unsubscribe = null;
 
 const dict = {
     ru: { 
-        welcomeSub: "Маг Автоматизации", 
-        todoTitle: "Тайная комната", 
-        loginBtn: "Войти", 
-        catsTitle: "Коты Таверны", 
-        skillTech: "Арсенал",
-        skill1: "Алхимия JS и DOM",
-        skill2: "Python мосты для Telegram",
-        skill3: "Архитектура Firebase Realtime",
-        skill4: "Адаптивный Mobile-First UX",
-        skill5: "Магия правил безопасности"
+        welcomeSub: "Маг Автоматизации", todoTitle: "Тайная комната", loginBtn: "Войти", catsTitle: "Коты Таверны", skillTech: "Арсенал",
+        skill1: "Алхимия JS и DOM", skill2: "Python мосты для Telegram", skill3: "Архитектура Firebase Realtime", skill4: "Адаптивный Mobile-First UX", skill5: "Магия правил безопасности"
     },
     en: { 
-        welcomeSub: "Automation Mage", 
-        todoTitle: "Secret Room", 
-        loginBtn: "Authorize", 
-        catsTitle: "Tavern Cats", 
-        skillTech: "Arsenal",
-        skill1: "JS Alchemy & DOM",
-        skill2: "Python Telegram Bridges",
-        skill3: "Firebase Realtime Architecture",
-        skill4: "Adaptive Mobile-First UX",
-        skill5: "Security Rules Sorcery"
+        welcomeSub: "Automation Mage", todoTitle: "Secret Room", loginBtn: "Authorize", catsTitle: "Tavern Cats", skillTech: "Arsenal",
+        skill1: "JS Alchemy & DOM", skill2: "Python Telegram Bridges", skill3: "Firebase Realtime Architecture", skill4: "Adaptive Mobile-First UX", skill5: "Security Rules Sorcery"
     }
 };
+
+// --- СЛУШАТЕЛЬ СОСТОЯНИЯ (Защита от обновления страницы) ---
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        // Если пользователь уже залогинен (после обновления страницы)
+        currentUser = user;
+        showUserInterface(user);
+        startChatListener(user.uid);
+    } else {
+        // Если пользователь не залогинен
+        handleLogoutUI();
+    }
+});
+
+function showUserInterface(user) {
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('user-info').style.display = 'flex';
+    document.getElementById('logout-btn').style.display = 'block';
+    document.getElementById('user-name').innerText = user.email.split('@')[0];
+    document.getElementById('chat-msg').onkeydown = (e) => { if (e.key === 'Enter') sendMessage(); };
+}
+
+function handleLogoutUI() {
+    document.getElementById('login-form').style.display = 'flex';
+    document.getElementById('user-info').style.display = 'none';
+    document.getElementById('logout-btn').style.display = 'none';
+    document.getElementById('user-name').innerText = "Guest";
+    document.getElementById('chat-window').innerHTML = "";
+    if (unsubscribe) unsubscribe();
+}
+
+// --- ФУНКЦИИ ---
 
 function toggleLang() {
     const icon = document.getElementById('lang-icon');
     currentLang = currentLang === 'ru' ? 'en' : 'ru';
     icon.innerText = currentLang === 'ru' ? "🌐 🇷🇺" : "🌐 🇺🇸";
-    
     document.querySelectorAll('[data-lang]').forEach(el => {
         const key = el.getAttribute('data-lang');
         if (dict[currentLang][key]) el.innerText = dict[currentLang][key];
@@ -59,34 +74,16 @@ async function handleLogin() {
     const email = document.getElementById('auth-email').value;
     const pass = document.getElementById('auth-pass').value;
     try {
-        const userCred = await auth.signInWithEmailAndPassword(email, pass)
+        await auth.signInWithEmailAndPassword(email, pass)
             .catch(() => auth.createUserWithEmailAndPassword(email, pass));
-        
-        currentUser = userCred.user;
-        await db.collection("users").doc(currentUser.uid).set({
-            email: currentUser.email,
-            last_active: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-
-        document.getElementById('login-form').style.display = 'none';
-        document.getElementById('user-info').style.display = 'flex';
-        document.getElementById('logout-btn').style.display = 'block';
-        document.getElementById('user-name').innerText = currentUser.email.split('@')[0];
-        
-        document.getElementById('chat-msg').onkeydown = (e) => { if (e.key === 'Enter') sendMessage(); };
-        startChatListener(currentUser.uid);
+        // Интерфейс обновится автоматически через onAuthStateChanged
     } catch (e) { alert(e.message); }
 }
 
 async function handleLogout() {
-    await auth.signOut();
-    currentUser = null;
-    if (unsubscribe) unsubscribe();
-    document.getElementById('login-form').style.display = 'flex';
-    document.getElementById('user-info').style.display = 'none';
-    document.getElementById('logout-btn').style.display = 'none';
-    document.getElementById('user-name').innerText = "Guest";
-    document.getElementById('chat-window').innerHTML = "";
+    try {
+        await auth.signOut();
+    } catch (e) { console.error(e); }
 }
 
 async function sendMessage() {
@@ -107,6 +104,7 @@ async function sendMessage() {
 }
 
 function startChatListener(uid) {
+    if (unsubscribe) unsubscribe(); // Очистка старой подписки
     unsubscribe = db.collection("users").doc(uid).collection("messages").orderBy("timestamp", "asc").onSnapshot(snap => {
         const win = document.getElementById('chat-window');
         win.innerHTML = "";
