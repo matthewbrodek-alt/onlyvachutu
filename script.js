@@ -20,19 +20,20 @@ const auth = firebase.auth();
 let currentUser = null;
 let chatListener = null;
 
-// --- СМЕНА ЯЗЫКА ---
 const dict = {
     ru: {
         navHome: "Таверна", navPortfolio: "Свитки", navSkills: "Навыки", navRoom: "Комната",
         welcomeTitle: "Добро пожаловать!", welcomeSub: "Маг Автоматизации",
         portfolioTitle: "Выполненные квесты", catsTitle: "Коты Таверны",
-        loginBtn: "Открыть дверь", sendBtn: "Отправить", chatPlaceholder: "Послать ворона..."
+        loginBtn: "Открыть дверь", sendBtn: "Отправить", chatPlaceholder: "Послать ворона...",
+        catsBtn: "Приманить еще"
     },
     en: {
         navHome: "Tavern", navPortfolio: "Scrolls", navSkills: "Skills", navRoom: "Room",
         welcomeTitle: "Welcome, traveler!", welcomeSub: "Automation Mage",
         portfolioTitle: "Completed Quests", catsTitle: "Tavern Cats",
-        loginBtn: "Open Door", sendBtn: "Send", chatPlaceholder: "Send a raven..."
+        loginBtn: "Open Door", sendBtn: "Send", chatPlaceholder: "Send a raven...",
+        catsBtn: "Summon More"
     }
 };
 
@@ -51,13 +52,11 @@ function toggleLang() {
     if(chatInput) chatInput.placeholder = dict[currentLang].chatPlaceholder;
 }
 
-// --- НАВИГАЦИЯ ---
 function scrollToPanel(id) {
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: 'smooth' });
 }
 
-// --- ЧАТ И ОБРАТНАЯ СВЯЗЬ ---
 async function handleLogin() {
     const email = document.getElementById('auth-email').value;
     const pass = document.getElementById('auth-pass').value;
@@ -80,14 +79,12 @@ async function sendMessage() {
     const text = msgInput.value.trim();
     if (!text) return;
 
-    // 1. Пишем в Firebase (для отображения на сайте)
     await db.collection("users").doc(currentUser.uid).collection("messages").add({
         message: text,
         sender: "user",
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // 2. Шлем в Telegram (для твоего Python-бота)
     const botText = `👤 Юзер: ${currentUser.email}\nID ${currentUser.uid}\n\n💬 ${text}`;
     fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
@@ -116,7 +113,6 @@ function startChatListener(uid) {
         });
 }
 
-// --- КОТИКИ ---
 async function fetchCats() {
     try {
         const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=3');
@@ -128,4 +124,18 @@ async function fetchCats() {
     } catch(e) { console.error("Коты сбежали", e); }
 }
 
-window.onload = fetchCats;
+// ПРИ ЗАГРУЗКЕ
+window.onload = () => {
+    fetchCats();
+    
+    // Добавляем отправку по Enter
+    const chatInput = document.getElementById('chat-msg');
+    if(chatInput) {
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // Чтобы не было переноса строки
+                sendMessage();
+            }
+        });
+    }
+};
