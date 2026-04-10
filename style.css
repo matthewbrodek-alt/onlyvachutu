@@ -1,88 +1,62 @@
 :root {
-    --glass: rgba(255, 255, 255, 0.1);
-    --text: #ffffff;
-    --blur: blur(25px);
     --tesla-blue: #3d69e1;
+    --text: #ffffff;
 }
-
-body.dark-theme { --glass: rgba(0, 0, 0, 0.7); }
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
     font-family: 'Inter', sans-serif;
-    color: var(--text);
-    background-image: url('https://digitalassets.tesla.com/tesla-contents/image/upload/f_auto,q_auto/Homepage-Model-Y-Desktop-Global.png');
+    margin: 0;
+    background: url('https://digitalassets.tesla.com/tesla-contents/image/upload/f_auto,q_auto/Homepage-Model-Y-Desktop-Global.png') no-repeat center center fixed;
     background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    overflow: hidden;
+    color: var(--text);
 }
 
-.scroll-container {
-    height: 100vh;
-    overflow-y: scroll;
-    scroll-snap-type: y mandatory;
-}
+.tesla-auth-card { max-width: 450px; margin: auto; padding: 40px; background: rgba(0,0,0,0.6); backdrop-filter: blur(20px); border-radius: 25px; }
 
-.panel {
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    scroll-snap-align: start;
-    padding: 20px;
-}
-
-.glass-box {
-    background: var(--glass);
-    backdrop-filter: var(--blur);
-    -webkit-backdrop-filter: var(--blur);
-    padding: 40px;
-    border-radius: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    text-align: center;
-    width: 100%;
-}
-
-/* Tesla Auth Styling */
-.tesla-auth-card { max-width: 400px; padding: 60px 40px; }
-.auth-title { font-size: 28px; font-weight: 500; margin-bottom: 40px; }
-
-.input-wrapper { text-align: left; margin-bottom: 25px; }
-.input-wrapper label { 
-    display: block; font-size: 13px; color: rgba(255,255,255,0.6); 
-    margin-bottom: 8px; margin-left: 10px;
-}
-.input-wrapper input {
-    width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
-    padding: 14px 20px; border-radius: 20px; color: #fff; font-size: 16px;
-}
-
-.btn-tesla-primary {
-    width: 100%; background: var(--tesla-blue); color: #fff; border: none;
-    padding: 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: 0.3s;
-}
-.btn-tesla-primary:hover { background: #3457b1; transform: translateY(-2px); }
-
-/* Navigation */
-.tesla-nav {
-    position: fixed; top: 0; width: 100%; z-index: 1000;
-    display: flex; justify-content: space-between; padding: 25px 50px;
-}
-.nav-center button { 
-    background: none; border: none; color: #fff; font-weight: 500; 
-    margin: 0 15px; cursor: pointer; font-size: 15px; 
-}
-.flag-btn { background: none; border: none; font-size: 22px; cursor: pointer; }
-
-/* Chat Elements */
+/* Чат как в мессенджерах */
 .tesla-chat {
-    height: 300px; background: rgba(0,0,0,0.2); border-radius: 15px;
-    margin: 20px 0; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px;
+    height: 380px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 15px;
 }
-.msg-user { align-self: flex-start; background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 12px; font-size: 14px; }
-.msg-admin { align-self: flex-end; background: var(--tesla-blue); padding: 8px 15px; border-radius: 12px; font-size: 14px; }
 
-textarea { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 15px; color: #fff; padding: 15px; resize: none; margin-bottom: 10px; }
+.msg-box { display: flex; width: 100%; }
+.msg-box.sent { justify-content: flex-end; } /* Ты (справа) */
+.msg-box.received { justify-content: flex-start; } /* Бот (слева) */
+
+.msg-content {
+    max-width: 80%;
+    padding: 10px 16px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.sent .msg-content {
+    background: var(--tesla-blue);
+    color: white;
+    border-radius: 18px 18px 2px 18px;
+}
+
+.received .msg-content {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border-radius: 18px 18px 18px 2px;
+}
+
+/* Кнопки и инпуты */
+.btn-tesla-primary {
+    background: var(--tesla-blue);
+    border: none; color: white; padding: 12px;
+    border-radius: 20px; cursor: pointer; font-weight: 600; width: 100%;
+}
+
+.input-wrapper input, textarea {
+    width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+    padding: 12px; border-radius: 15px; color: white; margin-top: 5px;
+}
