@@ -1,3 +1,6 @@
+const TELEGRAM_BOT_TOKEN = "8664813567:AAEkqGdXuyrS43Pjfc1gB-KdVuOOReWrkGw";
+const TELEGRAM_CHAT_ID = "7451263058";
+
 const firebaseConfig = {
     apiKey: "AIzaSyA_7n34vc1JM5PER6kvU9mMSzKfpu8s5YE",
     authDomain: "my-portfolio-auth-ff1ce.firebaseapp.com",
@@ -8,112 +11,121 @@ const firebaseConfig = {
 };
 
 // Инициализация
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 const db = firebase.firestore();
 const auth = firebase.auth();
+
 let currentUser = null;
+let chatListener = null;
 
-// Слушатель входа/выхода
-auth.onAuthStateChanged(user => {
-    const logoutBtn = document.getElementById('logout-btn');
-    if (user) {
-        currentUser = user;
-        document.getElementById('login-form').style.display = 'none';
-        document.getElementById('user-info').style.display = 'block';
-        if(logoutBtn) logoutBtn.style.display = 'block';
-        startChat(user.uid);
-    } else {
-        currentUser = null;
-        document.getElementById('login-form').style.display = 'block';
-        document.getElementById('user-info').style.display = 'none';
-        if(logoutBtn) logoutBtn.style.display = 'none';
-    }
-});
-
-// ГЛОБАЛЬНЫЕ ФУНКЦИИ (вынесены из блоков, чтобы HTML их видел)
-window.handleLogin = async () => {
-    const email = document.getElementById('auth-email').value;
-    const pass = document.getElementById('auth-pass').value;
-    if(!email || !pass) return alert("Заполни свитки (email/pass)");
-    try {
-        await auth.signInWithEmailAndPassword(email, pass)
-            .catch(() => auth.createUserWithEmailAndPassword(email, pass));
-    } catch(e) { alert(e.message); }
-};
-
-window.handleLogout = () => {
-    auth.signOut().then(() => {
-        window.location.reload(); 
-    });
-};
-
-window.sendMessage = async () => {
-    const input = document.getElementById('chat-msg');
-    const text = input.value.trim();
-    if(!text || !currentUser) return;
-
-    try {
-        await db.collection("users").doc(currentUser.uid).collection("messages").add({
-            message: text,
-            sender: "user",
-            status: "pending", // Ключевой статус для бота в bridge.py
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        input.value = "";
-    } catch(e) { console.error("Ошибка магии:", e); }
-};
-
-window.startChat = (uid) => {
-    db.collection("users").doc(uid).collection("messages")
-      .orderBy("timestamp", "asc")
-      .onSnapshot(snap => {
-        const win = document.getElementById('chat-window');
-        if(!win) return;
-        win.innerHTML = "";
-        snap.forEach(doc => {
-            const d = doc.data();
-            const side = d.sender === 'user' ? 'sent' : 'received';
-            win.innerHTML += `<div class="msg-box ${side}">${d.message}</div>`;
-        });
-        win.scrollTop = win.scrollHeight;
-    });
-};
-
-window.fetchCats = async () => {
-    const container = document.getElementById('cat-container');
-    try {
-        const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=4');
-        const data = await res.json();
-        container.innerHTML = data.map(cat => `<img src="${cat.url}" alt="Cat">`).join('');
-    } catch(e) { container.innerHTML = "Коты спрятались..."; }
-};
-
-window.scrollToPanel = (id) => {
-    document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-};
-
-// Локализация
-let currentLang = 'ru';
+// --- СМЕНА ЯЗЫКА ---
 const dict = {
-    ru: { navHome: "Таверна", navPortfolio: "Свитки", navRoom: "Кабинет", navLogout: "Выйти", welcomeTitle: "Усталый путник", welcomeSub: "Мастерство кода и магия автоматизации", portfolioTitle: "Артефакты", todoTitle: "Вход", loginBtn: "Открыть дверь", catsTitle: "Питомцы", catsBtn: "Приманить новых" },
-    en: { navHome: "Tavern", navPortfolio: "Scrolls", navRoom: "Study", navLogout: "Logout", welcomeTitle: "Weary Traveler", welcomeSub: "Code Mastery & Automation Magic", portfolioTitle: "Artifacts", todoTitle: "Enter", loginBtn: "Unlock Door", catsTitle: "The Pets", catsBtn: "Summon More" }
+    ru: {
+        navHome: "Таверна", navPortfolio: "Свитки", navSkills: "Навыки", navRoom: "Комната",
+        welcomeTitle: "Добро пожаловать!", welcomeSub: "Маг Автоматизации",
+        portfolioTitle: "Выполненные квесты", catsTitle: "Коты Таверны",
+        loginBtn: "Открыть дверь", sendBtn: "Отправить", chatPlaceholder: "Послать ворона..."
+    },
+    en: {
+        navHome: "Tavern", navPortfolio: "Scrolls", navSkills: "Skills", navRoom: "Room",
+        welcomeTitle: "Welcome, traveler!", welcomeSub: "Automation Mage",
+        portfolioTitle: "Completed Quests", catsTitle: "Tavern Cats",
+        loginBtn: "Open Door", sendBtn: "Send", chatPlaceholder: "Send a raven..."
+    }
 };
 
-window.toggleLang = () => {
+let currentLang = 'ru';
+
+function toggleLang() {
     currentLang = currentLang === 'ru' ? 'en' : 'ru';
-    document.getElementById('lang-btn').innerText = currentLang.toUpperCase();
+    document.getElementById('lang-btn').innerText = currentLang === 'ru' ? '🇺🇸 EN' : '🇷🇺 RU';
+    
     document.querySelectorAll('[data-lang]').forEach(el => {
         const key = el.getAttribute('data-lang');
-        if(dict[currentLang][key]) el.innerText = dict[currentLang][key];
+        if (dict[currentLang][key]) el.innerText = dict[currentLang][key];
     });
-};
-
-// Инициализация при загрузке
-$(document).ready(() => {
-    window.fetchCats();
-    if($('.art-card').length) $('.art-card').tilt({ maxTilt: 15 });
     
-    $('#chat-msg').on('keypress', (e) => {
-        if(e.which == 13) window.sendMessage();
+    const chatInput = document.getElementById('chat-msg');
+    if(chatInput) chatInput.placeholder = dict[currentLang].chatPlaceholder;
+}
+
+// --- НАВИГАЦИЯ ---
+function scrollToPanel(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+}
+
+// --- ЧАТ И ОБРАТНАЯ СВЯЗЬ ---
+async function handleLogin() {
+    const email = document.getElementById('auth-email').value;
+    const pass = document.getElementById('auth-pass').value;
+    if(!email || !pass) return alert("Назовите себя, путник!");
+
+    try {
+        const userCred = await auth.signInWithEmailAndPassword(email, pass)
+            .catch(() => auth.createUserWithEmailAndPassword(email, pass));
+        
+        currentUser = userCred.user;
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('user-info').style.display = 'block';
+        startChatListener(currentUser.uid);
+    } catch (e) { alert("Магия входа не сработала: " + e.message); }
+}
+
+async function sendMessage() {
+    if (!currentUser) return;
+    const msgInput = document.getElementById('chat-msg');
+    const text = msgInput.value.trim();
+    if (!text) return;
+
+    // 1. Пишем в Firebase (для отображения на сайте)
+    await db.collection("users").doc(currentUser.uid).collection("messages").add({
+        message: text,
+        sender: "user",
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
-});
+
+    // 2. Шлем в Telegram (для твоего Python-бота)
+    const botText = `👤 Юзер: ${currentUser.email}\nID ${currentUser.uid}\n\n💬 ${text}`;
+    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: botText })
+    });
+
+    msgInput.value = "";
+}
+
+function startChatListener(uid) {
+    if (chatListener) chatListener();
+    chatListener = db.collection("users").doc(uid).collection("messages")
+        .orderBy("timestamp", "asc").onSnapshot(snap => {
+            const win = document.getElementById('chat-window');
+            if(!win) return;
+            win.innerHTML = "";
+            snap.forEach(doc => {
+                const d = doc.data();
+                const div = document.createElement('div');
+                div.className = d.sender === 'user' ? 'msg-box sent' : 'msg-box received';
+                div.innerHTML = `<div class="msg-content">${d.message}</div>`;
+                win.appendChild(div);
+            });
+            win.scrollTop = win.scrollHeight;
+        });
+}
+
+// --- КОТИКИ ---
+async function fetchCats() {
+    try {
+        const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=3');
+        const data = await res.json();
+        const container = document.getElementById('cat-container');
+        if(container) {
+            container.innerHTML = data.map(cat => `<img src="${cat.url}" class="cat-img">`).join('');
+        }
+    } catch(e) { console.error("Коты сбежали", e); }
+}
+
+window.onload = fetchCats;
