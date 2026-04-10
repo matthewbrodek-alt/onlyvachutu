@@ -62,23 +62,36 @@
         </section>
 
         <section id="todo" class="panel">
-            <div class="glass-box auth-container">
-                <h2 data-lang="todoTitle">Список дел</h2>
-                <div id="login-form">
-                    <input type="email" id="auth-email" placeholder="Email">
-                    <input type="password" id="auth-pass" placeholder="Password">
-                    <br><br>
-                    <button onclick="handleLogin()" class="btn-primary" data-lang="loginBtn">Войти</button>
-                </div>
-                <div id="user-info" style="display:none;">
-                    <div class="todo-input-row">
-                        <input type="text" id="todo-input" data-placeholder="todoPlaceholder" placeholder="Что нужно сделать?">
-                        <button onclick="addTodo()" class="btn-primary">+</button>
-                    </div>
-                    <ul id="todo-list"></ul>
-                </div>
+        <div class="tesla-auth-card glass-box">
+        <h2 data-lang="todoTitle" class="auth-title">Личный кабинет</h2>
+        
+        <div id="login-form" class="auth-form">
+            <div class="input-wrapper">
+                <label>Email</label>
+                <input type="email" id="auth-email" placeholder="">
             </div>
-        </section>
+            <div class="input-wrapper">
+                <label>Password</label>
+                <input type="password" id="auth-pass" placeholder="">
+            </div>
+            <div class="auth-actions">
+                <button onclick="handleLogin()" class="btn-tesla-primary" data-lang="loginBtn">Войти / Создать</button>
+            </div>
+        </div>
+
+        <div id="user-info" style="display:none;" class="auth-chat-mode">
+            <div class="chat-header">
+                <p class="status-dot">● Online</p>
+                <span id="user-display-email"></span>
+            </div>
+            <div id="chat-window" class="tesla-chat"></div>
+            <div class="chat-inputs">
+                <textarea id="chat-msg" data-placeholder="chatMsg" placeholder="Сообщение..."></textarea>
+                <button onclick="sendMessage()" class="btn-tesla-primary" data-lang="sendBtn">Отправить</button>
+               </div>
+            </div>
+         </div>
+     </section>
 
         <section id="about" class="panel">
             <div class="glass-box chat-container">
