@@ -53,8 +53,11 @@
 
     <div class="bento-item cats-card">
         <h3 data-lang="catsTitle">Коты Таверны</h3>
-        <div id="cat-container" class="mini-gallery"></div>
-        <button onclick="fetchCats()" class="refresh-cats">↺</button>
+        <div class="cat-viewer">
+            <div id="cat-container" class="cat-frame">
+                </div>
+        </div>
+        <button onclick="fetchCats()" class="cat-refresh-btn">Приманить еще</button>
     </div>
 
     <div class="bento-item stats-card">
