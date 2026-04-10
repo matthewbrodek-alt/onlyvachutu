@@ -18,14 +18,37 @@ let currentLang = 'ru';
 let unsubscribe = null;
 
 const dict = {
-    ru: { welcomeSub: "Маг Автоматизации", todoTitle: "Тайная комната", loginBtn: "Войти", catsTitle: "Коты Таверны", skillTech: "Арсенал" },
-    en: { welcomeSub: "Automation Mage", todoTitle: "Secret Room", loginBtn: "Authorize", catsTitle: "Tavern Cats", skillTech: "Arsenal" }
+    ru: { 
+        welcomeSub: "Маг Автоматизации", 
+        todoTitle: "Тайная комната", 
+        loginBtn: "Войти", 
+        catsTitle: "Коты Таверны", 
+        skillTech: "Арсенал",
+        skill1: "Алхимия JS и DOM",
+        skill2: "Python мосты для Telegram",
+        skill3: "Архитектура Firebase Realtime",
+        skill4: "Адаптивный Mobile-First UX",
+        skill5: "Магия правил безопасности"
+    },
+    en: { 
+        welcomeSub: "Automation Mage", 
+        todoTitle: "Secret Room", 
+        loginBtn: "Authorize", 
+        catsTitle: "Tavern Cats", 
+        skillTech: "Arsenal",
+        skill1: "JS Alchemy & DOM",
+        skill2: "Python Telegram Bridges",
+        skill3: "Firebase Realtime Architecture",
+        skill4: "Adaptive Mobile-First UX",
+        skill5: "Security Rules Sorcery"
+    }
 };
 
 function toggleLang() {
     const icon = document.getElementById('lang-icon');
     currentLang = currentLang === 'ru' ? 'en' : 'ru';
     icon.innerText = currentLang === 'ru' ? "🌐 🇷🇺" : "🌐 🇺🇸";
+    
     document.querySelectorAll('[data-lang]').forEach(el => {
         const key = el.getAttribute('data-lang');
         if (dict[currentLang][key]) el.innerText = dict[currentLang][key];
