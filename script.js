@@ -10,33 +10,12 @@ const firebaseConfig = {
     appId: "1:391088510675:web:ff1c4d866c37f921886626"
 };
 
-// Инициализация Firebase
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
 
 let currentUser = null;
 let chatListener = null;
-
-// Перевод
-const dict = {
-    ru: { navHome: "Таверна", navPortfolio: "Свитки", navRoom: "Кабинет", welcomeTitle: "Утро в Таверне", welcomeSub: "Магия автоматизации", portfolioTitle: "Артефакты", todoTitle: "Вход", loginBtn: "Войти", catsTitle: "Коты", catsBtn: "Приманить" },
-    en: { navHome: "Tavern", navPortfolio: "Scrolls", navRoom: "Cabinet", welcomeTitle: "Morning in Tavern", welcomeSub: "Automation Magic", portfolioTitle: "Artifacts", todoTitle: "Login", loginBtn: "Enter", catsTitle: "Cats", catsBtn: "Summon" }
-};
-let currentLang = 'ru';
-
-function toggleLang() {
-    currentLang = currentLang === 'ru' ? 'en' : 'ru';
-    document.querySelectorAll('[data-lang]').forEach(el => {
-        const key = el.getAttribute('data-lang');
-        if (dict[currentLang][key]) el.innerText = dict[currentLang][key];
-    });
-}
-
-function scrollToPanel(id) {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-}
 
 async function handleLogin() {
     const email = document.getElementById('auth-email').value;
@@ -46,17 +25,16 @@ async function handleLogin() {
             .catch(() => auth.createUserWithEmailAndPassword(email, pass));
         
         currentUser = userCred.user;
-        
-        // КРИТИЧЕСКИ ВАЖНО: сохраняем email в документе пользователя!
+
+        // ВАЖНО для моста: сохраняем email
         await db.collection("users").doc(currentUser.uid).set({
-            email: currentUser.email,
-            lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+            email: currentUser.email.toLowerCase()
         }, { merge: true });
 
         document.getElementById('login-form').style.display = 'none';
         document.getElementById('user-info').style.display = 'block';
         startChatListener(currentUser.uid);
-    } catch (e) { alert(e.message); }
+    } catch (e) { alert("Ошибка входа: " + e.message); }
 }
 
 async function sendMessage() {
@@ -64,53 +42,52 @@ async function sendMessage() {
     const text = msgInput.value.trim();
     if (!text || !currentUser) return;
 
+    // Пишем в свою подколлекцию
     await db.collection("users").doc(currentUser.uid).collection("messages").add({
         message: text,
         sender: "user",
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
 
+    // Шлем в Telegram (Бот возьмет email отсюда для ответа)
     fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: `👤 ${currentUser.email}:\n${text}` })
+        body: JSON.stringify({ 
+            chat_id: TELEGRAM_CHAT_ID, 
+            text: `👤 User: ${currentUser.email}\n💬 ${text}` 
+        })
     });
     msgInput.value = "";
 }
 
 function startChatListener(uid) {
     if (chatListener) chatListener();
-    chatListener = db.collection("users").doc(uid).collection("messages").orderBy("timestamp", "asc").onSnapshot(snap => {
-        const win = document.getElementById('chat-window');
-        win.innerHTML = "";
-        snap.forEach(doc => {
-            const d = doc.data();
-            win.innerHTML += `<div class="msg-box ${d.sender === 'user' ? 'sent' : 'received'}">${d.message}</div>`;
+    chatListener = db.collection("users").doc(uid).collection("messages")
+        .orderBy("timestamp", "asc")
+        .onSnapshot(snap => {
+            const win = document.getElementById('chat-window');
+            win.innerHTML = "";
+            snap.forEach(doc => {
+                const d = doc.data();
+                const type = (d.sender === 'user') ? 'sent' : 'received';
+                win.innerHTML += `<div class="msg-box ${type}">${d.message}</div>`;
+            });
+            win.scrollTop = win.scrollHeight;
         });
-        win.scrollTop = win.scrollHeight;
-    });
 }
+
+function scrollToPanel(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth' }); }
 
 async function fetchCats() {
-    try {
-        const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=3');
-        const data = await res.json();
-        document.getElementById('cat-container').innerHTML = data.map(cat => `<img src="${cat.url}" class="cat-pic">`).join('');
-    } catch(e) {}
+    const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=3');
+    const data = await res.json();
+    document.getElementById('cat-container').innerHTML = data.map(c => `<img src="${c.url}" class="cat-pic">`).join('');
 }
 
-// БЕЗОПАСНЫЙ ЗАПУСК
 $(document).ready(function() {
     fetchCats();
-    
     if (typeof $.fn.tilt !== 'undefined') {
         $('.artifact-card').tilt({ maxTilt: 15, scale: 1.05 });
     }
-
-    $('#chat-msg').on('keypress', (e) => {
-        if(e.which == 13 && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
 });
