@@ -21,12 +21,12 @@ const dict = {
     ru: { 
         welcomeSub: "Маг Автоматизации", todoTitle: "Тайная комната", loginBtn: "Войти", catsTitle: "Коты Таверны", skillTech: "Арсенал",
         skill1: "Алхимия JS и DOM", skill2: "Python мосты для Telegram", skill3: "Архитектура Firebase Realtime", skill4: "Адаптивный Mobile-First UX", skill5: "Магия правил безопасности",
-        sendBtn: "Отправить", catsBtn: "Призвать котика"
+        sendBtn: "Отправить", catsBtn: "Призвать котика", adsLink: "Реклама", promoText: "Здесь могла быть ваша реклама"
     },
     en: { 
         welcomeSub: "Automation Mage", todoTitle: "Secret Room", loginBtn: "Authorize", catsTitle: "Tavern Cats", skillTech: "Arsenal",
         skill1: "JS Alchemy & DOM", skill2: "Python Telegram Bridges", skill3: "Firebase Realtime Architecture", skill4: "Adaptive Mobile-First UX", skill5: "Security Rules Sorcery",
-        sendBtn: "Send", catsBtn: "Summon Cats"
+        sendBtn: "Send", catsBtn: "Summon Cats", adsLink: "Ads", promoText: "Your ad could be here"
     }
 };
 
@@ -40,6 +40,13 @@ auth.onAuthStateChanged((user) => {
         handleLogoutUI();
     }
 });
+
+function showPage(pageId) {
+    document.getElementById('main-content').classList.remove('active');
+    document.getElementById('ads-page').classList.remove('active');
+    if (pageId === 'main') document.getElementById('main-content').classList.add('active');
+    else document.getElementById('ads-page').classList.add('active');
+}
 
 function showUserInterface(user) {
     document.getElementById('login-form').style.display = 'none';
@@ -77,7 +84,7 @@ async function handleLogin() {
 }
 
 async function handleLogout() {
-    try { await auth.signOut(); } catch (e) { console.error(e); }
+    try { await auth.signOut(); showPage('main'); } catch (e) { console.error(e); }
 }
 
 async function sendMessage() {
