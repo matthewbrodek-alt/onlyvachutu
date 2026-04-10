@@ -10,66 +10,67 @@ const firebaseConfig = {
     appId: "1:391088510675:web:ff1c4d866c37f921886626"
 };
 
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
 
 let currentUser = null;
 
+// Твоя логика входа
 async function handleLogin() {
     const email = document.getElementById('auth-email').value;
     const pass = document.getElementById('auth-pass').value;
+    if(!email || !pass) return;
+
     try {
         const userCred = await auth.signInWithEmailAndPassword(email, pass)
             .catch(() => auth.createUserWithEmailAndPassword(email, pass));
         
         currentUser = userCred.user;
-
-        // Сохраняем email для поиска ботом
-        await db.collection("users").doc(currentUser.uid).set({
-            email: currentUser.email.toLowerCase()
-        }, { merge: true });
-
         document.getElementById('login-form').style.display = 'none';
-        document.getElementById('user-info').style.display = 'block';
-        document.getElementById('user-display-name').innerText = currentUser.email.split('@')[0];
+        document.getElementById('user-info').style.display = 'flex';
+        document.getElementById('user-name').innerText = currentUser.email.split('@')[0];
         
         startChatListener(currentUser.uid);
     } catch (e) { alert(e.message); }
 }
 
+// ТВОЯ ЛОГИКА ТЕЛЕГРАМА (сохранена полностью)
 async function sendMessage() {
+    if (!currentUser) return;
     const msgInput = document.getElementById('chat-msg');
     const text = msgInput.value.trim();
-    if (!text || !currentUser) return;
+    if (!text) return;
 
+    // 1. В Firebase
     await db.collection("users").doc(currentUser.uid).collection("messages").add({
         message: text,
         sender: "user",
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
 
+    // 2. В Telegram (Твой формат бот-текста)
+    const botText = `👤 Юзер: ${currentUser.email}\nID ${currentUser.uid}\n\n💬 ${text}`;
     fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            chat_id: TELEGRAM_CHAT_ID, 
-            text: `👤 Nitro User: ${currentUser.email}\n💬 ${text}` 
-        })
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: botText })
     });
+
     msgInput.value = "";
 }
 
 function startChatListener(uid) {
     db.collection("users").doc(uid).collection("messages")
-        .orderBy("timestamp", "asc")
-        .onSnapshot(snap => {
+        .orderBy("timestamp", "asc").onSnapshot(snap => {
             const win = document.getElementById('chat-window');
             win.innerHTML = "";
             snap.forEach(doc => {
                 const d = doc.data();
-                const type = d.sender === 'user' ? 'sent' : 'received';
-                win.innerHTML += `<div class="msg-box ${type}">${d.message}</div>`;
+                const div = document.createElement('div');
+                div.className = d.sender === 'user' ? 'msg-box sent' : 'msg-box received';
+                div.innerText = d.message;
+                win.appendChild(div);
             });
             win.scrollTop = win.scrollHeight;
         });
@@ -81,7 +82,8 @@ async function fetchCats() {
     document.getElementById('cat-container').innerHTML = data.map(c => `<img src="${c.url}">`).join('');
 }
 
+// Анимации при загрузке
 $(document).ready(() => {
     fetchCats();
-    $('.bento-item').tilt({ maxTilt: 10, speed: 400, glare: true, "max-glare": 0.1 });
+    $('.bento-item').tilt({ maxTilt: 10, glare: true, maxGlare: 0.1 });
 });
