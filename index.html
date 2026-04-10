@@ -2,8 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Arcane Tavern HUB</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nitro Tavern | Hub</title>
     
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tilt.js/1.2.1/tilt.jquery.min.js"></script>
@@ -12,76 +12,56 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Cinzel:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="forest-bg"></div>
-    <div class="runes-overlay"></div>
+<div class="nitro-bg"></div>
 
-    <header class="tavern-header">
-        <div class="nav-brand">TAVERN.HUB</div>
-        <nav class="nav-links">
-            <a href="javascript:void(0)" onclick="scrollToPanel('home')">Таверна</a>
-            <a href="javascript:void(0)" onclick="scrollToPanel('portfolio')">Свитки</a>
-            <a href="javascript:void(0)" onclick="scrollToPanel('todo')">Кабинет</a>
-            <a href="javascript:void(0)" onclick="toggleLang()" class="globe-icon">🌐</a>
-        </nav>
-    </header>
+<nav class="nitro-nav">
+    <div class="logo">NITRO.HUB</div>
+    <div class="nav-items">
+        <button onclick="handleLogin()" id="login-trigger">Cabinet</button>
+    </div>
+</nav>
 
-    <main class="scroll-container">
-        
-        <section id="home" class="panel">
-            <div class="hero-card">
-                <h1 class="glow-text">Утро в Таверне</h1>
-                <p class="sub-text">Современные решения для старых задач</p>
+<main class="bento-container">
+    <div class="bento-item profile-card" data-tilt>
+        <div class="status-dot"></div>
+        <h2 id="user-display-name">Путник</h2>
+        <p>Уровень доступа: Admin</p>
+    </div>
+
+    <div class="bento-item chat-card">
+        <div id="login-form" class="auth-box">
+            <h3>Вход в систему</h3>
+            <input type="email" id="auth-email" placeholder="Email">
+            <input type="password" id="auth-pass" placeholder="Password">
+            <button onclick="handleLogin()" class="nitro-btn">Connect</button>
+        </div>
+
+        <div id="user-info" style="display:none;">
+            <div id="chat-window" class="nitro-chat"></div>
+            <div class="nitro-input-group">
+                <input type="text" id="chat-msg" placeholder="Type a message...">
+                <button onclick="sendMessage()">Send</button>
             </div>
-        </section>
+        </div>
+    </div>
 
-        <section id="portfolio" class="panel">
-            <h2 class="section-title">Артефакты кода</h2>
-            <div class="artifacts-grid">
-                <div class="artifact-card">
-                    <div class="art-icon fire-icon"></div>
-                    <h3>WEB MAGIC</h3>
-                    <p>Alchemy of JS</p>
-                </div>
-                <div class="artifact-card">
-                    <div class="art-icon bot-icon"></div>
-                    <h3>BOT SPELLS</h3>
-                    <p>Runes of Python</p>
-                </div>
-            </div>
-        </section>
+    <div class="bento-item cats-card">
+        <h3>Коты-хранители</h3>
+        <div id="cat-container" class="mini-grid"></div>
+        <button onclick="fetchCats()" class="refresh-btn">↺</button>
+    </div>
 
-        <section id="todo" class="panel room-section">
-            <div id="login-form" class="arcane-panel login-panel">
-                <h2 class="panel-title">Вход в Кабинет</h2>
-                <input type="email" id="auth-email" class="arcane-input" placeholder="Email...">
-                <input type="password" id="auth-pass" class="arcane-input" placeholder="Password...">
-                <button onclick="handleLogin()" class="arcane-btn">Открыть дверь</button>
-            </div>
+    <div class="bento-item stats-card">
+        <div class="stat"><span>Messages:</span> 128</div>
+        <div class="stat"><span>Uptime:</span> 99.9%</div>
+    </div>
+</main>
 
-            <div id="user-info" class="arcane-panel chat-panel" style="display:none;">
-                <div id="chat-window" class="arcane-chat"></div>
-                <div class="chat-inputs">
-                    <textarea id="chat-msg" placeholder="Послать ворона..."></textarea>
-                    <button onclick="sendMessage()" class="send-btn">→</button>
-                </div>
-            </div>
-        </section>
-
-        <section id="cats" class="panel">
-            <div class="arcane-panel cats-panel wide">
-                <h2 class="panel-title">Коты Таверны</h2>
-                <div id="cat-container" class="cat-grid"></div>
-                <button onclick="fetchCats()" class="arcane-btn">Приманить новых</button>
-            </div>
-        </section>
-
-    </main>
-
-    <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
