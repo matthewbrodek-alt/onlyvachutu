@@ -18,7 +18,7 @@ const auth = firebase.auth();
 let currentUser = null;
 let chatListener = null;
 
-// Перевод (Твой оригинал)
+// Перевод
 const dict = {
     ru: { navHome: "Таверна", navPortfolio: "Свитки", navSkills: "Навыки", navRoom: "Комната", welcomeTitle: "Приветствую!", welcomeSub: "Мастер Кода", portfolioTitle: "Квесты", catsTitle: "Коты", loginBtn: "Войти", catsBtn: "Приманить", sendBtn: "Send" },
     en: { navHome: "Tavern", navPortfolio: "Scrolls", navSkills: "Skills", navRoom: "Room", welcomeTitle: "Welcome!", welcomeSub: "Code Master", portfolioTitle: "Quests", catsTitle: "The Cats", loginBtn: "Enter", catsBtn: "Summon", sendBtn: "Send" }
@@ -39,7 +39,7 @@ window.scrollToPanel = (id) => {
     document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
 };
 
-// Коты API (Сохранено)
+// Коты API
 window.fetchCats = async () => {
     const container = document.getElementById('cat-container');
     container.innerHTML = "Призываем...";
@@ -50,7 +50,7 @@ window.fetchCats = async () => {
     } catch(e) { container.innerHTML = "Котики спят..."; }
 }
 
-// Firebase Логика (Твой оригинал без потерь)
+// Firebase Логика
 window.handleLogin = async () => {
     const email = document.getElementById('auth-email').value;
     const pass = document.getElementById('auth-pass').value;
@@ -101,8 +101,6 @@ function startChatListener(uid) {
 $(document).ready(() => {
     fetchCats();
     if($('.gallery-item').length) $('.gallery-item').tilt({ maxTilt: 10 });
-    
-    // Добавлено: Отправка по Enter
     $('#chat-msg').on('keypress', (e) => {
         if(e.which == 13) sendMessage();
     });
