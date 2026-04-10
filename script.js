@@ -10,23 +10,48 @@ const firebaseConfig = {
     appId: "1:391088510675:web:ff1c4d866c37f921886626"
 };
 
+// Инициализация Firebase
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
 
 let currentUser = null;
+let currentLang = 'ru';
 
-// Твоя логика входа
+const dict = {
+    ru: { welcomeSub: "Маг Автоматизации", todoTitle: "Тайная комната", loginBtn: "Открыть дверь", catsTitle: "Коты Таверны", skillTech: "Арсенал" },
+    en: { welcomeSub: "Automation Mage", todoTitle: "Secret Room", loginBtn: "Open Door", catsTitle: "Tavern Cats", skillTech: "Arsenal" }
+};
+
+// Смена языка
+function toggleLang() {
+    currentLang = currentLang === 'ru' ? 'en' : 'ru';
+    const btn = document.getElementById('lang-btn');
+    if (btn) btn.innerText = currentLang === 'ru' ? '🇺🇸 EN' : '🇷🇺 RU';
+    
+    document.querySelectorAll('[data-lang]').forEach(el => {
+        const key = el.getAttribute('data-lang');
+        if (dict[currentLang][key]) el.innerText = dict[currentLang][key];
+    });
+}
+
+// Логин
 async function handleLogin() {
     const email = document.getElementById('auth-email').value;
     const pass = document.getElementById('auth-pass').value;
-    if(!email || !pass) return;
+    if(!email || !pass) return alert("Введите данные!");
 
     try {
         const userCred = await auth.signInWithEmailAndPassword(email, pass)
             .catch(() => auth.createUserWithEmailAndPassword(email, pass));
         
         currentUser = userCred.user;
+        
+        // Запись профиля (для правил Firebase)
+        await db.collection("users").doc(currentUser.uid).set({
+            email: currentUser.email.toLowerCase()
+        }, { merge: true });
+
         document.getElementById('login-form').style.display = 'none';
         document.getElementById('user-info').style.display = 'flex';
         document.getElementById('user-name').innerText = currentUser.email.split('@')[0];
@@ -35,21 +60,20 @@ async function handleLogin() {
     } catch (e) { alert(e.message); }
 }
 
-// ТВОЯ ЛОГИКА ТЕЛЕГРАМА (сохранена полностью)
+// Отправка (Твоя логика Telegram)
 async function sendMessage() {
-    if (!currentUser) return;
     const msgInput = document.getElementById('chat-msg');
     const text = msgInput.value.trim();
-    if (!text) return;
+    if (!text || !currentUser) return;
 
-    // 1. В Firebase
+    // В Firestore
     await db.collection("users").doc(currentUser.uid).collection("messages").add({
         message: text,
         sender: "user",
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // 2. В Telegram (Твой формат бот-текста)
+    // В Telegram (Формат: Юзер + ID + Текст)
     const botText = `👤 Юзер: ${currentUser.email}\nID ${currentUser.uid}\n\n💬 ${text}`;
     fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
@@ -60,6 +84,7 @@ async function sendMessage() {
     msgInput.value = "";
 }
 
+// Слушатель чата
 function startChatListener(uid) {
     db.collection("users").doc(uid).collection("messages")
         .orderBy("timestamp", "asc").onSnapshot(snap => {
@@ -76,14 +101,34 @@ function startChatListener(uid) {
         });
 }
 
+// Котики
 async function fetchCats() {
-    const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=4');
-    const data = await res.json();
-    document.getElementById('cat-container').innerHTML = data.map(c => `<img src="${c.url}">`).join('');
+    try {
+        const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=4');
+        const data = await res.json();
+        const container = document.getElementById('cat-container');
+        if (container) {
+            container.innerHTML = data.map(c => `<img src="${c.url}">`).join('');
+        }
+    } catch (e) { console.log("Коты сбежали"); }
 }
 
-// Анимации при загрузке
+// Запуск
 $(document).ready(() => {
     fetchCats();
-    $('.bento-item').tilt({ maxTilt: 10, glare: true, maxGlare: 0.1 });
+    
+    // Прямой слушатель кнопки языка
+    const langBtn = document.getElementById('lang-btn');
+    if (langBtn) langBtn.addEventListener('click', toggleLang);
+
+    // Усмиренный Tilt (4 градуса макс)
+    if ($('.bento-item').length) {
+        $('.bento-item').tilt({
+            maxTilt: 4,
+            perspective: 1000,
+            speed: 800,
+            glare: true,
+            maxGlare: 0.05
+        });
+    }
 });
