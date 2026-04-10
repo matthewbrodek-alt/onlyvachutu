@@ -41,43 +41,56 @@ body, html {
     display: flex; justify-content: space-between; align-items: center; z-index: 100;
 }
 .logo { font-family: 'Cinzel'; color: var(--accent); font-size: 1.2rem; }
-.nav-links a { color: #888; text-decoration: none; margin-left: 20px; font-size: 0.8rem; transition: 0.3s; }
-.nav-links a:hover { color: #fff; text-shadow: 0 0 10px #fff; }
+.nav-links { display: flex; align-items: center; }
+.nav-links a { color: #888; text-decoration: none; margin-left: 20px; font-size: 0.85rem; transition: 0.3s; }
+.nav-links a:hover { color: #fff; }
+
+.lang-switch { 
+    background: none; border: 1px solid var(--accent); color: var(--accent); 
+    padding: 5px 10px; border-radius: 5px; cursor: pointer; margin-left: 15px;
+}
 
 /* СКРОЛЛ */
 .scroll-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; }
-.panel { height: 100vh; scroll-snap-align: start; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.panel { height: 100vh; scroll-snap-align: start; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center;}
 
 /* КОНТЕНТ */
 .glass-board {
     background: var(--glass); backdrop-filter: blur(20px);
-    padding: 35px; border-radius: 20px; border: 1px solid rgba(255,159,67,0.1);
-    width: 90%; max-width: 450px; text-align: center;
+    padding: 30px; border-radius: 20px; border: 1px solid rgba(255,159,67,0.1);
+    width: 100%; max-width: 450px;
 }
-.glow-text { font-family: 'Cinzel'; font-size: 3rem; text-shadow: 0 0 20px var(--accent-glow); margin-bottom: 10px; }
+.glow-text { font-family: 'Cinzel'; font-size: 3rem; text-shadow: 0 0 20px var(--accent-glow); margin-bottom: 10px; line-height: 1; }
 .section-title { font-family: 'Cinzel'; color: var(--accent); margin-bottom: 25px; letter-spacing: 2px; }
 
 /* КАРТОЧКИ */
 .artifacts-grid { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-.art-card { width: 300px; height: 180px; border-radius: 15px; overflow: hidden; position: relative; border: 1px solid rgba(255,255,255,0.05); }
+.art-card { width: 280px; height: 160px; border-radius: 15px; overflow: hidden; position: relative; border: 1px solid rgba(255,255,255,0.05); }
 .card-bg { position: absolute; inset: 0; background-size: cover; filter: brightness(0.4); transition: 0.5s; }
 .art-card:hover .card-bg { filter: brightness(1); transform: scale(1.05); }
 .card-content { position: absolute; bottom: 0; padding: 15px; background: linear-gradient(to top, #000, transparent); width: 100%; text-align: left; }
 
 /* ЧАТ */
-.arcane-chat { height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
-.msg-box { padding: 10px 15px; border-radius: 10px; font-size: 0.9rem; max-width: 80%; }
-.sent { align-self: flex-end; background: #1a1a1d; border: 1px solid var(--accent); }
-.received { align-self: flex-start; background: #2d2d30; color: var(--accent); }
+.arcane-chat { height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; padding-right: 5px; }
+.msg-box { padding: 10px 15px; border-radius: 10px; font-size: 0.9rem; max-width: 80%; line-height: 1.4; word-wrap: break-word; }
+.sent { align-self: flex-end; background: #1a1a1d; border: 1px solid var(--accent); text-align: right; }
+.received { align-self: flex-start; background: #2d2d30; color: var(--accent); text-align: left; }
 
 .m-input { width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: #fff; border-radius: 8px; margin-bottom: 10px; outline: none; }
-.m-input:focus { border-color: var(--accent); }
 .m-btn { width: 100%; padding: 14px; background: var(--accent); border: none; font-family: 'Cinzel'; font-weight: bold; border-radius: 8px; cursor: pointer; }
-.m-btn-icon { width: 50px; background: var(--accent); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+.m-btn-icon { width: 50px; background: var(--accent); border: none; border-radius: 8px; cursor: pointer; font-size: 1.2rem; }
 .chat-input-group { display: flex; gap: 8px; }
 
 /* КОТЫ */
 .cats-stack { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-.cats-stack img { width: 100%; height: 120px; object-fit: cover; border-radius: 10px; border: 1px solid #222; }
-.refresh-cats-btn { background: none; border: 1px solid #444; color: #888; padding: 10px 20px; border-radius: 5px; cursor: pointer; transition: 0.3s; }
-.refresh-cats-btn:hover { border-color: var(--accent); color: var(--accent); }
+.cats-stack img { width: 100%; height: 100px; object-fit: cover; border-radius: 10px; border: 1px solid #222; }
+.refresh-cats-btn { background: none; border: 1px solid #444; color: #888; padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; }
+
+/* МОБИЛЬНАЯ АДАПТАЦИЯ */
+@media (max-width: 600px) {
+    .glow-text { font-size: 2.2rem; }
+    .tavern-header { padding: 15px 20px; }
+    .nav-links a { margin-left: 12px; font-size: 0.75rem; }
+    .art-card { width: 100%; }
+    .glass-board { padding: 20px; }
+}
