@@ -10,7 +10,6 @@ const firebaseConfig = {
     appId: "1:391088510675:web:ff1c4d866c37f921886626"
 };
 
-// Инициализация Firebase
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
@@ -23,7 +22,8 @@ const dict = {
     en: { welcomeSub: "Automation Mage", todoTitle: "Secret Room", loginBtn: "Open Door", catsTitle: "Tavern Cats", skillTech: "Arsenal" }
 };
 
-// Смена языка
+// --- ФУНКЦИИ ---
+
 function toggleLang() {
     currentLang = currentLang === 'ru' ? 'en' : 'ru';
     const btn = document.getElementById('lang-btn');
@@ -35,45 +35,36 @@ function toggleLang() {
     });
 }
 
-// Логин
 async function handleLogin() {
     const email = document.getElementById('auth-email').value;
     const pass = document.getElementById('auth-pass').value;
-    if(!email || !pass) return alert("Введите данные!");
+    if(!email || !pass) return alert("Назовите себя, путник!");
 
     try {
         const userCred = await auth.signInWithEmailAndPassword(email, pass)
             .catch(() => auth.createUserWithEmailAndPassword(email, pass));
         
         currentUser = userCred.user;
-        
-        // Запись профиля (для правил Firebase)
-        await db.collection("users").doc(currentUser.uid).set({
-            email: currentUser.email.toLowerCase()
-        }, { merge: true });
-
         document.getElementById('login-form').style.display = 'none';
         document.getElementById('user-info').style.display = 'flex';
         document.getElementById('user-name').innerText = currentUser.email.split('@')[0];
         
         startChatListener(currentUser.uid);
-    } catch (e) { alert(e.message); }
+    } catch (e) { alert("Магия входа не сработала: " + e.message); }
 }
 
-// Отправка (Твоя логика Telegram)
 async function sendMessage() {
+    if (!currentUser) return;
     const msgInput = document.getElementById('chat-msg');
     const text = msgInput.value.trim();
-    if (!text || !currentUser) return;
+    if (!text) return;
 
-    // В Firestore
     await db.collection("users").doc(currentUser.uid).collection("messages").add({
         message: text,
         sender: "user",
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // В Telegram (Формат: Юзер + ID + Текст)
     const botText = `👤 Юзер: ${currentUser.email}\nID ${currentUser.uid}\n\n💬 ${text}`;
     fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
@@ -84,11 +75,11 @@ async function sendMessage() {
     msgInput.value = "";
 }
 
-// Слушатель чата
 function startChatListener(uid) {
     db.collection("users").doc(uid).collection("messages")
         .orderBy("timestamp", "asc").onSnapshot(snap => {
             const win = document.getElementById('chat-window');
+            if(!win) return;
             win.innerHTML = "";
             snap.forEach(doc => {
                 const d = doc.data();
@@ -101,32 +92,30 @@ function startChatListener(uid) {
         });
 }
 
-// Котики
 async function fetchCats() {
     try {
-        const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=4');
+        const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=3');
         const data = await res.json();
         const container = document.getElementById('cat-container');
-        if (container) {
-            container.innerHTML = data.map(c => `<img src="${c.url}">`).join('');
+        if(container) {
+            container.innerHTML = data.map(cat => `<img src="${cat.url}">`).join('');
         }
-    } catch (e) { console.log("Коты сбежали"); }
+    } catch(e) { console.error("Коты сбежали", e); }
 }
 
-// Запуск
+// --- ИНИЦИАЛИЗАЦИЯ ---
 $(document).ready(() => {
     fetchCats();
     
-    // Прямой слушатель кнопки языка
+    // Привязка кнопки языка
     const langBtn = document.getElementById('lang-btn');
     if (langBtn) langBtn.addEventListener('click', toggleLang);
 
-    // Усмиренный Tilt (4 градуса макс)
+    // Мягкий наклон
     if ($('.bento-item').length) {
         $('.bento-item').tilt({
             maxTilt: 4,
             perspective: 1000,
-            speed: 800,
             glare: true,
             maxGlare: 0.05
         });
