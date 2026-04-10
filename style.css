@@ -3,124 +3,50 @@
     --card-bg: #0d0d0d;
     --accent: #00ff88;
     --text: #ffffff;
-    --border: rgba(255, 255, 255, 0.08);
+    --border: rgba(255, 255, 255, 0.1);
 }
 
 body, html {
     margin: 0; padding: 0; height: 100%; width: 100%;
-    background-color: var(--bg-color);
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    overflow: hidden;
+    background-color: var(--bg-color); color: var(--text);
+    font-family: 'Inter', sans-serif; overflow: hidden;
 }
 
-.nitro-bg {
-    position: fixed; inset: 0; z-index: -1;
-    background: radial-gradient(circle at 50% 50%, #111 0%, #050505 100%);
-}
-
-.nitro-nav {
-    padding: 20px 50px; display: flex; justify-content: space-between; align-items: center;
-    height: 80px; box-sizing: border-box;
-}
-
-.logo { font-family: 'Cinzel'; font-size: 1.4rem; letter-spacing: 2px; color: var(--accent); }
-
-.lang-btn {
-    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-    color: #fff; padding: 8px 16px; border-radius: 12px; cursor: pointer; transition: 0.3s;
-}
-
-/* BENTO SYSTEM */
 .bento-grid {
-    display: grid;
-    grid-template-columns: 320px 1fr 350px;
-    grid-template-rows: 240px 1fr;
-    gap: 20px;
-    padding: 0 40px 40px 40px;
-    height: calc(100vh - 100px);
-    max-width: 1600px;
-    margin: 0 auto;
-    box-sizing: border-box;
+    display: grid; grid-template-columns: 320px 1fr 350px;
+    grid-template-rows: 240px 1fr; gap: 20px;
+    padding: 20px 40px; height: 90vh; max-width: 1600px; margin: 0 auto;
 }
 
 .bento-item {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 28px;
-    padding: 25px;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 28px; padding: 25px; display: flex; flex-direction: column;
+    transform-style: preserve-3d; /* Фикс для корректного Tilt */
 }
 
-/* ТЕХНИЧЕСКИЙ ЧАТ */
+/* ЧАТ */
 .chat-card { grid-row: span 2; min-height: 0; }
-.nitro-chat {
-    flex-grow: 1; overflow-y: auto; overflow-x: hidden;
-    padding-right: 10px; display: flex; flex-direction: column; gap: 10px;
-}
-.msg-box {
-    padding: 10px 16px; border-radius: 14px; font-size: 0.85rem;
-    word-wrap: break-word; max-width: 85%; line-height: 1.4;
-}
-.sent { align-self: flex-end; background: var(--accent); color: #000; font-weight: 600; }
-.received { align-self: flex-start; background: #1a1a1a; border: 1px solid var(--border); }
+.nitro-chat { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
 
 .nitro-input-group {
-    display: flex; background: #000; padding: 8px; border-radius: 18px; border: 1px solid var(--border);
-    margin-top: 15px;
+    display: flex; background: #1a1a1a; padding: 10px; border-radius: 16px;
+    border: 2px solid var(--accent); /* Поле теперь точно видно */
 }
-.chat-input { background: transparent; border: none; color: #fff; flex-grow: 1; padding: 10px; outline: none; }
-.send-btn { background: var(--accent); border: none; border-radius: 12px; width: 45px; cursor: pointer; }
+.chat-input {
+    background: transparent; border: none; color: #fff; flex-grow: 1;
+    font-size: 1rem; outline: none; padding: 5px;
+}
+.send-btn { background: var(--accent); border: none; border-radius: 10px; width: 40px; cursor: pointer; }
 
-/* БЛОК КОТИКОВ (Увеличенный с рамкой) */
-.cats-card { grid-row: span 2; }
-.cat-viewer {
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 15px 0;
-}
+/* КОТЫ */
 .cat-frame {
-    width: 100%;
-    height: 400px; /* Фиксированная высота рамки */
-    border: 2px solid var(--border);
-    border-radius: 20px;
-    overflow-y: auto; /* Скролл если много котов */
-    padding: 10px;
-    background: #000;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    flex-grow: 1; border: 1px solid var(--border); border-radius: 20px;
+    overflow-y: auto; background: #000; padding: 10px; display: flex; flex-direction: column; gap: 10px;
 }
-.cat-frame img {
-    width: 100%;
-    height: auto;
-    border-radius: 12px;
-    object-fit: cover;
-}
-.cat-refresh-btn {
-    background: transparent;
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    padding: 12px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.3s;
-}
-.cat-refresh-btn:hover { background: var(--accent); color: #000; }
+.cat-frame img { width: 100%; border-radius: 12px; }
+.cat-refresh-btn { margin-top: 10px; background: var(--accent); border: none; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; }
 
-/* АУТЕНТИФИКАЦИЯ */
-.auth-container { display: flex; flex-direction: column; gap: 20px; align-items: center; justify-content: center; height: 100%; }
-.input-wrap { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 300px; }
-.nitro-input { background: #111; border: 1px solid var(--border); padding: 12px; border-radius: 12px; color: #fff; outline: none; }
-.nitro-btn { background: var(--accent); border: none; padding: 12px 30px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; }
-
-/* ДЕКОР */
-.status-indicator { display: inline-block; padding: 4px 10px; border-radius: 20px; background: rgba(0, 255, 136, 0.1); color: var(--accent); font-size: 0.65rem; text-transform: uppercase; margin-bottom: 15px; width: fit-content; }
-.skill-list { list-style: none; padding: 0; margin-top: 15px; }
-.skill-list li { padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; opacity: 0.7; }
+/* Сообщения */
+.msg-box { padding: 10px 15px; border-radius: 18px; max-width: 80%; line-height: 1.4; }
+.sent { align-self: flex-end; background: var(--accent); color: #000; }
+.received { align-self: flex-start; background: #222; border: 1px solid var(--border); }
