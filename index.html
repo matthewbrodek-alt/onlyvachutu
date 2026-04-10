@@ -3,19 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Arcane Tavern | Portfolio</title>
+    <title>Arcane Tavern | Full Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tilt.js/1.2.1/tilt.jquery.min.js"></script>
+
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="arcane-bg">
         <div class="smoke"></div>
-        <div class="sparks">
-            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        <div class="sparks"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="ghost-people">
+            <div class="ghost p1"></div>
+            <div class="ghost p2"></div>
         </div>
     </div>
 
@@ -34,69 +41,58 @@
         
         <section id="home" class="panel">
             <div class="hero-content">
-                <h1 class="glow-text" data-lang="welcomeTitle">Добро пожаловать</h1>
-                <p data-lang="welcomeSub">Разработчик и Техно-Маг Автоматизации</p>
-                <div class="scroll-down"></div>
+                <h1 class="glow-text" data-lang="welcomeTitle">Усталый путник</h1>
+                <p data-lang="welcomeSub">Мастерство кода и магия автоматизации</p>
             </div>
         </section>
 
         <section id="portfolio" class="panel">
             <h2 class="section-title" data-lang="portfolioTitle">Артефакты</h2>
             <div class="artifacts-grid">
-                <div class="art-card" onclick="scrollToPanel('todo')" data-tilt>
-                    <div class="card-bg" style="background-image: url('https://images.unsplash.com/photo-1496181133206-80ce9b88a853?q=80&w=400')"></div>
+                <div class="art-card" data-tilt>
+                    <div class="card-bg" style="background-image: url('https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400')"></div>
                     <div class="card-content">
-                        <h3>Web Magic</h3>
-                        <p>JS & CSS Spells</p>
+                        <h3>Web Spells</h3>
+                        <p>Frontend Alchemy</p>
                     </div>
                 </div>
-                <div class="art-card" onclick="scrollToPanel('todo')" data-tilt>
-                    <div class="card-bg" style="background-image: url('https://images.unsplash.com/photo-1527477396000-e27163b481c2?q=80&w=400')"></div>
+                <div class="art-card" data-tilt>
+                    <div class="card-bg" style="background-image: url('https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=400')"></div>
                     <div class="card-content">
-                        <h3>Bot Spells</h3>
-                        <p>Python Telegram Messenger</p>
+                        <h3>Bot Magic</h3>
+                        <p>Python Telegram Souls</p>
                     </div>
                 </div>
             </div>
         </section>
 
         <section id="todo" class="panel">
-            <div class="glass-board auth-board">
+            <div class="glass-board">
                 <div id="login-form">
-                    <h2 data-lang="todoTitle" class="section-title">Войти</h2>
+                    <h2 class="section-title" data-lang="todoTitle">Вход</h2>
                     <input type="email" id="auth-email" placeholder="Email" class="m-input">
                     <input type="password" id="auth-pass" placeholder="Password" class="m-input">
-                    <button onclick="handleLogin()" class="m-btn">Открыть дверь</button>
+                    <button onclick="handleLogin()" class="m-btn" data-lang="loginBtn">Открыть дверь</button>
                 </div>
                 <div id="user-info" style="display:none; width: 100%;">
                     <div id="chat-window" class="arcane-chat"></div>
                     <div class="chat-input-group">
                         <input type="text" id="chat-msg" placeholder="Послать ворона...">
-                        <button onclick="sendMessage()" class="m-btn icon-btn">→</button>
+                        <button id="send-btn" onclick="sendMessage()" class="m-btn-icon">→</button>
                     </div>
                 </div>
             </div>
         </section>
 
         <section id="cats" class="panel">
-            <div class="glass-board cats-board">
+            <div class="glass-board">
                 <h2 class="section-title" data-lang="catsTitle">Питомцы</h2>
-                <div id="cat-container" class="cats-stack">
-                    </div>
+                <div id="cat-container" class="cats-stack"></div>
                 <button onclick="fetchCats()" class="refresh-cats-btn" data-lang="catsBtn">Приманить новых</button>
             </div>
         </section>
-
     </main>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tilt.js/1.2.1/tilt.jquery.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        // Инициализация 3D-наклона (Tilt)
-        $('.art-card').tilt({
-            maxTilt: 15, persperspective: 1000, speed: 400, glare: true, maxGlare: 0.3
-        });
-    </script>
     <script src="script.js"></script>
 </body>
 </html>
