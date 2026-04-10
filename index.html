@@ -2,17 +2,25 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tavern Portfolio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tavern Portfolio | Усталый Путник</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Marcellus&display=swap" rel="stylesheet">
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="embers">
-        <span></span><span></span><span></span><span></span><span></span>
+
+    <div class="fireplace-bg">
+        <div class="fire-glow"></div>
+        <div class="sparks">
+            <span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span>
+        </div>
     </div>
 
     <nav class="tavern-nav">
@@ -29,6 +37,7 @@
     </nav>
 
     <main class="scroll-container">
+        
         <section id="home" class="panel">
             <div class="wood-board">
                 <h1 class="flicker-text" data-lang="welcomeTitle">Добро пожаловать!</h1>
@@ -38,14 +47,14 @@
         </section>
 
         <section id="portfolio" class="panel">
-            <div class="wood-board wide">
+            <div class="wood-board">
                 <h2 data-lang="portfolioTitle" class="section-title">Выполненные квесты</h2>
                 <div class="gallery-grid">
-                    <a href="#skills" class="gallery-item">
+                    <a href="javascript:void(0)" onclick="scrollToPanel('skills')" class="gallery-item">
                         <img src="https://images.unsplash.com/photo-1618472609777-b038f1f04b8d?q=80&w=500" alt="Quest 1">
                         <div class="overlay" data-lang="proj1">Магия Сайтов</div>
                     </a>
-                    <a href="#todo" class="gallery-item">
+                    <a href="javascript:void(0)" onclick="scrollToPanel('todo')" class="gallery-item">
                         <img src="https://images.unsplash.com/photo-1552820728-8b83bb6b773f?q=80&w=500" alt="Quest 2">
                         <div class="overlay" data-lang="proj2">Боты и Заклинания</div>
                     </a>
@@ -54,14 +63,12 @@
         </section>
 
         <section id="skills" class="panel">
-            <div class="skills-grid">
-                <div class="wood-board skill-card">
-                    <h3 data-lang="skillTech">Арсенал</h3>
-                    <ul>
-                        <li>JavaScript (Алхимия)</li>
-                        <li>Python (Древние руны)</li>
-                        <li>Firebase (Хранилище душ)</li>
-                    </ul>
+            <div class="wood-board">
+                <h2 data-lang="navSkills" class="section-title">Навыки</h2>
+                <div class="skills-list">
+                    <p>🔥 <b>JavaScript</b> — Создание живых миров</p>
+                    <p>🐍 <b>Python</b> — Дрессировка Telegram-воронов</p>
+                    <p>💎 <b>Firebase</b> — Хранение магических данных</p>
                 </div>
             </div>
         </section>
@@ -73,23 +80,24 @@
                 <div id="login-form">
                     <div class="input-wrapper">
                         <label>Email</label>
-                        <input type="email" id="auth-email" class="tavern-input">
+                        <input type="email" id="auth-email" class="tavern-input" placeholder="traveler@mail.com">
                     </div>
                     <div class="input-wrapper">
                         <label>Password</label>
-                        <input type="password" id="auth-pass" class="tavern-input">
+                        <input type="password" id="auth-pass" class="tavern-input" placeholder="******">
                     </div>
                     <button onclick="handleLogin()" class="btn-tavern" data-lang="loginBtn">Открыть дверь</button>
                 </div>
 
                 <div id="user-info" style="display:none;">
                     <div class="chat-header">
-                        <p class="status-dot">🔥 В таверне</p>
-                        <span id="user-display-email"></span>
+                        <p class="status-dot">● В таверне</p>
+                        <span id="user-display-email" style="font-size: 10px; opacity: 0.7;"></span>
                     </div>
-                    <div id="chat-window" class="tavern-chat"></div>
+                    <div id="chat-window" class="tavern-chat">
+                        </div>
                     <div class="chat-inputs">
-                        <textarea id="chat-msg" data-lang-placeholder="chatMsg" placeholder="Послать ворона..."></textarea>
+                        <textarea id="chat-msg" data-lang-placeholder="chatPlaceholder" placeholder="Послать ворона..."></textarea>
                         <button onclick="sendMessage()" class="btn-tavern" data-lang="sendBtn">Отправить</button>
                     </div>
                 </div>
@@ -97,13 +105,14 @@
         </section>
 
         <section id="cats" class="panel">
-            <div class="wood-board wide">
+            <div class="wood-board">
                 <h2 data-lang="catsTitle" class="section-title">Коты Таверны</h2>
                 <div id="cat-container" class="cat-grid">
                     </div>
                 <button onclick="fetchCats()" class="btn-tavern" style="margin-top:20px;" data-lang="catsBtn">Приманить еще</button>
             </div>
         </section>
+
     </main>
 
     <script src="script.js"></script>
