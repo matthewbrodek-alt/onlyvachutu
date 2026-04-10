@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tavern Portfolio</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Marcellus&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="tavern-bg-overlay"></div>
     <div class="embers">
         <span></span><span></span><span></span><span></span><span></span>
     </div>
@@ -89,7 +90,7 @@
                     </div>
                     <div id="chat-window" class="tavern-chat"></div>
                     <div class="chat-inputs">
-                        <textarea id="chat-msg" data-lang-placeholder="chatMsg" placeholder="Послать ворона..."></textarea>
+                        <textarea id="chat-msg" placeholder="Послать ворона..."></textarea>
                         <button onclick="sendMessage()" class="btn-tavern" data-lang="sendBtn">Отправить</button>
                     </div>
                 </div>
@@ -99,8 +100,7 @@
         <section id="cats" class="panel">
             <div class="wood-board wide">
                 <h2 data-lang="catsTitle" class="section-title">Коты Таверны</h2>
-                <div id="cat-container" class="cat-grid">
-                    </div>
+                <div id="cat-container" class="cat-grid"></div>
                 <button onclick="fetchCats()" class="btn-tavern" style="margin-top:20px;" data-lang="catsBtn">Приманить еще</button>
             </div>
         </section>
