@@ -9,31 +9,39 @@
 body, html {
     font-family: 'Marcellus', serif;
     margin: 0; padding: 0;
+    /* ЖИВОЙ ФОН: ГРАДИЕНТ И АНИМАЦИЯ */
     background: radial-gradient(circle at center, #3a2318 0%, #110905 100%);
+    animation: bgPulse 15s infinite alternate;
     color: var(--text-color);
-    overflow: hidden; /* Важно для Snap Scroll */
+    overflow: hidden;
+}
+
+@keyframes bgPulse {
+    0% { background: radial-gradient(circle at center, #3a2318 0%, #110905 100%); }
+    100% { background: radial-gradient(circle at center, #4e342e 0%, #0f0702 100%); }
 }
 
 h1, h2, h3, .nav-brand { font-family: 'Cinzel', serif; }
 
-/* АДАПТИВНАЯ НАВИГАЦИЯ */
-.tavern-nav { 
-    position: fixed; top: 0; width: 100%; display: flex; justify-content: space-between; 
-    padding: 15px 25px; z-index: 1000; box-sizing: border-box;
-    background: linear-gradient(to bottom, rgba(20,10,5,0.9), transparent);
+/* ОБНОВЛЕННЫЙ ХЕДЕР (СВЕТЛЫЙ И ЧИСТЫЙ) */
+.tavern-header {
+    position: fixed; top: 0; width: 100%; display: flex; justify-content: space-between; align-items: center; 
+    padding: 10px 40px; z-index: 1000; box-sizing: border-box;
+    background: rgba(10, 5, 2, 0.85); backdrop-filter: blur(10px);
 }
-.nav-center button { 
-    background: none; border: none; color: var(--gold); 
-    margin: 0 10px; cursor: pointer; font-size: 14px; 
-    font-family: 'Cinzel'; transition: 0.3s; white-space: nowrap;
+.nav-brand { font-size: 1rem; color: #fff; letter-spacing: 2px; }
+.nav-links { display: flex; align-items: center; gap: 15px; }
+.nav-links a { 
+    color: #aaa; text-decoration: none; font-size: 0.8rem; font-family: 'Cinzel';
+    transition: 0.3s; padding: 5px 10px; border-radius: 5px;
 }
-.nav-center button:hover { color: var(--fire); transform: translateY(-2px); }
+.nav-links a:hover { color: #fff; background: rgba(255, 255, 255, 0.15); }
 
-/* ПАНЕЛИ И СКРОЛЛ (Вернули твою логику) */
+/* Скролл */
 .scroll-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; }
 .panel { height: 100vh; scroll-snap-align: start; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
 
-/* ДЕРЕВЯННЫЕ ДОСКИ (Сохранили твой стиль) */
+/* ДЕРЕВЯННЫЕ ДОСКИ */
 .wood-board { 
     background: url('https://www.transparenttextures.com/patterns/wood-pattern.png'), var(--wood-dark);
     padding: 30px; border-radius: 12px; border: 3px solid var(--wood-light);
@@ -53,14 +61,12 @@ h1, h2, h3, .nav-brand { font-family: 'Cinzel', serif; }
     position: absolute; bottom: -50px; left: 0; width: 100%; background: rgba(0,0,0,0.8);
     color: var(--gold); padding: 8px 0; font-family: 'Cinzel'; font-size: 12px;
 }
-
-/* Эффекты только для десктопа */
 @media (min-width: 768px) {
     .gallery-item:hover img { transform: scale(1.1); filter: brightness(0.6); }
     .gallery-item:hover .overlay { bottom: 0; }
 }
 
-/* ЧАТ (Твой стиль, адаптирован) */
+/* ЧАТ */
 .tavern-chat { height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 10px; background: rgba(0,0,0,0.5); border: 1px inset var(--wood-light); border-radius: 6px; margin: 15px 0; }
 .msg-box { max-width: 85%; padding: 8px 12px; font-size: 13px; border-radius: 10px; }
 .sent { align-self: flex-end; background: var(--wood-light); color: var(--text-color); }
@@ -73,31 +79,24 @@ h1, h2, h3, .nav-brand { font-family: 'Cinzel', serif; }
     font-family: 'Cinzel'; cursor: pointer; transition: 0.3s;
 }
 .btn-tavern:hover { background: var(--fire); transform: scale(1.05); }
+.magic-btn { background: none; border: 1px solid var(--gold); color: var(--gold); padding: 5px 10px; cursor: pointer; border-radius: 5px; font-family: 'Cinzel'; font-size: 0.8rem;}
 
-/* ГАБАРИТЫ КОТИКОВ (ИСПРАВЛЕНО) */
-.cat-fixed-container {
-    width: 100%;
-    height: 180px; /* Фиксируем высоту контейнера, чтобы не перкрывал */
-    overflow-y: scroll; /* Разрешаем внутренний скролл */
-    margin: 15px 0;
-}
+/* ГАБАРИТЫ КОТИКОВ */
+.cat-fixed-container { width: 100%; height: 180px; overflow-y: scroll; margin: 15px 0; }
 .cat-grid { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-.cat-img { 
-    width: 80px; height: 80px; object-fit: cover; 
-    border: 2px solid var(--wood-light); border-radius: 8px; 
-}
+.cat-img { width: 80px; height: 80px; object-fit: cover; border: 2px solid var(--wood-light); border-radius: 8px; }
 
 /* МОБИЛЬНАЯ АДАПТАЦИЯ */
 @media (max-width: 768px) {
-    .nav-brand { display: none; }
-    .nav-center button { margin: 0; font-size: 12px; padding: 0 5px; }
+    .tavern-header { padding: 10px 20px; flex-wrap: wrap; gap: 5px; }
+    .nav-brand { font-size: 0.9rem; }
+    .nav-links { gap: 8px; justify-content: center; }
+    .nav-links a { font-size: 0.7rem; padding: 3px 6px; }
     .glow-text { font-size: 1.8rem; }
-    .art-card { width: 100%; height: 140px; margin-bottom: 10px; }
     .wood-board { padding: 20px; }
-    .cats-stack img { height: 70px; }
 }
 
-/* Эффект искр (Твой оригинал) */
+/* Искры */
 .embers span {
     position: absolute; bottom: -50px; background: var(--fire); width: 3px; height: 3px; border-radius: 50%;
     animation: floatUp 5s infinite ease-in; opacity: 0.6;
