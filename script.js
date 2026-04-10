@@ -10,31 +10,35 @@ const firebaseConfig = {
     appId: "1:391088510675:web:ff1c4d866c37f921886626"
 };
 
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
 
 let currentUser = null;
 
-// Отправка по Enter
-document.getElementById('chat-msg')?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendMessage();
-});
-
+// Функция входа
 async function handleLogin() {
     const email = document.getElementById('auth-email').value;
     const pass = document.getElementById('auth-pass').value;
     try {
         const userCred = await auth.signInWithEmailAndPassword(email, pass)
             .catch(() => auth.createUserWithEmailAndPassword(email, pass));
+        
         currentUser = userCred.user;
         document.getElementById('login-form').style.display = 'none';
         document.getElementById('user-info').style.display = 'flex';
         document.getElementById('user-name').innerText = currentUser.email.split('@')[0];
+        
+        // Включаем Enter только после логина
+        document.getElementById('chat-msg').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
         startChatListener(currentUser.uid);
-    } catch (e) { alert("Ошибка входа: " + e.message); }
+    } catch (e) { alert(e.message); }
 }
 
+// Отправка
 async function sendMessage() {
     const msgInput = document.getElementById('chat-msg');
     const text = msgInput.value.trim();
@@ -49,12 +53,13 @@ async function sendMessage() {
     fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: `💬 ${text}\n👤 ${currentUser.email}` })
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: `👤 ${currentUser.email}\n💬 ${text}` })
     });
 
     msgInput.value = "";
 }
 
+// Слушатель
 function startChatListener(uid) {
     db.collection("users").doc(uid).collection("messages")
         .orderBy("timestamp", "asc").onSnapshot(snap => {
@@ -72,9 +77,11 @@ function startChatListener(uid) {
 }
 
 async function fetchCats() {
-    const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=3');
-    const data = await res.json();
-    document.getElementById('cat-container').innerHTML = data.map(c => `<img src="${c.url}">`).join('');
+    try {
+        const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=2');
+        const data = await res.json();
+        document.getElementById('cat-container').innerHTML = data.map(c => `<img src="${c.url}">`).join('');
+    } catch (e) {}
 }
 
 window.onload = fetchCats;
