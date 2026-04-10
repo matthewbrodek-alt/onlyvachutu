@@ -13,88 +13,104 @@ const firebaseConfig = {
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
-
 let currentUser = null;
+let currentLang = 'ru';
+let unsubscribe = null; // Для остановки прослушки чата при выходе
 
+const dict = {
+    ru: { welcomeSub: "Маг Автоматизации", todoTitle: "Тайная комната", loginBtn: "Войти", catsTitle: "Коты Таверны", skillTech: "Арсенал" },
+    en: { welcomeSub: "Automation Mage", todoTitle: "Secret Room", loginBtn: "Authorize", catsTitle: "Tavern Cats", skillTech: "Arsenal" }
+};
+
+// Смена языка
+function toggleLang() {
+    const icon = document.getElementById('lang-icon');
+    currentLang = currentLang === 'ru' ? 'en' : 'ru';
+    icon.innerText = currentLang === 'ru' ? "🌐 🇷🇺" : "🌐 🇺🇸";
+    document.querySelectorAll('[data-lang]').forEach(el => {
+        const key = el.getAttribute('data-lang');
+        if (dict[currentLang][key]) el.innerText = dict[currentLang][key];
+    });
+}
+
+// ВХОД
 async function handleLogin() {
     const email = document.getElementById('auth-email').value;
     const pass = document.getElementById('auth-pass').value;
-    if(!email || !pass) return;
-
     try {
         const userCred = await auth.signInWithEmailAndPassword(email, pass)
             .catch(() => auth.createUserWithEmailAndPassword(email, pass));
         
         currentUser = userCred.user;
-
-        // Сохраняем email в Firestore, чтобы бот мог тебя найти по почте
         await db.collection("users").doc(currentUser.uid).set({
             email: currentUser.email,
             last_active: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
 
+        // Переключение UI
         document.getElementById('login-form').style.display = 'none';
         document.getElementById('user-info').style.display = 'flex';
+        document.getElementById('logout-btn').style.display = 'block';
         document.getElementById('user-name').innerText = currentUser.email.split('@')[0];
         
-        // Включаем Enter
-        document.getElementById('chat-msg').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
-
+        document.getElementById('chat-msg').onkeydown = (e) => { if (e.key === 'Enter') sendMessage(); };
         startChatListener(currentUser.uid);
-    } catch (e) { alert("Magic Error: " + e.message); }
+    } catch (e) { alert(e.message); }
 }
 
+// ВЫХОД (Новое!)
+async function handleLogout() {
+    try {
+        await auth.signOut();
+        currentUser = null;
+        if (unsubscribe) unsubscribe(); // Останавливаем Firestore
+        
+        // Возвращаем UI в исходное состояние
+        document.getElementById('login-form').style.display = 'flex';
+        document.getElementById('user-info').style.display = 'none';
+        document.getElementById('logout-btn').style.display = 'none';
+        document.getElementById('user-name').innerText = "Guest";
+        document.getElementById('chat-window').innerHTML = "";
+    } catch (e) { console.error("Logout Error", e); }
+}
+
+// ОТПРАВКА
 async function sendMessage() {
     const input = document.getElementById('chat-msg');
     const text = input.value.trim();
     if (!text || !currentUser) return;
 
-    // В базу
     await db.collection("users").doc(currentUser.uid).collection("messages").add({
-        message: text,
-        sender: "user",
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        message: text, sender: "user", timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // В Телеграм
-    const tgText = `👤 ${currentUser.email}\n💬 ${text}`;
     fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: tgText })
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: `👤 ${currentUser.email}\n💬 ${text}` })
     });
-
     input.value = "";
 }
 
+// ЧАТ
 function startChatListener(uid) {
-    db.collection("users").doc(uid).collection("messages")
-        .orderBy("timestamp", "asc").onSnapshot(snap => {
-            const win = document.getElementById('chat-window');
-            win.innerHTML = "";
-            snap.forEach(doc => {
-                const d = doc.data();
-                const div = document.createElement('div');
-                div.className = d.sender === 'user' ? 'msg-box sent' : 'msg-box received';
-                div.innerText = d.message;
-                win.appendChild(div);
-            });
-            win.scrollTop = win.scrollHeight;
+    unsubscribe = db.collection("users").doc(uid).collection("messages").orderBy("timestamp", "asc").onSnapshot(snap => {
+        const win = document.getElementById('chat-window');
+        win.innerHTML = "";
+        snap.forEach(doc => {
+            const d = doc.data();
+            const div = document.createElement('div');
+            div.className = d.sender === 'user' ? 'msg-box sent' : 'msg-box received';
+            div.innerText = d.message;
+            win.appendChild(div);
         });
+        win.scrollTop = win.scrollHeight;
+    });
 }
 
 async function fetchCats() {
-    try {
-        const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=2');
-        const data = await res.json();
-        const container = document.getElementById('cat-container');
-        if(container) container.innerHTML = data.map(c => `<img src="${c.url}">`).join('');
-    } catch(e) {}
+    const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=2');
+    const data = await res.json();
+    document.getElementById('cat-container').innerHTML = data.map(c => `<img src="${c.url}">`).join('');
 }
-
 window.onload = fetchCats;
