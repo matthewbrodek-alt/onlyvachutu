@@ -1,124 +1,89 @@
 :root {
     --bg: #050505;
-    --card: #0f0f0f;
+    --card: #0d0d0d;
     --accent: #00ff88;
-    --border: rgba(255, 255, 255, 0.1);
+    --border: rgba(255, 255, 255, 0.08);
     --text: #ffffff;
 }
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-body {
-    background-color: var(--bg);
-    color: var(--text);
+body, html {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    background: var(--bg); color: var(--text);
     font-family: 'Plus Jakarta Sans', sans-serif;
-    margin: 0;
-    line-height: 1.5;
+    overflow: hidden; /* Фикс скролла всей страницы */
 }
 
-/* Навигация */
-.top-nav {
-    height: 70px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 5%;
-    border-bottom: 1px solid var(--border);
-}
-.logo { font-weight: 800; font-size: 1.2rem; }
-.logo span { color: var(--accent); }
-
-/* Сетка Dashboard (Mobile First) */
+/* Сетка Dashboard */
 .dashboard {
     display: grid;
-    grid-template-columns: 1fr; /* На телефоне всё в одну колонку */
     gap: 15px;
     padding: 15px;
-    max-width: 1400px;
-    margin: 0 auto;
+    height: calc(100vh - 70px);
+    grid-template-columns: 1fr; /* Мобилки по умолчанию */
+    overflow-y: auto;
 }
 
-/* Настройка для планшетов и ПК */
-@media (min-width: 992px) {
+/* Настройки для компьютеров */
+@media (min-width: 1024px) {
     .dashboard {
-        grid-template-columns: 300px 1fr 300px; /* 3 колонки */
+        grid-template-columns: 280px 1fr 300px;
         grid-template-rows: auto 1fr;
-        height: calc(100vh - 100px);
+        overflow: hidden;
     }
     .chat-card { grid-row: span 2; }
-    .profile-card { grid-column: 1; }
-    .skills-card { grid-column: 1; }
-    .cats-card { grid-column: 3; grid-row: span 2; }
+    .cats-card { grid-row: span 2; }
 }
 
-/* Универсальные карточки */
 .card {
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 20px;
+    border-radius: 24px;
     padding: 20px;
     display: flex;
     flex-direction: column;
-    min-height: 0; /* Важно для скролла внутри Grid */
+    min-height: 0;
 }
 
 /* ЧАТ */
-.chat-wrapper { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
-.chat-messages {
-    flex-grow: 1;
-    overflow-y: auto;
-    gap: 10px;
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 15px;
-    padding-right: 5px;
-    min-height: 300px; /* Чтобы чат не схлопывался */
+.chat-ui { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+.chat-feed {
+    flex-grow: 1; overflow-y: auto; padding-right: 10px;
+    display: flex; flex-direction: column; gap: 10px;
 }
+.chat-controls { display: flex; gap: 10px; margin-top: 15px; }
 
 .msg-box {
-    padding: 10px 15px;
-    border-radius: 15px;
-    max-width: 85%;
-    font-size: 0.9rem;
+    padding: 12px 16px; border-radius: 18px; max-width: 80%;
+    font-size: 14px; line-height: 1.4; word-wrap: break-word;
 }
-.sent { align-self: flex-end; background: var(--accent); color: #000; font-weight: 600; }
-.received { align-self: flex-start; background: #222; }
+.sent { align-self: flex-end; background: var(--accent); color: #000; font-weight: 700; }
+.received { align-self: flex-start; background: #222; border: 1px solid var(--border); }
 
-.chat-input-area { display: flex; gap: 8px; }
-
-/* Элементы управления */
+/* ИНПУТЫ */
 .n-input {
-    background: #1a1a1a;
-    border: 1px solid var(--border);
-    color: #fff;
-    padding: 12px;
-    border-radius: 12px;
-    width: 100%;
-    outline: none;
+    background: #161616; border: 1px solid var(--border);
+    color: #fff; padding: 12px 16px; border-radius: 14px;
+    outline: none; width: 100%; font-size: 16px; /* 16px фикс зума на iOS */
 }
 .n-input:focus { border-color: var(--accent); }
 
 .n-btn {
-    padding: 12px;
-    border-radius: 12px;
-    border: none;
-    cursor: pointer;
-    font-weight: 700;
+    padding: 12px; border-radius: 14px; border: none;
+    font-weight: 700; cursor: pointer; transition: 0.2s;
 }
 .primary { background: var(--accent); color: #000; }
 .secondary { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
 
-/* Коты */
-.cat-viewer {
-    flex-grow: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin: 10px 0;
-}
-.cat-viewer img { width: 100%; border-radius: 12px; }
+/* КОТЫ */
+.cat-grid { flex-grow: 1; overflow-y: auto; margin: 10px 0; display: flex; flex-direction: column; gap: 10px; }
+.cat-grid img { width: 100%; border-radius: 14px; border: 1px solid var(--border); }
 
-/* Скроллбар */
+/* НАВИГАЦИЯ */
+.top-nav { height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 30px; border-bottom: 1px solid var(--border); }
+.logo { font-weight: 800; font-size: 20px; }
+.logo span { color: var(--accent); }
+
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
