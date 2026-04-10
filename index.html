@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tavern Portfolio | Safe Edition</title>
+    <title>Tavern Portfolio | Direct Link</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Marcellus&display=swap" rel="stylesheet">
     
     <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
@@ -19,18 +19,16 @@
         <span></span><span></span><span></span><span></span><span></span>
     </div>
 
-    <nav class="tavern-nav">
-        <div class="nav-brand" data-lang="navLogo">УСТАЛЫЙ ПУТНИК</div>
-        <div class="nav-center">
-            <button onclick="scrollToPanel('home')" data-lang="navHome">Таверна</button>
-            <button onclick="scrollToPanel('portfolio')" data-lang="navPortfolio">Свитки</button>
-            <button onclick="scrollToPanel('skills')" data-lang="navSkills">Навыки</button>
-            <button onclick="scrollToPanel('todo')" data-lang="navRoom">Комната</button>
-        </div>
-        <div class="nav-right">
-            <button onclick="toggleLang()" id="lang-btn" class="magic-btn">🇺🇸 EN</button>
-        </div>
-    </nav>
+    <header class="tavern-header">
+        <div class="nav-brand" data-lang="navLogo">TAVERN.HUB</div>
+        <nav class="nav-links">
+            <a href="javascript:void(0)" onclick="scrollToPanel('home')" data-lang="navHome">Таверна</a>
+            <a href="javascript:void(0)" onclick="scrollToPanel('portfolio')" data-lang="navPortfolio">Свитки</a>
+            <a href="javascript:void(0)" onclick="scrollToPanel('skills')" data-lang="navSkills">Навыки</a>
+            <a href="javascript:void(0)" onclick="scrollToPanel('todo')" data-lang="navRoom">Кабинет</a>
+        </nav>
+        <button onclick="toggleLang()" id="lang-btn" class="magic-btn">🇺🇸 EN</button>
+    </header>
 
     <main class="scroll-container">
         <section id="home" class="panel">
