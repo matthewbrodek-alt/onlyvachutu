@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nitro Tavern v2</title>
+    <title>Nitro Tavern | Adaptive</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -20,48 +20,43 @@
 </nav>
 
 <main class="dashboard">
-    <aside class="side-panel">
-        <div class="card profile-card">
-            <div class="badge">Online</div>
-            <h2 id="user-name">Путник</h2>
-            <p class="sub" data-lang="welcomeSub">Automation Mage</p>
-        </div>
-        <div class="card skills-card">
-            <h3 data-lang="skillTech">Арсенал</h3>
-            <ul>
-                <li>JS Alchemy</li>
-                <li>Python Runes</li>
-                <li>Firebase Souls</li>
-            </ul>
-        </div>
-    </aside>
+    <div class="card profile-card">
+        <div class="badge">Online</div>
+        <h2 id="user-name">Путник</h2>
+        <p class="sub" data-lang="welcomeSub">Automation Mage</p>
+    </div>
 
-    <section class="main-content">
-        <div class="card chat-card">
-            <div id="login-form" class="auth-box">
-                <h3 data-lang="todoTitle">Тайная комната</h3>
-                <input type="email" id="auth-email" placeholder="Email" class="n-input">
-                <input type="password" id="auth-pass" placeholder="Password" class="n-input">
-                <button onclick="handleLogin()" class="n-btn primary" data-lang="loginBtn">Войти</button>
-            </div>
+    <div class="card chat-card">
+        <div id="login-form" class="auth-box">
+            <h3 data-lang="todoTitle">Тайная комната</h3>
+            <input type="email" id="auth-email" placeholder="Email" class="n-input">
+            <input type="password" id="auth-pass" placeholder="Password" class="n-input">
+            <button onclick="handleLogin()" class="n-btn primary" data-lang="loginBtn">Войти</button>
+        </div>
 
-            <div id="user-info" style="display:none;" class="chat-wrapper">
-                <div id="chat-window" class="chat-messages"></div>
-                <div class="chat-input-area">
-                    <input type="text" id="chat-msg" placeholder="Послать ворона..." class="n-input">
-                    <button onclick="sendMessage()" class="send-btn">➔</button>
-                </div>
+        <div id="user-info" style="display:none;" class="chat-wrapper">
+            <div id="chat-window" class="chat-messages"></div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-msg" placeholder="Сообщение..." class="n-input">
+                <button onclick="sendMessage()" class="send-btn">➔</button>
             </div>
         </div>
-    </section>
+    </div>
 
-    <aside class="side-panel">
-        <div class="card cats-card">
-            <h3 data-lang="catsTitle">Коты Таверны</h3>
-            <div id="cat-container" class="cat-viewer"></div>
-            <button onclick="fetchCats()" class="n-btn secondary">Приманить еще</button>
-        </div>
-    </aside>
+    <div class="card cats-card">
+        <h3 data-lang="catsTitle">Коты Таверны</h3>
+        <div id="cat-container" class="cat-viewer"></div>
+        <button onclick="fetchCats()" class="n-btn secondary">Приманить</button>
+    </div>
+
+    <div class="card skills-card">
+        <h3 data-lang="skillTech">Арсенал</h3>
+        <ul class="skill-list">
+            <li>JS Alchemy</li>
+            <li>Python Runes</li>
+            <li>Firebase Souls</li>
+        </ul>
+    </div>
 </main>
 
 <script src="script.js"></script>
