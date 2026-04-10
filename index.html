@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Arcane Tavern | Final Stable</title>
+    <title>Arcane Tavern | Full Control</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -28,7 +28,7 @@
             <a href="javascript:void(0)" onclick="scrollToPanel('home')" data-lang="navHome">Таверна</a>
             <a href="javascript:void(0)" onclick="scrollToPanel('portfolio')" data-lang="navPortfolio">Свитки</a>
             <a href="javascript:void(0)" onclick="scrollToPanel('todo')" data-lang="navRoom">Кабинет</a>
-            <a href="javascript:void(0)" onclick="scrollToPanel('cats')" data-lang="navCats">Коты</a>
+            <a href="javascript:void(0)" onclick="handleLogout()" id="logout-btn" style="display:none; color: #ff4d4d;" data-lang="navLogout">Выйти</a>
         </nav>
         <button onclick="toggleLang()" id="lang-btn" class="lang-switch">EN</button>
     </header>
