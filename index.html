@@ -3,76 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio | Tesla Edition</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>Tavern Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Marcellus&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="light-theme">
+<body>
+    <div class="embers">
+        <span></span><span></span><span></span><span></span><span></span>
+    </div>
 
-    <nav class="tesla-nav">
-        <div class="nav-brand">MY PORTFOLIO</div>
+    <nav class="tavern-nav">
+        <div class="nav-brand" data-lang="navLogo">УСТАЛЫЙ ПУТНИК</div>
         <div class="nav-center">
-            <button onclick="scrollToPanel('home')" data-lang="navHome">Главная</button>
+            <button onclick="scrollToPanel('home')" data-lang="navHome">Таверна</button>
+            <button onclick="scrollToPanel('portfolio')" data-lang="navPortfolio">Свитки</button>
             <button onclick="scrollToPanel('skills')" data-lang="navSkills">Навыки</button>
-            <button onclick="scrollToPanel('todo')" data-lang="navTodo">Кабинет</button>
+            <button onclick="scrollToPanel('todo')" data-lang="navRoom">Комната</button>
         </div>
         <div class="nav-right">
-            <button onclick="toggleLang()" id="lang-btn" class="flag-btn">🇺🇸</button>
-            <button onclick="toggleTheme()" id="theme-icon">🌙</button>
+            <button onclick="toggleLang()" id="lang-btn" class="magic-btn">🇺🇸 EN</button>
         </div>
     </nav>
 
     <main class="scroll-container">
         <section id="home" class="panel">
-            <div class="glass-box">
-                <h1 data-lang="welcomeTitle">Привет!</h1>
-                <p class="sub-text" data-lang="welcomeSub">Junior Developer & Automation Specialist</p>
-                <button onclick="scrollToPanel('todo')" class="btn-tesla-primary" style="width:auto; padding: 15px 40px;">Личный кабинет</button>
+            <div class="wood-board">
+                <h1 class="flicker-text" data-lang="welcomeTitle">Добро пожаловать!</h1>
+                <p class="sub-text" data-lang="welcomeSub">Разработчик и Маг Автоматизации</p>
+                <button onclick="scrollToPanel('portfolio')" class="btn-tavern" data-lang="exploreBtn">Смотреть квесты</button>
+            </div>
+        </section>
+
+        <section id="portfolio" class="panel">
+            <div class="wood-board wide">
+                <h2 data-lang="portfolioTitle" class="section-title">Выполненные квесты</h2>
+                <div class="gallery-grid">
+                    <a href="#skills" class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1618472609777-b038f1f04b8d?q=80&w=500" alt="Quest 1">
+                        <div class="overlay" data-lang="proj1">Магия Сайтов</div>
+                    </a>
+                    <a href="#todo" class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1552820728-8b83bb6b773f?q=80&w=500" alt="Quest 2">
+                        <div class="overlay" data-lang="proj2">Боты и Заклинания</div>
+                    </a>
+                </div>
             </div>
         </section>
 
         <section id="skills" class="panel">
             <div class="skills-grid">
-                <div class="skill-card glass-box">
-                    <h3 data-lang="skillIt">Навыки</h3>
-                    <ul data-lang="skillItList">
-                        <li>JS / UI / UX</li>
-                        <li>Firebase / Python</li>
+                <div class="wood-board skill-card">
+                    <h3 data-lang="skillTech">Арсенал</h3>
+                    <ul>
+                        <li>JavaScript (Алхимия)</li>
+                        <li>Python (Древние руны)</li>
+                        <li>Firebase (Хранилище душ)</li>
                     </ul>
                 </div>
             </div>
         </section>
 
         <section id="todo" class="panel">
-            <div class="tesla-auth-card glass-box">
-                <h2 data-lang="todoTitle" class="auth-title">Личный кабинет</h2>
+            <div class="wood-board auth-board">
+                <h2 data-lang="todoTitle" class="section-title">Тайная комната</h2>
                 
                 <div id="login-form">
                     <div class="input-wrapper">
                         <label>Email</label>
-                        <input type="email" id="auth-email">
+                        <input type="email" id="auth-email" class="tavern-input">
                     </div>
                     <div class="input-wrapper">
                         <label>Password</label>
-                        <input type="password" id="auth-pass">
+                        <input type="password" id="auth-pass" class="tavern-input">
                     </div>
-                    <button onclick="handleLogin()" class="btn-tesla-primary" data-lang="loginBtn">Войти</button>
+                    <button onclick="handleLogin()" class="btn-tavern" data-lang="loginBtn">Открыть дверь</button>
                 </div>
 
                 <div id="user-info" style="display:none;">
                     <div class="chat-header">
-                        <p class="status-dot">● Online</p>
+                        <p class="status-dot">🔥 В таверне</p>
                         <span id="user-display-email"></span>
                     </div>
-                    <div id="chat-window" class="tesla-chat"></div>
+                    <div id="chat-window" class="tavern-chat"></div>
                     <div class="chat-inputs">
-                        <textarea id="chat-msg" data-placeholder="chatMsg" placeholder="Сообщение..."></textarea>
-                        <button onclick="sendMessage()" class="btn-tesla-primary" data-lang="sendBtn">Отправить</button>
+                        <textarea id="chat-msg" data-lang-placeholder="chatMsg" placeholder="Послать ворона..."></textarea>
+                        <button onclick="sendMessage()" class="btn-tavern" data-lang="sendBtn">Отправить</button>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <section id="cats" class="panel">
+            <div class="wood-board wide">
+                <h2 data-lang="catsTitle" class="section-title">Коты Таверны</h2>
+                <div id="cat-container" class="cat-grid">
+                    </div>
+                <button onclick="fetchCats()" class="btn-tavern" style="margin-top:20px;" data-lang="catsBtn">Приманить еще</button>
             </div>
         </section>
     </main>
