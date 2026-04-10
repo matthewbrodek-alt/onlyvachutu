@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Modern Light Tavern</title>
+    <title>Modern Tavern | v2.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -13,8 +13,8 @@
 <body>
 
     <div class="light-bg">
-        <div class="blob"></div>
-        <div class="blob"></div>
+        <div class="blob b1"></div>
+        <div class="blob b2"></div>
         <div class="people-layer">
             <div class="person p1"></div>
             <div class="person p2"></div>
@@ -22,7 +22,7 @@
     </div>
 
     <nav class="modern-nav">
-        <div class="nav-logo" data-lang="navLogo">TAVERN.HUB</div>
+        <div class="nav-logo">TAVERN.HUB</div>
         <div class="nav-links">
             <button onclick="scrollToPanel('home')">●</button>
             <button onclick="scrollToPanel('portfolio')">●</button>
@@ -36,9 +36,8 @@
         
         <section id="home" class="panel">
             <div class="hero-card">
-                <h1 class="reveal-text" data-lang="welcomeTitle">Утро в Таверне</h1>
+                <h1 data-lang="welcomeTitle">Утро в Таверне</h1>
                 <p data-lang="welcomeSub">Современные решения для старых задач</p>
-                <div class="scroll-badge">↓</div>
             </div>
         </section>
 
@@ -46,13 +45,13 @@
             <div class="glass-panel">
                 <h2 class="section-title" data-lang="portfolioTitle">Проекты</h2>
                 <div class="modern-grid">
-                    <div class="project-card" onclick="scrollToPanel('skills')">
-                        <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=400')"></div>
-                        <span data-lang="proj1">WEB</span>
+                    <div class="project-card" onclick="scrollToPanel('todo')">
+                        <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400')"></div>
+                        <span>WEB</span>
                     </div>
                     <div class="project-card" onclick="scrollToPanel('todo')">
-                        <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=400')"></div>
-                        <span data-lang="proj2">BOTS</span>
+                        <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400')"></div>
+                        <span>BOTS</span>
                     </div>
                 </div>
             </div>
@@ -69,7 +68,7 @@
                 <div id="user-info" style="display:none; width: 100%;">
                     <div id="chat-window" class="modern-chat"></div>
                     <div class="input-group">
-                        <input type="text" id="chat-msg" data-lang-placeholder="chatPlaceholder" placeholder="Написать...">
+                        <input type="text" id="chat-msg" placeholder="Написать...">
                         <button onclick="sendMessage()">→</button>
                     </div>
                 </div>
@@ -77,11 +76,13 @@
         </section>
 
         <section id="cats" class="panel">
-            <div class="cats-section">
+            <div class="glass-panel cats-board">
                 <h2 class="section-title" data-lang="catsTitle">Кото-терапия</h2>
-                <div id="cat-container" class="stack-carousel">
-                    </div>
-                <button onclick="fetchCats()" class="refresh-cats">♻</button>
+                <div class="stack-wrapper">
+                    <div id="cat-container" class="stack-carousel">
+                        </div>
+                </div>
+                <button onclick="fetchCats()" class="refresh-cats">♻ Обновить</button>
             </div>
         </section>
     </main>
