@@ -1,97 +1,95 @@
 :root {
-    --wood-dark: #23120b;
-    --wood-light: #4a2e19;
-    --gold: #ffcf40;
-    --fire-core: #ff5722;
-    --text-color: #fcebc9;
+    --bg: #f8f9fd;
+    --accent: #6c5ce7;
+    --text: #2d3436;
+    --glass: rgba(255, 255, 255, 0.8);
 }
 
 body, html {
-    margin: 0; padding: 0;
-    height: 100%; width: 100%;
-    background: #110905;
-    color: var(--text-color);
-    font-family: 'Marcellus', serif;
+    margin: 0; padding: 0; height: 100%;
+    background: var(--bg); color: var(--text);
+    font-family: 'Montserrat', sans-serif;
     overflow: hidden;
 }
 
-/* ФОН И ИСКРЫ (Оставляем как было) */
-.fireplace-bg { position: fixed; width: 100%; height: 100%; z-index: 0; background: radial-gradient(circle at bottom, #3a1c10 0%, #110905 100%); }
-.fire-glow { position: absolute; bottom: -10%; left: 50%; transform: translateX(-50%); width: 120%; height: 60%; background: radial-gradient(circle, rgba(255,87,34,0.3) 0%, transparent 70%); filter: blur(50px); animation: pulse 4s infinite alternate; }
-@keyframes pulse { from { opacity: 0.6; } to { opacity: 1; } }
-
-/* СКРОЛЛ ПЕРЕХОД (Snap Scroll) */
-.scroll-container {
-    height: 100vh;
-    overflow-y: scroll;
-    scroll-snap-type: y mandatory; /* Включает эффект прилипания */
-    scroll-behavior: smooth;
-    position: relative;
-    z-index: 5;
-}
-
-.panel {
-    height: 100vh;
-    width: 100%;
-    scroll-snap-align: start; /* Секция всегда встает в начало экрана */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0 15px;
-    box-sizing: border-box;
-}
-
-/* НАВИГАЦИЯ */
-.tavern-nav { position: fixed; top: 0; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; z-index: 100; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); box-sizing: border-box; }
-.nav-center { display: flex; gap: 10px; overflow-x: auto; }
-.nav-center button { background: none; border: none; color: #fff; font-family: 'Cinzel'; cursor: pointer; white-space: nowrap; }
-
-/* ДОСКИ */
-.wood-board { 
-    background: url('https://www.transparenttextures.com/patterns/wood-pattern.png'), var(--wood-dark);
-    padding: 25px; border-radius: 12px; border: 2px solid var(--wood-light);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-    width: 100%; max-width: 500px; text-align: center;
-}
-
-/* КАРУСЕЛЬ КОТИКОВ */
-.cat-carousel-wrapper {
-    width: 100%;
+/* СВЕТЛЫЙ ФОН С АНИМАЦИЕЙ ЛЮДЕЙ */
+.light-bg {
+    position: fixed; width: 100%; height: 100%; z-index: -1;
+    background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
     overflow: hidden;
-    margin: 15px 0;
-    border-radius: 8px;
-    background: rgba(0,0,0,0.3);
 }
 
-.cat-carousel {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    gap: 15px;
-    padding: 10px;
-    scrollbar-width: none; /* Скрываем полосу прокрутки для Firefox */
+.blob {
+    position: absolute; width: 400px; height: 400px;
+    background: var(--accent); opacity: 0.1;
+    filter: blur(80px); border-radius: 50%;
+    animation: move 20s infinite alternate;
+}
+.blob:nth-child(2) { right: 0; bottom: 0; background: #a29bfe; animation-delay: -5s; }
+
+@keyframes move { from { transform: translate(-10%, -10%); } to { transform: translate(20%, 20%); } }
+
+/* АНИМАЦИЯ ЛЮДЕЙ */
+.person {
+    position: absolute; bottom: 5%; width: 60px; height: 120px;
+    background: rgba(0,0,0,0.05); clip-path: polygon(50% 0%, 80% 20%, 80% 100%, 20% 100%, 20% 20%);
+    animation: walk linear infinite;
+}
+.p1 { left: -100px; animation-duration: 25s; }
+.p2 { left: -100px; animation-duration: 35s; animation-delay: 10s; }
+
+@keyframes walk {
+    0% { left: -100px; opacity: 0; }
+    10% { opacity: 0.3; }
+    90% { opacity: 0.3; }
+    100% { left: 110vw; opacity: 0; }
 }
 
-.cat-carousel::-webkit-scrollbar { display: none; } /* Скрываем для Chrome/Safari */
+/* NAV */
+.modern-nav {
+    position: fixed; top: 0; width: 100%; height: 70px;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 30px; box-sizing: border-box; z-index: 100;
+}
+.nav-links button { 
+    background: #dfe6e9; border: none; width: 10px; height: 10px; 
+    border-radius: 50%; margin: 0 5px; cursor: pointer; transition: 0.3s;
+}
+.nav-links button:hover { background: var(--accent); transform: scale(1.5); }
 
-.cat-img {
-    flex: 0 0 180px; /* Фиксированная ширина кота */
-    height: 180px;
-    object-fit: cover;
-    border-radius: 8px;
-    border: 2px solid var(--gold);
-    scroll-snap-align: center;
-    transition: 0.3s;
+/* ПАНЕЛИ */
+.scroll-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+.panel { height: 100vh; scroll-snap-align: start; display: flex; justify-content: center; align-items: center; }
+
+.glass-panel {
+    background: var(--glass); backdrop-filter: blur(10px);
+    padding: 30px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+    width: 90%; max-width: 400px; text-align: center;
 }
 
-/* АДАПТИВНОСТЬ */
-@media (max-width: 600px) {
-    .nav-brand { display: none; }
-    .cat-img { flex: 0 0 140px; height: 140px; }
-    .wood-board { padding: 15px; }
+/* СОВРЕМЕННАЯ КАРУСЕЛЬ КОТОВ (Stack) */
+.stack-carousel {
+    position: relative; width: 280px; height: 350px; margin: 0 auto;
 }
+.cat-card {
+    position: absolute; width: 100%; height: 100%;
+    border-radius: 20px; overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    border: 5px solid #fff;
+}
+.cat-card img { width: 100%; height: 100%; object-fit: cover; }
 
-/* Кнопки и чат (Кратко) */
-.btn-tavern { background: var(--wood-light); border: 1px solid var(--gold); color: var(--gold); padding: 10px 15px; cursor: pointer; font-family: 'Cinzel'; }
-.tavern-chat { height: 200px; overflow-y: auto; background: rgba(0,0,0,0.5); margin: 10px 0; padding: 10px; border-radius: 5px; }
-.msg-content { background: var(--wood-light); padding: 5px 10px; border-radius: 4px; display: inline-block; margin: 5px 0; }
+/* Каскадное наложение карт */
+.cat-card:nth-child(1) { transform: rotate(-5deg) translate(-10px); z-index: 3; }
+.cat-card:nth-child(2) { transform: rotate(3deg) translate(10px); z-index: 2; opacity: 0.8; }
+.cat-card:nth-child(3) { transform: rotate(-2deg) translate(0, 10px); z-index: 1; opacity: 0.5; }
+
+/* ЧАТ */
+.modern-chat { height: 250px; overflow-y: auto; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
+.msg-box { padding: 10px 15px; border-radius: 15px; font-size: 14px; max-width: 80%; }
+.user { align-self: flex-end; background: var(--accent); color: #fff; }
+.admin { align-self: flex-start; background: #fff; border: 1px solid #eee; }
+
+.m-input { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 12px; margin-bottom: 10px; outline: none; }
+.m-btn { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; }
