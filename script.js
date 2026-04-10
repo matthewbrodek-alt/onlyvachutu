@@ -7,87 +7,40 @@ const firebaseConfig = {
     appId: "1:391088510675:web:ff1c4d866c37f921886626"
 };
 
+// Проверка инициализации
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
 
 let currentUser = null;
 
-// ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ
-$(document).ready(function() {
-    // Активация 3D эффекта для карточек
-    $('.art-card').tilt({
-        maxTilt: 15,
-        perspective: 1000,
-        glare: true,
-        maxGlare: .3
-    });
-
-    fetchCats();
-
-    // Отправка сообщения по Enter
-    $(document).on('keypress', '#chat-msg', function(e) {
-        if(e.which == 13) sendMessage();
-    });
+// ПРОВЕРКА 1: Автоматический вход при загрузке
+auth.onAuthStateChanged(user => {
+    if (user) {
+        currentUser = user;
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('user-info').style.display = 'block';
+        startChat(user.uid);
+    }
 });
 
-// ПЛАВНЫЙ СКРОЛЛ
-function scrollToPanel(id) {
-    const el = document.getElementById(id);
-    if(el) el.scrollIntoView({ behavior: 'smooth' });
-}
+// ПРОВЕРКА 2: Безопасный Tilt
+$(document).ready(() => {
+    fetchCats();
+    // Обработка Enter в чате
+    $('#chat-msg').on('keypress', (e) => { if(e.which == 13) sendMessage(); });
+});
 
-// КОТЫ
-async function fetchCats() {
-    const container = document.getElementById('cat-container');
-    container.innerHTML = "<p style='color: #666; font-size: 12px;'>Призываем...</p>";
-    try {
-        const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=4');
-        const data = await res.json();
-        container.innerHTML = data.map(cat => `<img src="${cat.url}" alt="Cat">`).join('');
-    } catch(e) { container.innerHTML = "<p>Магия котиков исчерпана</p>"; }
-}
-
-// ЯЗЫК
-let currentLang = 'ru';
-const dict = {
-    ru: { 
-        navHome: "Таверна", navPortfolio: "Свитки", navRoom: "Кабинет", navCats: "Коты",
-        welcomeTitle: "Усталый путник", welcomeSub: "Мастерство кода и магия автоматизации",
-        portfolioTitle: "Артефакты", todoTitle: "Вход", catsTitle: "Питомцы",
-        loginBtn: "Открыть дверь", catsBtn: "Приманить новых"
-    },
-    en: { 
-        navHome: "The Tavern", navPortfolio: "Scrolls", navRoom: "Study", navCats: "Cats",
-        welcomeTitle: "Weary Traveler", welcomeSub: "Code Mastery & Automation Magic",
-        portfolioTitle: "Artifacts", todoTitle: "Enter", catsTitle: "The Pets",
-        loginBtn: "Unlock Door", catsBtn: "Summon More"
-    }
-};
-
-function toggleLang() {
-    currentLang = currentLang === 'ru' ? 'en' : 'ru';
-    document.getElementById('lang-btn').innerText = currentLang.toUpperCase();
-    document.querySelectorAll('[data-lang]').forEach(el => {
-        const key = el.getAttribute('data-lang');
-        if(dict[currentLang][key]) el.innerText = dict[currentLang][key];
-    });
-}
-
-// FIREBASE ЛОГИКА
 async function handleLogin() {
     const email = document.getElementById('auth-email').value;
     const pass = document.getElementById('auth-pass').value;
-    if(!email || !pass) return;
+    if(!email || !pass) return alert("Нужны свитки (email/pass)");
 
     try {
         const cred = await auth.signInWithEmailAndPassword(email, pass)
             .catch(() => auth.createUserWithEmailAndPassword(email, pass));
-        currentUser = cred.user;
-        document.getElementById('login-form').style.display = 'none';
-        document.getElementById('user-info').style.display = 'block';
-        startChat(currentUser.uid);
-    } catch(e) { alert("Ошибка доступа: " + e.message); }
+        // Чат подцепится через onAuthStateChanged
+    } catch(e) { alert("Магия не сработала: " + e.message); }
 }
 
 function startChat(uid) {
@@ -96,8 +49,8 @@ function startChat(uid) {
         win.innerHTML = "";
         snap.forEach(doc => {
             const d = doc.data();
-            const type = d.sender === 'user' ? 'sent' : 'received';
-            win.innerHTML += `<div class="msg-box ${type}">${d.message}</div>`;
+            const side = d.sender === 'user' ? 'sent' : 'received';
+            win.innerHTML += `<div class="msg-box ${side}">${d.message}</div>`;
         });
         win.scrollTop = win.scrollHeight;
     });
@@ -114,4 +67,34 @@ async function sendMessage() {
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
     input.value = "";
+}
+
+async function fetchCats() {
+    const container = document.getElementById('cat-container');
+    try {
+        const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=4');
+        const data = await res.json();
+        container.innerHTML = data.map(cat => `<img src="${cat.url}" alt="Cat">`).join('');
+    } catch(e) { container.innerHTML = "<p>Коты ушли в лес</p>"; }
+}
+
+function scrollToPanel(id) {
+    const el = document.getElementById(id);
+    if(el) el.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ПРОВЕРКА 3: Полный словарь для локализации
+let currentLang = 'ru';
+const dict = {
+    ru: { navHome: "Таверна", navPortfolio: "Свитки", navRoom: "Кабинет", navCats: "Коты", welcomeTitle: "Усталый путник", welcomeSub: "Мастерство кода и магия автоматизации", portfolioTitle: "Артефакты", todoTitle: "Вход", loginBtn: "Открыть дверь", catsTitle: "Питомцы", catsBtn: "Приманить новых" },
+    en: { navHome: "Tavern", navPortfolio: "Scrolls", navRoom: "Study", navCats: "Cats", welcomeTitle: "Weary Traveler", welcomeSub: "Code Mastery & Automation Magic", portfolioTitle: "Artifacts", todoTitle: "Enter", loginBtn: "Unlock Door", catsTitle: "The Pets", catsBtn: "Summon More" }
+};
+
+function toggleLang() {
+    currentLang = currentLang === 'ru' ? 'en' : 'ru';
+    document.getElementById('lang-btn').innerText = currentLang.toUpperCase();
+    document.querySelectorAll('[data-lang]').forEach(el => {
+        const key = el.getAttribute('data-lang');
+        if(dict[currentLang][key]) el.innerText = dict[currentLang][key];
+    });
 }
