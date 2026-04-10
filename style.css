@@ -1,40 +1,100 @@
 :root {
-    --tesla-blue: #3d69e1;
-    --text: #ffffff;
+    --wood-dark: #2c1a10;
+    --wood-light: #5c3a21;
+    --gold: #d4af37;
+    --fire: #e25822;
+    --text-color: #fcebc9;
 }
 
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Marcellus', serif;
     margin: 0;
-    background: url('https://digitalassets.tesla.com/tesla-contents/image/upload/f_auto,q_auto/Homepage-Model-Y-Desktop-Global.png') no-repeat center center fixed;
-    background-size: cover;
-    color: var(--text);
+    /* Фон таверны (темное дерево/камин) */
+    background: radial-gradient(circle at center, #3a2318 0%, #110905 100%);
+    color: var(--text-color);
+    overflow: hidden;
 }
 
-.tesla-nav { position: fixed; top: 0; width: 100%; display: flex; justify-content: space-between; padding: 20px 40px; z-index: 100; }
-.nav-center button { background: none; border: none; color: white; margin: 0 15px; cursor: pointer; font-size: 15px; }
+h1, h2, h3, .nav-brand { font-family: 'Cinzel', serif; }
 
-.panel { height: 100vh; display: flex; justify-content: center; align-items: center; scroll-snap-align: start; }
-.scroll-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; }
+/* Навигация как подвесная доска */
+.tavern-nav { 
+    position: fixed; top: 0; width: 100%; display: flex; justify-content: space-between; 
+    padding: 20px 40px; z-index: 100; box-sizing: border-box;
+    background: linear-gradient(to bottom, rgba(20,10,5,0.9), transparent);
+}
+.nav-center button { background: none; border: none; color: var(--gold); margin: 0 15px; cursor: pointer; font-size: 16px; font-family: 'Cinzel'; text-shadow: 1px 1px 2px black; transition: 0.3s;}
+.nav-center button:hover { color: var(--fire); transform: scale(1.1); }
 
-.glass-box { background: rgba(0,0,0,0.6); backdrop-filter: blur(20px); padding: 40px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+/* Скролл */
+.panel { height: 100vh; display: flex; justify-content: center; align-items: center; scroll-snap-align: start; position: relative; z-index: 10; }
+.scroll-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+
+/* Деревянные доски (Вместо стекла) */
+.wood-board { 
+    background: url('https://www.transparenttextures.com/patterns/wood-pattern.png'), var(--wood-dark);
+    padding: 40px; border-radius: 10px; border: 3px solid var(--wood-light);
+    box-shadow: 0 15px 25px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.9);
+    text-align: center; position: relative;
+}
+.wide { width: 60%; max-width: 800px; }
+
+/* Кликабельные картинки (Портфолио) */
+.gallery-grid { display: flex; gap: 20px; justify-content: center; margin-top: 20px; }
+.gallery-item {
+    position: relative; overflow: hidden; border-radius: 5px; border: 2px solid var(--gold);
+    width: 250px; height: 150px; cursor: pointer; transition: 0.4s; text-decoration: none;
+}
+.gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.4s; }
+.overlay {
+    position: absolute; bottom: -50px; left: 0; width: 100%; background: rgba(0,0,0,0.8);
+    color: var(--gold); padding: 10px 0; transition: 0.4s; font-family: 'Cinzel';
+}
+.gallery-item:hover { transform: scale(1.05); box-shadow: 0 0 15px var(--gold); }
+.gallery-item:hover img { transform: scale(1.1); filter: brightness(0.6); }
+.gallery-item:hover .overlay { bottom: 0; }
+
+/* Кнопки таверны */
+.btn-tavern { 
+    background: linear-gradient(145deg, var(--wood-light), var(--wood-dark));
+    border: 2px solid var(--gold); color: var(--gold); padding: 12px 25px; border-radius: 5px;
+    font-family: 'Cinzel'; font-weight: bold; cursor: pointer; transition: 0.3s;
+}
+.btn-tavern:hover { background: var(--gold); color: var(--wood-dark); box-shadow: 0 0 10px var(--gold); }
+.magic-btn { background: none; border: 1px solid var(--gold); color: var(--gold); padding: 5px 10px; cursor: pointer; border-radius: 5px; }
 
 /* Чат */
-.tesla-chat {
-    height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 15px; 
-    background: rgba(0,0,0,0.3); border-radius: 15px; margin: 20px 0;
+.tavern-chat { height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 15px; background: rgba(0,0,0,0.5); border: 1px inset var(--wood-light); border-radius: 5px; margin: 20px 0; }
+.msg-box { display: flex; width: 100%; }
+.msg-box.sent { justify-content: flex-end; } 
+.msg-box.received { justify-content: flex-start; } 
+.msg-content { max-width: 80%; padding: 10px 15px; font-size: 14px; border-radius: 5px; font-family: 'Arial'; }
+.sent .msg-content { background: var(--wood-light); color: var(--text-color); border: 1px solid var(--gold); }
+.received .msg-content { background: rgba(255,255,255,0.1); color: var(--gold); border: 1px solid gray; }
+.tavern-input, textarea { width: 100%; background: rgba(0,0,0,0.6); border: 1px solid var(--wood-light); padding: 12px; border-radius: 5px; color: var(--gold); font-family: inherit; box-sizing: border-box; }
+
+/* Котики */
+.cat-grid { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+.cat-img { width: 150px; height: 150px; object-fit: cover; border: 2px solid var(--wood-light); border-radius: 5px; transition: 0.3s; }
+.cat-img:hover { transform: rotate(5deg) scale(1.1); border-color: var(--gold); }
+
+/* Движущиеся искры (Анимация) */
+.embers { position: absolute; width: 100%; height: 100vh; top: 0; left: 0; pointer-events: none; z-index: 1; }
+.embers span {
+    position: absolute; bottom: -50px; background: var(--fire); width: 4px; height: 4px; border-radius: 50%;
+    box-shadow: 0 0 10px var(--fire), 0 0 20px var(--gold); animation: floatUp 5s infinite ease-in; opacity: 0;
+}
+.embers span:nth-child(1) { left: 20%; animation-duration: 6s; animation-delay: 0s; }
+.embers span:nth-child(2) { left: 40%; animation-duration: 4s; animation-delay: 1s; }
+.embers span:nth-child(3) { left: 60%; animation-duration: 7s; animation-delay: 2s; }
+.embers span:nth-child(4) { left: 80%; animation-duration: 5s; animation-delay: 3s; }
+.embers span:nth-child(5) { left: 50%; animation-duration: 6.5s; animation-delay: 1.5s; }
+
+@keyframes floatUp {
+    0% { transform: translateY(0) translateX(0) scale(1); opacity: 1; }
+    50% { transform: translateY(-50vh) translateX(20px) scale(1.5); opacity: 0.8; }
+    100% { transform: translateY(-100vh) translateX(-20px) scale(0); opacity: 0; }
 }
 
-.msg-box { display: flex; width: 100%; }
-.msg-box.sent { justify-content: flex-end; } /* Ты справа */
-.msg-box.received { justify-content: flex-start; } /* Бот слева */
-
-.msg-content { max-width: 80%; padding: 10px 15px; font-size: 14px; border-radius: 15px; }
-.sent .msg-content { background: var(--tesla-blue); border-bottom-right-radius: 2px; }
-.received .msg-content { background: rgba(255,255,255,0.15); border-bottom-left-radius: 2px; }
-
-.input-wrapper { text-align: left; margin-bottom: 20px; }
-.input-wrapper label { font-size: 12px; color: rgba(255,255,255,0.6); margin-left: 10px; }
-.input-wrapper input, textarea { width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 12px; border-radius: 15px; color: white; }
-
-.btn-tesla-primary { background: var(--tesla-blue); border: none; color: white; padding: 12px 25px; border-radius: 20px; font-weight: 600; cursor: pointer; width: 100%; }
+.flicker-text { text-shadow: 0 0 10px var(--fire), 0 0 20px var(--gold); animation: flicker 3s infinite alternate; }
+@keyframes flicker { 0% { opacity: 0.9; } 100% { opacity: 1; text-shadow: 0 0 15px var(--fire), 0 0 30px #fff; } }
