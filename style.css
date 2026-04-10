@@ -2,10 +2,10 @@
     --bg-dark: #0a0a0c;
     --accent: #ff9f43;
     --accent-glow: #e25822;
-    --glass: rgba(15, 15, 20, 0.95);
+    --glass: rgba(20, 20, 25, 0.95);
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
 body, html {
     height: 100%; width: 100%;
@@ -14,83 +14,84 @@ body, html {
     overflow: hidden;
 }
 
-/* ФОН */
+/* ФОНОВЫЕ ЭФФЕКТЫ */
 .arcane-bg { position: fixed; inset: 0; z-index: -1; background: #050507; }
 .smoke {
     position: absolute; bottom: -10%; left: -10%; width: 140%; height: 70%;
     background: radial-gradient(circle, rgba(108, 92, 231, 0.08), transparent 70%);
-    filter: blur(60px); opacity: 0.5;
+    filter: blur(60px); opacity: 0.6;
 }
 .sparks i {
-    position: absolute; bottom: -10px; width: 3px; height: 3px;
+    position: absolute; bottom: -10px; width: 2px; height: 2px;
     background: var(--accent); border-radius: 50%;
-    box-shadow: 0 0 10px var(--accent-glow);
-    animation: fire 6s infinite ease-in;
+    box-shadow: 0 0 8px var(--accent-glow);
+    animation: fire 5s infinite ease-in;
 }
-.sparks i:nth-child(1) { left: 10%; animation-delay: 0s; }
-.sparks i:nth-child(2) { left: 30%; animation-delay: 2s; }
-.sparks i:nth-child(3) { left: 50%; animation-delay: 4s; }
-.sparks i:nth-child(4) { left: 70%; animation-delay: 1s; }
-.sparks i:nth-child(5) { left: 90%; animation-delay: 3s; }
-
 @keyframes fire { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100vh); opacity: 0; } }
 
-/* НАВИГАЦИЯ */
+/* ХЕДЕР */
 .tavern-header {
-    position: fixed; top: 0; width: 100%; padding: 20px 40px;
-    display: flex; justify-content: space-between; align-items: center; z-index: 100;
+    position: fixed; top: 0; width: 100%; padding: 15px 25px;
+    display: flex; justify-content: space-between; align-items: center; z-index: 1000;
+    background: rgba(10, 10, 12, 0.8); backdrop-filter: blur(10px);
 }
-.logo { font-family: 'Cinzel'; color: var(--accent); font-size: 1.2rem; }
-.nav-links { display: flex; align-items: center; }
-.nav-links a { color: #888; text-decoration: none; margin-left: 20px; font-size: 0.85rem; transition: 0.3s; }
-.nav-links a:hover { color: #fff; }
-
-.lang-switch { 
-    background: none; border: 1px solid var(--accent); color: var(--accent); 
-    padding: 5px 10px; border-radius: 5px; cursor: pointer; margin-left: 15px;
+.logo { font-family: 'Cinzel'; color: var(--accent); font-size: 1.1rem; letter-spacing: 2px; }
+.nav-links { display: flex; align-items: center; gap: 15px; }
+.nav-links a, #logout-btn { 
+    color: #999; text-decoration: none; font-size: 0.8rem; transition: 0.3s; 
+    background: none; border: none; cursor: pointer; font-family: inherit;
 }
+.nav-links a:hover, #logout-btn:hover { color: #fff; }
+#logout-btn { color: #ff5e5e; font-weight: 600; }
 
-/* СКРОЛЛ */
-.scroll-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; }
-.panel { height: 100vh; scroll-snap-align: start; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center;}
+/* СКРОЛЛ ПАНЕЛИ */
+.scroll-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+.panel { height: 100vh; scroll-snap-align: start; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
 
-/* КОНТЕНТ */
+/* ГЛАСС-МОРФИЗМ */
 .glass-board {
-    background: var(--glass); backdrop-filter: blur(20px);
-    padding: 30px; border-radius: 20px; border: 1px solid rgba(255,159,67,0.1);
-    width: 100%; max-width: 450px;
+    background: var(--glass); backdrop-filter: blur(25px);
+    padding: 25px; border-radius: 20px; border: 1px solid rgba(255,159,67,0.15);
+    width: 100%; max-width: 400px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
 }
-.glow-text { font-family: 'Cinzel'; font-size: 3rem; text-shadow: 0 0 20px var(--accent-glow); margin-bottom: 10px; line-height: 1; }
-.section-title { font-family: 'Cinzel'; color: var(--accent); margin-bottom: 25px; letter-spacing: 2px; }
 
-/* КАРТОЧКИ */
-.artifacts-grid { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-.art-card { width: 280px; height: 160px; border-radius: 15px; overflow: hidden; position: relative; border: 1px solid rgba(255,255,255,0.05); }
-.card-bg { position: absolute; inset: 0; background-size: cover; filter: brightness(0.4); transition: 0.5s; }
-.art-card:hover .card-bg { filter: brightness(1); transform: scale(1.05); }
-.card-content { position: absolute; bottom: 0; padding: 15px; background: linear-gradient(to top, #000, transparent); width: 100%; text-align: left; }
+/* ТЕКСТ */
+.glow-text { font-family: 'Cinzel'; font-size: 2.2rem; text-shadow: 0 0 15px var(--accent-glow); margin-bottom: 8px; text-align: center; }
+.section-title { font-family: 'Cinzel'; color: var(--accent); margin-bottom: 20px; font-size: 1.4rem; }
 
 /* ЧАТ */
-.arcane-chat { height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; padding-right: 5px; }
-.msg-box { padding: 10px 15px; border-radius: 10px; font-size: 0.9rem; max-width: 80%; line-height: 1.4; word-wrap: break-word; }
-.sent { align-self: flex-end; background: #1a1a1d; border: 1px solid var(--accent); text-align: right; }
-.received { align-self: flex-start; background: #2d2d30; color: var(--accent); text-align: left; }
+.arcane-chat { 
+    height: 280px; overflow-y: auto; display: flex; flex-direction: column; 
+    gap: 12px; margin-bottom: 15px; padding: 10px; border-radius: 10px; background: rgba(0,0,0,0.2);
+}
+.msg-box { padding: 10px 14px; border-radius: 12px; font-size: 0.85rem; max-width: 85%; line-height: 1.4; }
+.sent { align-self: flex-end; background: #1e1e22; border-right: 3px solid var(--accent); text-align: right; }
+.received { align-self: flex-start; background: #2a2a30; color: var(--accent); border-left: 3px solid var(--accent); }
 
-.m-input { width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: #fff; border-radius: 8px; margin-bottom: 10px; outline: none; }
-.m-btn { width: 100%; padding: 14px; background: var(--accent); border: none; font-family: 'Cinzel'; font-weight: bold; border-radius: 8px; cursor: pointer; }
-.m-btn-icon { width: 50px; background: var(--accent); border: none; border-radius: 8px; cursor: pointer; font-size: 1.2rem; }
-.chat-input-group { display: flex; gap: 8px; }
+/* ИНПУТЫ И КНОПКИ */
+.m-input { 
+    width: 100%; padding: 12px; background: #000; border: 1px solid #333; 
+    color: #fff; border-radius: 10px; margin-bottom: 12px; outline: none; transition: 0.3s;
+}
+.m-input:focus { border-color: var(--accent); }
+.m-btn { 
+    width: 100%; padding: 14px; background: var(--accent); border: none; 
+    font-family: 'Cinzel'; font-weight: bold; border-radius: 10px; cursor: pointer; color: #000;
+}
+.chat-input-group { display: flex; gap: 10px; }
+.m-btn-icon { background: var(--accent); border: none; border-radius: 10px; width: 50px; cursor: pointer; font-size: 1.1rem; }
 
 /* КОТЫ */
-.cats-stack { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-.cats-stack img { width: 100%; height: 100px; object-fit: cover; border-radius: 10px; border: 1px solid #222; }
-.refresh-cats-btn { background: none; border: 1px solid #444; color: #888; padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; }
+.cats-stack { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.cats-stack img { width: 100%; height: 90px; object-fit: cover; border-radius: 8px; border: 1px solid #222; }
 
 /* МОБИЛЬНАЯ АДАПТАЦИЯ */
-@media (max-width: 600px) {
-    .glow-text { font-size: 2.2rem; }
-    .tavern-header { padding: 15px 20px; }
-    .nav-links a { margin-left: 12px; font-size: 0.75rem; }
-    .art-card { width: 100%; }
-    .glass-board { padding: 20px; }
+@media (max-width: 480px) {
+    .glow-text { font-size: 1.8rem; }
+    .tavern-header { padding: 12px 15px; }
+    .nav-links { gap: 10px; }
+    .nav-links a { font-size: 0.7rem; }
+    .logo { font-size: 0.9rem; }
+    .artifacts-grid { flex-direction: column; align-items: center; }
+    .art-card { width: 280px; height: 150px; }
 }
