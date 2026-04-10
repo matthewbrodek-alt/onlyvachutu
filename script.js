@@ -34,17 +34,34 @@ function scrollToPanel(id) {
     if(el) el.scrollIntoView({ behavior: 'smooth' });
 }
 
-// КОТЫ В КАРУСЕЛИ
 async function fetchCats() {
     try {
-        const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=6');
+        const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=3');
         const data = await res.json();
         const container = document.getElementById('cat-container');
-        // Добавляем новых котов к существующим или заменяем
-        container.innerHTML = data.map(cat => `<img src="${cat.url}" class="cat-img">`).join('');
-    } catch(e) { console.error("Коты разбежались"); }
+        
+        container.innerHTML = data.map((cat, i) => `
+            <div class="cat-card" style="z-index: ${3-i}">
+                <img src="${cat.url}" alt="Cat">
+            </div>
+        `).join('');
+    } catch(e) { console.error("Коты не пришли"); }
 }
 
+
+// При клике на карточку кота — она уходит в конец (эффект перелистывания)
+document.addEventListener('click', (e) => {
+    if (e.target.closest('.cat-card')) {
+        const card = e.target.closest('.cat-card');
+        card.style.transform = 'translateX(200%) rotate(20deg)';
+        card.style.opacity = '0';
+        setTimeout(() => fetchCats(), 500); // Перезагружаем пачку
+    }
+});
+
+window.onload = () => {
+    fetchCats();
+};
 // ЛОГИКА ВХОДА И ЧАТА (Оставлена твоя рабочая)
 async function handleLogin() {
     const email = document.getElementById('auth-email').value;
@@ -70,4 +87,3 @@ function startChatListener(uid) {
     });
 }
 
-window.onload = fetchCats;
