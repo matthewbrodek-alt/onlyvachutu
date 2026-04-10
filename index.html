@@ -7,12 +7,11 @@
     
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tilt.js/1.2.1/tilt.jquery.min.js"></script>
-    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Cinzel:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -21,44 +20,48 @@
 
 <nav class="nitro-nav">
     <div class="logo">NITRO.HUB</div>
-    <div class="nav-items">
-        <button onclick="handleLogin()" id="login-trigger">Cabinet</button>
+    <div class="nav-right">
+        <button onclick="toggleLang()" id="lang-btn" class="lang-btn">🇺🇸 EN</button>
     </div>
 </nav>
 
-<main class="bento-container">
+<main class="bento-grid">
     <div class="bento-item profile-card" data-tilt>
-        <div class="status-dot"></div>
-        <h2 id="user-display-name">Путник</h2>
-        <p>Уровень доступа: Admin</p>
+        <div class="status-indicator">Online</div>
+        <h2 id="user-name">Путник</h2>
+        <p data-lang="welcomeSub">Automation Mage</p>
     </div>
 
     <div class="bento-item chat-card">
-        <div id="login-form" class="auth-box">
-            <h3>Вход в систему</h3>
-            <input type="email" id="auth-email" placeholder="Email">
-            <input type="password" id="auth-pass" placeholder="Password">
-            <button onclick="handleLogin()" class="nitro-btn">Connect</button>
+        <div id="login-form" class="auth-container">
+            <h3 data-lang="todoTitle">Тайная комната</h3>
+            <input type="email" id="auth-email" placeholder="Email" class="nitro-input">
+            <input type="password" id="auth-pass" placeholder="Password" class="nitro-input">
+            <button onclick="handleLogin()" class="nitro-btn" data-lang="loginBtn">Открыть дверь</button>
         </div>
 
-        <div id="user-info" style="display:none;">
+        <div id="user-info" style="display:none;" class="chat-container">
             <div id="chat-window" class="nitro-chat"></div>
             <div class="nitro-input-group">
-                <input type="text" id="chat-msg" placeholder="Type a message...">
-                <button onclick="sendMessage()">Send</button>
+                <input type="text" id="chat-msg" placeholder="Послать ворона..." class="chat-input">
+                <button onclick="sendMessage()" class="send-btn">→</button>
             </div>
         </div>
     </div>
 
     <div class="bento-item cats-card">
-        <h3>Коты-хранители</h3>
-        <div id="cat-container" class="mini-grid"></div>
-        <button onclick="fetchCats()" class="refresh-btn">↺</button>
+        <h3 data-lang="catsTitle">Коты Таверны</h3>
+        <div id="cat-container" class="mini-gallery"></div>
+        <button onclick="fetchCats()" class="refresh-cats">↺</button>
     </div>
 
     <div class="bento-item stats-card">
-        <div class="stat"><span>Messages:</span> 128</div>
-        <div class="stat"><span>Uptime:</span> 99.9%</div>
+        <h3 data-lang="skillTech">Арсенал</h3>
+        <ul class="skill-list">
+            <li>JS Alchemy</li>
+            <li>Python Runes</li>
+            <li>Firebase Souls</li>
+        </ul>
     </div>
 </main>
 
