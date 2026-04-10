@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nitro Hub v3.4</title>
+    <title>Nitro Hub v3.5</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -43,7 +43,7 @@
             <div id="chat-window" class="chat-feed"></div>
             <div class="chat-controls">
                 <input type="text" id="chat-msg" placeholder="Send a message..." class="n-input">
-                <button onclick="sendMessage()" class="send-btn">➔</button>
+                <button onclick="sendMessage()" class="n-btn secondary" data-lang="sendBtn">Send</button>
             </div>
         </div>
     </div>
@@ -51,7 +51,7 @@
     <div class="card cats-card">
         <h3 data-lang="catsTitle">Tavern Cats</h3>
         <div id="cat-container" class="cat-viewer"></div>
-        <button onclick="fetchCats()" class="n-btn secondary">Summon Cats</button>
+        <button onclick="fetchCats()" class="n-btn secondary" data-lang="catsBtn">Summon Cats</button>
     </div>
 
     <div class="card skills-card">
