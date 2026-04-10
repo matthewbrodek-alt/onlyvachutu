@@ -2,118 +2,123 @@
     --bg: #050505;
     --card: #0f0f0f;
     --accent: #00ff88;
-    --border: rgba(255, 255, 255, 0.08);
+    --border: rgba(255, 255, 255, 0.1);
     --text: #ffffff;
-    --text-dim: #888;
 }
+
+* { box-sizing: border-box; }
 
 body {
     background-color: var(--bg);
     color: var(--text);
     font-family: 'Plus Jakarta Sans', sans-serif;
     margin: 0;
-    overflow: hidden;
-}
-
-/* Сетка */
-.dashboard {
-    display: grid;
-    grid-template-columns: 280px 1fr 320px;
-    gap: 20px;
-    padding: 20px;
-    height: calc(100vh - 80px);
-    box-sizing: border-box;
-}
-
-.card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
+    line-height: 1.5;
 }
 
 /* Навигация */
 .top-nav {
-    height: 80px;
+    height: 70px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 40px;
+    padding: 0 5%;
+    border-bottom: 1px solid var(--border);
 }
-.logo { font-weight: 800; letter-spacing: 1px; }
+.logo { font-weight: 800; font-size: 1.2rem; }
 .logo span { color: var(--accent); }
 
-/* Чат */
-.chat-card { height: 100%; }
-.chat-wrapper { height: 100%; display: flex; flex-direction: column; }
+/* Сетка Dashboard (Mobile First) */
+.dashboard {
+    display: grid;
+    grid-template-columns: 1fr; /* На телефоне всё в одну колонку */
+    gap: 15px;
+    padding: 15px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Настройка для планшетов и ПК */
+@media (min-width: 992px) {
+    .dashboard {
+        grid-template-columns: 300px 1fr 300px; /* 3 колонки */
+        grid-template-rows: auto 1fr;
+        height: calc(100vh - 100px);
+    }
+    .chat-card { grid-row: span 2; }
+    .profile-card { grid-column: 1; }
+    .skills-card { grid-column: 1; }
+    .cats-card { grid-column: 3; grid-row: span 2; }
+}
+
+/* Универсальные карточки */
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* Важно для скролла внутри Grid */
+}
+
+/* ЧАТ */
+.chat-wrapper { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
 .chat-messages {
     flex-grow: 1;
     overflow-y: auto;
-    padding-right: 10px;
+    gap: 10px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-}
-.chat-input-area {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
+    margin-bottom: 15px;
+    padding-right: 5px;
+    min-height: 300px; /* Чтобы чат не схлопывался */
 }
 
-/* Баблы */
 .msg-box {
-    padding: 12px 18px;
-    border-radius: 18px;
-    max-width: 75%;
-    font-size: 0.95rem;
-    line-height: 1.4;
+    padding: 10px 15px;
+    border-radius: 15px;
+    max-width: 85%;
+    font-size: 0.9rem;
 }
 .sent { align-self: flex-end; background: var(--accent); color: #000; font-weight: 600; }
-.received { align-self: flex-start; background: #222; border: 1px solid var(--border); }
+.received { align-self: flex-start; background: #222; }
 
-/* Ввод */
+.chat-input-area { display: flex; gap: 8px; }
+
+/* Элементы управления */
 .n-input {
     background: #1a1a1a;
     border: 1px solid var(--border);
     color: #fff;
-    padding: 14px 20px;
-    border-radius: 14px;
-    outline: none;
+    padding: 12px;
+    border-radius: 12px;
     width: 100%;
-    box-sizing: border-box;
-    transition: 0.2s;
+    outline: none;
 }
 .n-input:focus { border-color: var(--accent); }
 
 .n-btn {
-    padding: 14px;
-    border-radius: 14px;
+    padding: 12px;
+    border-radius: 12px;
     border: none;
     cursor: pointer;
     font-weight: 700;
-    transition: 0.2s;
 }
 .primary { background: var(--accent); color: #000; }
 .secondary { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
-.n-btn:hover { opacity: 0.8; transform: translateY(-2px); }
 
 /* Коты */
 .cat-viewer {
     flex-grow: 1;
     overflow-y: auto;
-    margin: 15px 0;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
+    margin: 10px 0;
 }
-.cat-viewer img {
-    width: 100%;
-    border-radius: 16px;
-    border: 1px solid var(--border);
-}
+.cat-viewer img { width: 100%; border-radius: 12px; }
 
 /* Скроллбар */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
