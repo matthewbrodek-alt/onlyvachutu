@@ -1,3 +1,6 @@
+const TELEGRAM_BOT_TOKEN = "8664813567:AAEkqGdXuyrS43Pjfc1gB-KdVuOOReWrkGw"; 
+const TELEGRAM_CHAT_ID = "7451263058";
+
 const firebaseConfig = {
     apiKey: "AIzaSyA_7n34vc1JM5PER6kvU9mMSzKfpu8s5YE",
     authDomain: "my-portfolio-auth-ff1ce.firebaseapp.com",
@@ -7,10 +10,11 @@ const firebaseConfig = {
     appId: "1:391088510675:web:ff1c4d866c37f921886626"
 };
 
+// Инициализация Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// Логика локализации (Смена языка)
+// 2. ЛОКАЛИЗАЦИЯ
 let currentLang = 'ru';
 
 const translations = {
@@ -24,7 +28,7 @@ const translations = {
         todoTitle: "Список дел", loginBtn: "Войти",
         todoPlaceholder: "Что нужно сделать?",
         tgTitle: "Чат со мной", chatName: "Ваше имя", chatMsg: "Сообщение...", sendBtn: "Отправить",
-        nextFlag: "🇺🇸" // Флаг для перехода на англ
+        nextFlag: "🇺🇸"
     },
     en: {
         navHome: "Home", navSkills: "Skills", navTodo: "Tasks", navAbout: "Contact",
@@ -36,35 +40,26 @@ const translations = {
         todoTitle: "Tasks", loginBtn: "Login",
         todoPlaceholder: "What needs to be done?",
         tgTitle: "Chat with me", chatName: "Your Name", chatMsg: "Message...", sendBtn: "Send",
-        nextFlag: "🇷🇺" // Флаг для перехода на ру
+        nextFlag: "🇷🇺"
     }
 };
 
 function toggleLang() {
     currentLang = currentLang === 'ru' ? 'en' : 'ru';
-    
-    // Меняем флаг
     document.getElementById('lang-btn').innerText = translations[currentLang].nextFlag;
     
-    // Меняем текст элементов
     document.querySelectorAll('[data-lang]').forEach(el => {
         const key = el.getAttribute('data-lang');
         if (translations[currentLang][key]) el.innerHTML = translations[currentLang][key];
     });
 
-    // Меняем текст внутри полей ввода
     document.querySelectorAll('[data-placeholder]').forEach(el => {
         const key = el.getAttribute('data-placeholder');
         if (translations[currentLang][key]) el.placeholder = translations[currentLang][key];
     });
 }
 
-// Заглушки для ToDo, чтобы консоль была чистой
-function loadTodos(uid) { console.log("Loading todos..."); }
-function handleLogin() { console.log("Login sequence..."); }
-function addTodo() { console.log("Adding todo..."); }
-
-// Навигация и Темы
+// 3. ФУНКЦИИ ИНТЕРФЕЙСА
 function toggleTheme() {
     document.body.classList.toggle('dark-theme');
     document.getElementById('theme-icon').innerText = 
@@ -72,26 +67,58 @@ function toggleTheme() {
 }
 
 function scrollToPanel(id) {
-    document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
 }
 
-// Логика Чата (Отправка)
+// 4. ЛОГИКА ЧАТА (Firebase + Telegram)
 async function sendMessage() {
-    const name = document.getElementById('chat-name').value;
-    const text = document.getElementById('chat-msg').value;
-    if (!name || !text) return;
+    const nameInput = document.getElementById('chat-name');
+    const msgInput = document.getElementById('chat-msg');
+    
+    const name = nameInput.value.trim();
+    const text = msgInput.value.trim();
 
-    await db.collection("public_chats").add({
-        username: name, message: text, sender: "user",
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    document.getElementById('chat-msg').value = "";
+    if (!name || !text) {
+        alert(currentLang === 'ru' ? "Заполните все поля!" : "Please fill all fields!");
+        return;
+    }
+
+    try {
+        // А. Сохраняем в Firebase (для отображения на сайте)
+        await db.collection("public_chats").add({
+            username: name,
+            message: text,
+            sender: "user",
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // Б. Отправляем в Telegram API
+        const botText = `🚀 <b>Новое сообщение!</b>\n\n👤 <b>От:</b> ${name}\n💬 <b>Текст:</b> ${text}`;
+        
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: TELEGRAM_CHAT_ID,
+                text: botText,
+                parse_mode: 'HTML'
+            })
+        });
+
+        // Очищаем поле сообщения
+        msgInput.value = "";
+
+    } catch (error) {
+        console.error("Ошибка отправки:", error);
+    }
 }
 
-// Логика Чата (Чтение в реальном времени с сортировкой)
+// Слушатель сообщений из Firebase (обновление чата в реальном времени)
 db.collection("public_chats").orderBy("timestamp", "asc").onSnapshot(snap => {
     const win = document.getElementById('chat-window');
     if (!win) return;
+    
     win.innerHTML = "";
     snap.forEach(doc => {
         const d = doc.data();
@@ -102,3 +129,7 @@ db.collection("public_chats").orderBy("timestamp", "asc").onSnapshot(snap => {
     });
     win.scrollTop = win.scrollHeight;
 });
+
+// 5. ЗАГЛУШКИ (Для работы кнопок ToDo без ошибок)
+function handleLogin() { console.log("Login clicked"); }
+function addTodo() { console.log("Add todo clicked"); }
