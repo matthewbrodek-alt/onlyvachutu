@@ -38,14 +38,21 @@ function scrollToPanel(id) {
     if (el) el.scrollIntoView({ behavior: 'smooth' });
 }
 
-// Логика Чат/Вход
 async function handleLogin() {
     const email = document.getElementById('auth-email').value;
     const pass = document.getElementById('auth-pass').value;
     try {
         const userCred = await auth.signInWithEmailAndPassword(email, pass)
             .catch(() => auth.createUserWithEmailAndPassword(email, pass));
+        
         currentUser = userCred.user;
+        
+        // КРИТИЧЕСКИ ВАЖНО: сохраняем email в документе пользователя!
+        await db.collection("users").doc(currentUser.uid).set({
+            email: currentUser.email,
+            lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
         document.getElementById('login-form').style.display = 'none';
         document.getElementById('user-info').style.display = 'block';
         startChatListener(currentUser.uid);
