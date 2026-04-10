@@ -1,112 +1,105 @@
 :root {
-    --parchment: #f4e4bc;
-    --wood-light: #8d6e63;
-    --wood-dark: #4e342e;
-    --gold: #b8860b;
-    --fire: #d35400;
-    --text-dark: #2c1a10;
+    --wood-dark: #2c1a10;
+    --wood-light: #5c3a21;
+    --gold: #d4af37;
+    --fire: #e25822;
+    --text-color: #fcebc9;
 }
 
-body {
+body, html {
     font-family: 'Marcellus', serif;
-    margin: 0;
-    background-color: var(--parchment);
-    color: var(--text-dark);
-    overflow: hidden;
-}
-
-/* Светлый фон с силуэтами */
-.tavern-bg-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    /* Силуэты людей в таверне (через градиент и прозрачность) */
-    background: 
-        linear-gradient(rgba(244, 228, 188, 0.8), rgba(244, 228, 188, 0.8)),
-        url('https://www.transparenttextures.com/patterns/old-paper.png'),
-        url('https://img.freepik.com/free-vector/silhouette-people-party-background_23-2148113645.jpg?w=1380'); /* Пример силуэтов */
-    background-size: cover;
-    background-position: center;
-    z-index: -1;
-    filter: sepia(0.5) opacity(0.3);
+    margin: 0; padding: 0;
+    background: radial-gradient(circle at center, #3a2318 0%, #110905 100%);
+    color: var(--text-color);
+    overflow: hidden; /* Важно для Snap Scroll */
 }
 
 h1, h2, h3, .nav-brand { font-family: 'Cinzel', serif; }
 
-/* Адаптивная навигация */
+/* АДАПТИВНАЯ НАВИГАЦИЯ */
 .tavern-nav { 
     position: fixed; top: 0; width: 100%; display: flex; justify-content: space-between; 
-    padding: 15px 20px; z-index: 100; box-sizing: border-box;
-    background: rgba(78, 52, 46, 0.1); backdrop-filter: blur(5px);
+    padding: 15px 25px; z-index: 1000; box-sizing: border-box;
+    background: linear-gradient(to bottom, rgba(20,10,5,0.9), transparent);
 }
-
 .nav-center button { 
-    background: none; border: none; color: var(--wood-dark); 
+    background: none; border: none; color: var(--gold); 
     margin: 0 10px; cursor: pointer; font-size: 14px; 
-    font-family: 'Cinzel'; transition: 0.3s;
+    font-family: 'Cinzel'; transition: 0.3s; white-space: nowrap;
 }
-
 .nav-center button:hover { color: var(--fire); transform: translateY(-2px); }
 
-/* Скролл */
-.panel { height: 100vh; display: flex; justify-content: center; align-items: center; scroll-snap-align: start; padding: 20px; box-sizing: border-box; }
-.scroll-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+/* ПАНЕЛИ И СКРОЛЛ (Вернули твою логику) */
+.scroll-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; }
+.panel { height: 100vh; scroll-snap-align: start; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
 
-/* Адаптивные доски */
+/* ДЕРЕВЯННЫЕ ДОСКИ (Сохранили твой стиль) */
 .wood-board { 
-    background: rgba(255, 255, 255, 0.7);
-    padding: 30px; border-radius: 15px; border: 2px solid var(--wood-light);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    text-align: center; width: 90%; max-width: 500px;
+    background: url('https://www.transparenttextures.com/patterns/wood-pattern.png'), var(--wood-dark);
+    padding: 30px; border-radius: 12px; border: 3px solid var(--wood-light);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.8), inset 0 0 15px rgba(0,0,0,0.9);
+    text-align: center; width: 100%; max-width: 450px;
 }
-.wide { max-width: 800px; }
+.wide { width: 90%; max-width: 800px; }
 
-/* Сетка портфолио */
+/* ГАЛЕРЕЯ ПОРТФОЛИО */
 .gallery-grid { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
 .gallery-item {
-    position: relative; overflow: hidden; border-radius: 10px; border: 2px solid var(--wood-light);
-    width: 100%; max-width: 280px; height: 180px; cursor: pointer; transition: 0.4s;
+    position: relative; overflow: hidden; border-radius: 8px; border: 2px solid var(--gold);
+    width: 250px; height: 150px; cursor: pointer; transition: 0.4s;
 }
-.gallery-item img { width: 100%; height: 100%; object-fit: cover; }
-
-/* Чат */
-.tavern-chat { 
-    height: 250px; overflow-y: auto; display: flex; flex-direction: column; 
-    gap: 8px; padding: 10px; background: rgba(255,255,255,0.5); 
-    border: 1px solid var(--wood-light); border-radius: 8px; margin: 15px 0; 
-}
-.msg-content { max-width: 85%; padding: 8px 12px; font-size: 14px; border-radius: 10px; }
-.sent .msg-content { background: var(--wood-dark); color: #fff; align-self: flex-end; }
-.received .msg-content { background: var(--parchment); color: var(--text-dark); border: 1px solid var(--wood-light); align-self: flex-start; }
-
-.tavern-input, textarea { 
-    width: 100%; background: #fff; border: 1px solid var(--wood-light); 
-    padding: 10px; border-radius: 8px; color: var(--text-dark); margin-bottom: 10px;
+.gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.4s; }
+.overlay {
+    position: absolute; bottom: -50px; left: 0; width: 100%; background: rgba(0,0,0,0.8);
+    color: var(--gold); padding: 8px 0; font-family: 'Cinzel'; font-size: 12px;
 }
 
-/* Кнопки */
+/* Эффекты только для десктопа */
+@media (min-width: 768px) {
+    .gallery-item:hover img { transform: scale(1.1); filter: brightness(0.6); }
+    .gallery-item:hover .overlay { bottom: 0; }
+}
+
+/* ЧАТ (Твой стиль, адаптирован) */
+.tavern-chat { height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 10px; background: rgba(0,0,0,0.5); border: 1px inset var(--wood-light); border-radius: 6px; margin: 15px 0; }
+.msg-box { max-width: 85%; padding: 8px 12px; font-size: 13px; border-radius: 10px; }
+.sent { align-self: flex-end; background: var(--wood-light); color: var(--text-color); }
+.received { align-self: flex-start; background: rgba(255,255,255,0.08); color: var(--gold); }
+
+/* КНОПКИ */
 .btn-tavern { 
-    background: var(--wood-dark); color: #fff; 
-    padding: 10px 20px; border: none; border-radius: 8px;
+    background: linear-gradient(145deg, var(--wood-light), var(--wood-dark));
+    border: 2px solid var(--gold); color: #fff; padding: 12px 20px; border-radius: 6px;
     font-family: 'Cinzel'; cursor: pointer; transition: 0.3s;
 }
 .btn-tavern:hover { background: var(--fire); transform: scale(1.05); }
 
-/* Мобильные правки */
-@media (max-width: 768px) {
-    .nav-brand { display: none; }
-    .nav-center { width: 100%; display: flex; justify-content: space-around; }
-    .nav-center button { margin: 0; font-size: 12px; }
-    .flicker-text { font-size: 1.5rem; }
-    .wood-board { padding: 20px; }
-    .gallery-item { max-width: 100%; }
+/* ГАБАРИТЫ КОТИКОВ (ИСПРАВЛЕНО) */
+.cat-fixed-container {
+    width: 100%;
+    height: 180px; /* Фиксируем высоту контейнера, чтобы не перкрывал */
+    overflow-y: scroll; /* Разрешаем внутренний скролл */
+    margin: 15px 0;
+}
+.cat-grid { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.cat-img { 
+    width: 80px; height: 80px; object-fit: cover; 
+    border: 2px solid var(--wood-light); border-radius: 8px; 
 }
 
-/* Эффект искр (адаптирован под светлый фон) */
+/* МОБИЛЬНАЯ АДАПТАЦИЯ */
+@media (max-width: 768px) {
+    .nav-brand { display: none; }
+    .nav-center button { margin: 0; font-size: 12px; padding: 0 5px; }
+    .glow-text { font-size: 1.8rem; }
+    .art-card { width: 100%; height: 140px; margin-bottom: 10px; }
+    .wood-board { padding: 20px; }
+    .cats-stack img { height: 70px; }
+}
+
+/* Эффект искр (Твой оригинал) */
 .embers span {
     position: absolute; bottom: -50px; background: var(--fire); width: 3px; height: 3px; border-radius: 50%;
-    animation: floatUp 5s infinite ease-in; opacity: 0.4;
+    animation: floatUp 5s infinite ease-in; opacity: 0.6;
 }
-@keyframes floatUp {
-    0% { transform: translateY(0) scale(1); opacity: 0.5; }
-    100% { transform: translateY(-100vh) scale(0); opacity: 0; }
-}
+@keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100vh); opacity: 0; } }
