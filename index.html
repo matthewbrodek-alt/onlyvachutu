@@ -2,55 +2,55 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nitro Tavern | Adaptive</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nitro Hub v3</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <nav class="top-nav">
     <div class="logo">NITRO<span>HUB</span></div>
-    <button id="lang-btn">🇺🇸 EN</button>
+    <button id="lang-btn" class="magic-btn">🇺🇸 EN</button>
 </nav>
 
 <main class="dashboard">
     <div class="card profile-card">
-        <div class="badge">Online</div>
-        <h2 id="user-name">Путник</h2>
-        <p class="sub" data-lang="welcomeSub">Automation Mage</p>
+        <div class="status">ONLINE</div>
+        <h2 id="user-name">Traveler</h2>
+        <p class="sub">Automation Mage</p>
     </div>
 
     <div class="card chat-card">
-        <div id="login-form" class="auth-box">
-            <h3 data-lang="todoTitle">Тайная комната</h3>
+        <div id="login-form" class="auth-ui">
+            <h3>Secret Entrance</h3>
             <input type="email" id="auth-email" placeholder="Email" class="n-input">
             <input type="password" id="auth-pass" placeholder="Password" class="n-input">
-            <button onclick="handleLogin()" class="n-btn primary" data-lang="loginBtn">Войти</button>
+            <button onclick="handleLogin()" class="n-btn primary">Open Door</button>
         </div>
 
-        <div id="user-info" style="display:none;" class="chat-wrapper">
-            <div id="chat-window" class="chat-messages"></div>
-            <div class="chat-input-area">
-                <input type="text" id="chat-msg" placeholder="Сообщение..." class="n-input">
+        <div id="user-info" style="display:none;" class="chat-ui">
+            <div id="chat-window" class="chat-feed"></div>
+            <div class="chat-controls">
+                <input type="text" id="chat-msg" placeholder="Write a message..." class="n-input">
                 <button onclick="sendMessage()" class="send-btn">➔</button>
             </div>
         </div>
     </div>
 
     <div class="card cats-card">
-        <h3 data-lang="catsTitle">Коты Таверны</h3>
-        <div id="cat-container" class="cat-viewer"></div>
-        <button onclick="fetchCats()" class="n-btn secondary">Приманить</button>
+        <h3>Tavern Cats</h3>
+        <div id="cat-container" class="cat-grid"></div>
+        <button onclick="fetchCats()" class="n-btn secondary">Summon Cats</button>
     </div>
 
     <div class="card skills-card">
-        <h3 data-lang="skillTech">Арсенал</h3>
+        <h3>Arsenal</h3>
         <ul class="skill-list">
             <li>JS Alchemy</li>
             <li>Python Runes</li>
