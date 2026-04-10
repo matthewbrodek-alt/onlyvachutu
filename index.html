@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio | Tesla Edition</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -20,7 +19,7 @@
         <div class="nav-center">
             <button onclick="scrollToPanel('home')" data-lang="navHome">Главная</button>
             <button onclick="scrollToPanel('skills')" data-lang="navSkills">Навыки</button>
-            <button onclick="scrollToPanel('todo')" data-lang="navTodo">Задачи</button>
+            <button onclick="scrollToPanel('todo')" data-lang="navTodo">Кабинет</button>
             <button onclick="scrollToPanel('about')" data-lang="navAbout">Связь</button>
         </div>
         <div class="nav-right">
@@ -36,7 +35,7 @@
                 <p class="sub-text" data-lang="welcomeSub">Junior Developer & Automation Specialist</p>
                 <div class="button-group">
                     <button onclick="scrollToPanel('skills')" class="btn-primary" data-lang="navSkills">Навыки</button>
-                    <button onclick="scrollToPanel('about')" class="btn-secondary" data-lang="navAbout">Связь</button>
+                    <button onclick="scrollToPanel('todo')" class="btn-secondary" data-lang="navTodo">Войти</button>
                 </div>
             </div>
         </section>
@@ -62,45 +61,44 @@
         </section>
 
         <section id="todo" class="panel">
-        <div class="tesla-auth-card glass-box">
-        <h2 data-lang="todoTitle" class="auth-title">Личный кабинет</h2>
-        
-        <div id="login-form" class="auth-form">
-            <div class="input-wrapper">
-                <label>Email</label>
-                <input type="email" id="auth-email" placeholder="">
-            </div>
-            <div class="input-wrapper">
-                <label>Password</label>
-                <input type="password" id="auth-pass" placeholder="">
-            </div>
-            <div class="auth-actions">
-                <button onclick="handleLogin()" class="btn-tesla-primary" data-lang="loginBtn">Войти / Создать</button>
-            </div>
-        </div>
+            <div class="tesla-auth-card glass-box">
+                <h2 data-lang="todoTitle" class="auth-title">Личный кабинет</h2>
+                
+                <div id="login-form" class="auth-form">
+                    <div class="input-wrapper">
+                        <label>Email</label>
+                        <input type="email" id="auth-email">
+                    </div>
+                    <div class="input-wrapper">
+                        <label>Password</label>
+                        <input type="password" id="auth-pass">
+                    </div>
+                    <div class="auth-actions">
+                        <button onclick="handleLogin()" class="btn-tesla-primary" data-lang="loginBtn">Войти / Создать</button>
+                    </div>
+                </div>
 
-        <div id="user-info" style="display:none;" class="auth-chat-mode">
-            <div class="chat-header">
-                <p class="status-dot">● Online</p>
-                <span id="user-display-email"></span>
+                <div id="user-info" style="display:none;" class="auth-chat-mode">
+                    <div class="chat-header">
+                        <p class="status-dot">● Online</p>
+                        <span id="user-display-email"></span>
+                    </div>
+                    <div id="chat-window" class="tesla-chat"></div>
+                    <div class="chat-inputs">
+                        <textarea id="chat-msg" data-placeholder="chatMsg" placeholder="Сообщение..."></textarea>
+                        <button onclick="sendMessage()" class="btn-tesla-primary" data-lang="sendBtn">Отправить</button>
+                    </div>
+                </div>
             </div>
-            <div id="chat-window" class="tesla-chat"></div>
-            <div class="chat-inputs">
-                <textarea id="chat-msg" data-placeholder="chatMsg" placeholder="Сообщение..."></textarea>
-                <button onclick="sendMessage()" class="btn-tesla-primary" data-lang="sendBtn">Отправить</button>
-               </div>
-            </div>
-         </div>
-     </section>
+        </section>
 
         <section id="about" class="panel">
             <div class="glass-box chat-container">
-                <h2 data-lang="tgTitle">Чат со мной</h2>
-                <div id="chat-window" class="tesla-chat"></div>
+                <h2 data-lang="tgTitle">Быстрая связь</h2>
                 <div class="chat-inputs">
                     <input type="text" id="chat-name" data-placeholder="chatName" placeholder="Ваше имя">
-                    <textarea id="chat-msg" data-placeholder="chatMsg" placeholder="Сообщение..."></textarea>
-                    <button onclick="sendMessage()" class="btn-primary" data-lang="sendBtn">Отправить</button>
+                    <textarea id="chat-msg-public" data-placeholder="chatMsg" placeholder="Ваш вопрос..."></textarea>
+                    <button onclick="sendPublicMessage()" class="btn-primary" data-lang="sendBtn">Отправить</button>
                 </div>
             </div>
         </section>
