@@ -21,12 +21,12 @@
 <nav class="nitro-nav">
     <div class="logo">NITRO.HUB</div>
     <div class="nav-right">
-        <button onclick="toggleLang()" id="lang-btn" class="lang-btn">🇺🇸 EN</button>
+        <button id="lang-btn" class="lang-btn">🇺🇸 EN</button>
     </div>
 </nav>
 
 <main class="bento-grid">
-    <div class="bento-item profile-card" data-tilt>
+    <div class="bento-item profile-card">
         <div class="status-indicator">Online</div>
         <h2 id="user-name">Путник</h2>
         <p data-lang="welcomeSub">Automation Mage</p>
@@ -35,8 +35,10 @@
     <div class="bento-item chat-card">
         <div id="login-form" class="auth-container">
             <h3 data-lang="todoTitle">Тайная комната</h3>
-            <input type="email" id="auth-email" placeholder="Email" class="nitro-input">
-            <input type="password" id="auth-pass" placeholder="Password" class="nitro-input">
+            <div class="input-wrap">
+                <input type="email" id="auth-email" placeholder="Email" class="nitro-input">
+                <input type="password" id="auth-pass" placeholder="Password" class="nitro-input">
+            </div>
             <button onclick="handleLogin()" class="nitro-btn" data-lang="loginBtn">Открыть дверь</button>
         </div>
 
