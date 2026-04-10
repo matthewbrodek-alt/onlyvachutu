@@ -11,52 +11,30 @@ body {
     color: var(--text);
 }
 
-.tesla-auth-card { max-width: 450px; margin: auto; padding: 40px; background: rgba(0,0,0,0.6); backdrop-filter: blur(20px); border-radius: 25px; }
+.tesla-nav { position: fixed; top: 0; width: 100%; display: flex; justify-content: space-between; padding: 20px 40px; z-index: 100; }
+.nav-center button { background: none; border: none; color: white; margin: 0 15px; cursor: pointer; font-size: 15px; }
 
-/* Чат как в мессенджерах */
+.panel { height: 100vh; display: flex; justify-content: center; align-items: center; scroll-snap-align: start; }
+.scroll-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; }
+
+.glass-box { background: rgba(0,0,0,0.6); backdrop-filter: blur(20px); padding: 40px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+
+/* Чат */
 .tesla-chat {
-    height: 380px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 15px;
-    margin-bottom: 15px;
-    background: rgba(0,0,0,0.2);
-    border-radius: 15px;
+    height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 15px; 
+    background: rgba(0,0,0,0.3); border-radius: 15px; margin: 20px 0;
 }
 
 .msg-box { display: flex; width: 100%; }
-.msg-box.sent { justify-content: flex-end; } /* Ты (справа) */
-.msg-box.received { justify-content: flex-start; } /* Бот (слева) */
+.msg-box.sent { justify-content: flex-end; } /* Ты справа */
+.msg-box.received { justify-content: flex-start; } /* Бот слева */
 
-.msg-content {
-    max-width: 80%;
-    padding: 10px 16px;
-    font-size: 14px;
-    line-height: 1.4;
-}
+.msg-content { max-width: 80%; padding: 10px 15px; font-size: 14px; border-radius: 15px; }
+.sent .msg-content { background: var(--tesla-blue); border-bottom-right-radius: 2px; }
+.received .msg-content { background: rgba(255,255,255,0.15); border-bottom-left-radius: 2px; }
 
-.sent .msg-content {
-    background: var(--tesla-blue);
-    color: white;
-    border-radius: 18px 18px 2px 18px;
-}
+.input-wrapper { text-align: left; margin-bottom: 20px; }
+.input-wrapper label { font-size: 12px; color: rgba(255,255,255,0.6); margin-left: 10px; }
+.input-wrapper input, textarea { width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 12px; border-radius: 15px; color: white; }
 
-.received .msg-content {
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    border-radius: 18px 18px 18px 2px;
-}
-
-/* Кнопки и инпуты */
-.btn-tesla-primary {
-    background: var(--tesla-blue);
-    border: none; color: white; padding: 12px;
-    border-radius: 20px; cursor: pointer; font-weight: 600; width: 100%;
-}
-
-.input-wrapper input, textarea {
-    width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
-    padding: 12px; border-radius: 15px; color: white; margin-top: 5px;
-}
+.btn-tesla-primary { background: var(--tesla-blue); border: none; color: white; padding: 12px 25px; border-radius: 20px; font-weight: 600; cursor: pointer; width: 100%; }
