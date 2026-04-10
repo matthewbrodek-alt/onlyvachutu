@@ -1,95 +1,103 @@
 :root {
-    --bg: #f8f9fd;
+    --bg: #f0f2f5;
     --accent: #6c5ce7;
     --text: #2d3436;
-    --glass: rgba(255, 255, 255, 0.8);
+    --glass: rgba(255, 255, 255, 0.9);
 }
 
+* { box-sizing: border-box; }
+
 body, html {
-    margin: 0; padding: 0; height: 100%;
+    margin: 0; padding: 0; height: 100%; width: 100%;
     background: var(--bg); color: var(--text);
     font-family: 'Montserrat', sans-serif;
     overflow: hidden;
 }
 
-/* СВЕТЛЫЙ ФОН С АНИМАЦИЕЙ ЛЮДЕЙ */
+/* ФОН */
 .light-bg {
-    position: fixed; width: 100%; height: 100%; z-index: -1;
-    background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
-    overflow: hidden;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+    background: #f8f9fa; overflow: hidden;
 }
-
 .blob {
-    position: absolute; width: 400px; height: 400px;
-    background: var(--accent); opacity: 0.1;
-    filter: blur(80px); border-radius: 50%;
-    animation: move 20s infinite alternate;
+    position: absolute; width: 50vw; height: 50vw; background: var(--accent);
+    opacity: 0.1; filter: blur(100px); border-radius: 50%; animation: move 20s infinite alternate;
 }
-.blob:nth-child(2) { right: 0; bottom: 0; background: #a29bfe; animation-delay: -5s; }
+.b2 { right: -10%; bottom: -10%; background: #00cec9; animation-delay: -5s; }
 
-@keyframes move { from { transform: translate(-10%, -10%); } to { transform: translate(20%, 20%); } }
+@keyframes move { from { transform: translate(-10%, -10%); } to { transform: translate(10%, 10%); } }
 
-/* АНИМАЦИЯ ЛЮДЕЙ */
+/* ЛЮДИ (Силуэты) */
 .person {
-    position: absolute; bottom: 5%; width: 60px; height: 120px;
-    background: rgba(0,0,0,0.05); clip-path: polygon(50% 0%, 80% 20%, 80% 100%, 20% 100%, 20% 20%);
+    position: absolute; bottom: 0; width: 80px; height: 150px;
+    background: rgba(0,0,0,0.03); clip-path: polygon(50% 0, 80% 20%, 75% 100%, 25% 100%, 20% 20%);
     animation: walk linear infinite;
 }
-.p1 { left: -100px; animation-duration: 25s; }
-.p2 { left: -100px; animation-duration: 35s; animation-delay: 10s; }
+.p1 { animation-duration: 30s; }
+.p2 { animation-duration: 45s; animation-delay: 15s; }
+@keyframes walk { 0% { left: -10%; } 100% { left: 110%; } }
 
-@keyframes walk {
-    0% { left: -100px; opacity: 0; }
-    10% { opacity: 0.3; }
-    90% { opacity: 0.3; }
-    100% { left: 110vw; opacity: 0; }
+/* СКРОЛЛ */
+.scroll-container {
+    height: 100vh; overflow-y: scroll; 
+    scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch;
 }
-
-/* NAV */
-.modern-nav {
-    position: fixed; top: 0; width: 100%; height: 70px;
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 0 30px; box-sizing: border-box; z-index: 100;
+.panel {
+    height: 100vh; scroll-snap-align: start;
+    display: flex; justify-content: center; align-items: center;
+    padding: 20px;
 }
-.nav-links button { 
-    background: #dfe6e9; border: none; width: 10px; height: 10px; 
-    border-radius: 50%; margin: 0 5px; cursor: pointer; transition: 0.3s;
-}
-.nav-links button:hover { background: var(--accent); transform: scale(1.5); }
 
 /* ПАНЕЛИ */
-.scroll-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
-.panel { height: 100vh; scroll-snap-align: start; display: flex; justify-content: center; align-items: center; }
-
 .glass-panel {
-    background: var(--glass); backdrop-filter: blur(10px);
-    padding: 30px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-    width: 90%; max-width: 400px; text-align: center;
+    background: var(--glass); backdrop-filter: blur(15px);
+    padding: 30px; border-radius: 30px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+    width: 100%; max-width: 450px; text-align: center;
+    position: relative; z-index: 10;
 }
 
-/* СОВРЕМЕННАЯ КАРУСЕЛЬ КОТОВ (Stack) */
+/* КАРУСЕЛЬ КОТОВ */
+.stack-wrapper {
+    height: 300px; display: flex; align-items: center; justify-content: center;
+    margin: 20px 0; position: relative;
+}
 .stack-carousel {
-    position: relative; width: 280px; height: 350px; margin: 0 auto;
+    position: relative; width: 220px; height: 280px;
 }
 .cat-card {
     position: absolute; width: 100%; height: 100%;
-    border-radius: 20px; overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    transition: 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-    border: 5px solid #fff;
+    border-radius: 20px; overflow: hidden; border: 6px solid #fff;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    transition: 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    cursor: pointer;
 }
 .cat-card img { width: 100%; height: 100%; object-fit: cover; }
 
-/* Каскадное наложение карт */
-.cat-card:nth-child(1) { transform: rotate(-5deg) translate(-10px); z-index: 3; }
-.cat-card:nth-child(2) { transform: rotate(3deg) translate(10px); z-index: 2; opacity: 0.8; }
-.cat-card:nth-child(3) { transform: rotate(-2deg) translate(0, 10px); z-index: 1; opacity: 0.5; }
+/* Позиции в стопке */
+.cat-card:nth-child(1) { transform: rotate(-4deg) translateY(0); z-index: 3; }
+.cat-card:nth-child(2) { transform: rotate(4deg) translateY(10px); z-index: 2; opacity: 0.7; }
+.cat-card:nth-child(3) { transform: rotate(0deg) translateY(20px); z-index: 1; opacity: 0.4; }
 
-/* ЧАТ */
-.modern-chat { height: 250px; overflow-y: auto; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
-.msg-box { padding: 10px 15px; border-radius: 15px; font-size: 14px; max-width: 80%; }
+.refresh-cats {
+    background: var(--accent); color: #fff; border: none;
+    padding: 12px 25px; border-radius: 50px; cursor: pointer;
+    font-weight: 600; transition: 0.3s;
+}
+.refresh-cats:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4); }
+
+/* ИНТЕРФЕЙС */
+.modern-nav {
+    position: fixed; top: 0; width: 100%; display: flex; 
+    justify-content: space-between; padding: 20px 30px; z-index: 1000;
+}
+.m-input { width: 100%; padding: 15px; border: 1px solid #eee; border-radius: 15px; margin-bottom: 10px; outline: none; }
+.m-btn { width: 100%; padding: 15px; background: var(--accent); color: #fff; border: none; border-radius: 15px; cursor: pointer; font-weight: bold; }
+
+.modern-chat { height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.msg-box { padding: 10px; border-radius: 12px; font-size: 13px; max-width: 80%; }
 .user { align-self: flex-end; background: var(--accent); color: #fff; }
-.admin { align-self: flex-start; background: #fff; border: 1px solid #eee; }
+.admin { align-self: flex-start; background: #eee; }
 
-.m-input { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 12px; margin-bottom: 10px; outline: none; }
-.m-btn { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; }
+.input-group { display: flex; gap: 5px; }
+.input-group input { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #ddd; }
