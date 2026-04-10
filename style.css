@@ -46,16 +46,27 @@ body, html {
 .status-wrapper { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .logout-link { background: none; border: none; color: var(--error); font-size: 0.8rem; cursor: pointer; opacity: 0.7; }
 
+/* Чат */
 .chat-container { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
 .chat-feed { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.chat-controls { display: flex; gap: 10px; margin-top: 15px; }
+
 .msg-box { padding: 12px 18px; border-radius: 20px; max-width: 80%; font-size: 14px; }
 .sent { align-self: flex-end; background: var(--accent); color: #000; font-weight: 700; }
 .received { align-self: flex-start; background: #222; }
 
-.n-input { background: #161616; border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 12px; outline: none; width: 100%; font-size: 16px; }
-.n-btn { padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; }
+/* Кнопки и Инпуты */
+.n-input { 
+    background: #161616; border: 1px solid var(--border); color: #fff; 
+    padding: 12px; border-radius: 12px; outline: none; width: 100%; font-size: 16px; 
+}
+.n-btn { 
+    padding: 12px 20px; border-radius: 12px; border: none; font-weight: 700; 
+    cursor: pointer; transition: 0.3s; white-space: nowrap;
+}
 .primary { background: var(--accent); color: #000; }
 .secondary { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+.secondary:hover { background: var(--accent); color: #000; }
 
 .top-nav { height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; border-bottom: 1px solid var(--border); }
 .lang-globe-btn { background: #161616; border: 1px solid var(--border); color: #fff; padding: 8px 16px; border-radius: 30px; cursor: pointer; }
