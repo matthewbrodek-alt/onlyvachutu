@@ -23,79 +23,87 @@ body, html {
 }
 .runes-overlay { position: fixed; inset: 0; z-index: -1; background: url('https://www.transparenttextures.com/patterns/p5.png'); opacity: 0.1; }
 
-/* ИСКРЫ */
+/* ЭФФЕКТ ИСКР */
 .embers span {
     position: absolute; bottom: -10px; width: 3px; height: 3px;
     background: var(--accent); border-radius: 50%;
-    box-shadow: 0 0 10px var(--accent), 0 0 20px #fff;
+    box-shadow: 0 0 10px var(--accent);
     animation: floatUp infinite ease-in; opacity: 0;
 }
-.embers span:nth-child(1) { left: 20%; animation-duration: 4s; }
-.embers span:nth-child(2) { left: 50%; animation-duration: 6s; animation-delay: 1s; }
-.embers span:nth-child(3) { left: 80%; animation-duration: 5s; animation-delay: 2s; }
 @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100vh); opacity: 0; } }
 
 /* НАВИГАЦИЯ */
 .tavern-header {
-    position: fixed; top: 0; left: 0; width: 100%; height: 80px;
+    position: fixed; top: 0; width: 100%; height: 70px;
     display: flex; justify-content: space-between; align-items: center;
-    padding: 0 40px; box-sizing: border-box; z-index: 100;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+    padding: 0 50px; box-sizing: border-box; z-index: 100;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(10px);
 }
-.nav-brand { color: var(--accent); text-shadow: 0 0 10px var(--accent); font-family: 'Cinzel'; }
-.nav-links { display: flex; gap: 30px; }
-.nav-links a { text-decoration: none; color: #fff; font-family: 'Cinzel'; font-size: 0.9rem; transition: 0.3s; }
-.nav-links a:hover { color: var(--accent); }
+.nav-links { display: flex; gap: 25px; }
+.nav-links a { text-decoration: none; color: #fff; font-family: 'Cinzel'; font-size: 0.85rem; transition: 0.3s; }
+.nav-links a:hover { color: var(--accent); text-shadow: 0 0 8px var(--accent); }
 
-/* СКРОЛЛ ПАНЕЛИ */
+/* ПАНЕЛИ И СКРОЛЛ */
 .scroll-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
-.panel { height: 100vh; scroll-snap-align: start; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; padding: 20px; box-sizing: border-box; }
+.panel { height: 100vh; scroll-snap-align: start; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
 
-/* КАРТОЧКИ И ПАНЕЛИ */
 .arcane-panel {
     background: var(--panel-dark); border-radius: 20px; border: 1px solid var(--border);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.7); padding: 30px; position: relative;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.8); padding: 35px; position: relative;
 }
-.wide { width: 95%; max-width: 900px; }
 
-/* ГЕРОЙ (WELCOME) */
-.glow-text { font-family: 'Cinzel'; font-size: clamp(2rem, 8vw, 4rem); text-shadow: 0 0 20px var(--neon-blue); text-align: center; }
+/* РАСШИРЕННЫЙ ЧАТ */
+.chat-panel { 
+    width: 750px; /* Было 500, теперь просторно */
+    max-width: 95%; 
+}
+.arcane-chat { 
+    height: 400px; 
+    overflow-y: auto; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px; 
+    padding: 20px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 15px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,0.03);
+}
+.msg-box { max-width: 70%; padding: 12px 18px; border-radius: 12px; font-size: 14px; line-height: 1.4; }
+.sent { align-self: flex-end; background: var(--accent); color: #000; font-weight: 500; }
+.received { align-self: flex-start; background: rgba(255,255,255,0.07); color: #ddd; }
 
-/* КОТИКИ (ИСПРАВЛЕНО) */
+.chat-inputs { display: flex; gap: 10px; }
+#chat-msg { flex-grow: 1; height: 55px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 10px; color: #fff; padding: 12px; resize: none; outline: none; }
+.send-btn { width: 55px; height: 55px; background: var(--accent); border: none; border-radius: 10px; cursor: pointer; font-size: 20px; }
+
+/* КОТИКИ (МНОГО МЕСТА) */
+.cats-panel.wide { max-width: 1000px; }
 .cat-grid {
     display: grid; 
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
-    gap: 20px; 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 25px; 
     width: 100%;
-    min-height: 220px; /* Увеличили минимальную высоту */
-    margin: 20px 0 30px 0; /* Добавили больше отступа снизу до кнопки */
+    margin: 25px 0 40px 0; /* Огромный отступ до кнопки */
 }
 .cat-pic {
-    width: 100%; height: 200px; /* Увеличили размер самих фото */
-    object-fit: cover; border-radius: 12px; border: 2px solid var(--border);
-    transition: 0.4s;
+    width: 100%; height: 220px; 
+    object-fit: cover; border-radius: 15px; border: 2px solid var(--border);
+    transition: 0.4s ease;
 }
-.cat-pic:hover { border-color: var(--accent); transform: translateY(-5px); box-shadow: 0 5px 15px rgba(255, 159, 67, 0.4); }
+.cat-pic:hover { border-color: var(--accent); transform: scale(1.03); }
 
 /* КНОПКИ */
 .arcane-btn {
-    padding: 12px 30px; background: none; border: 1px solid var(--accent);
+    padding: 14px 35px; background: none; border: 1px solid var(--accent);
     color: var(--accent); font-family: 'Cinzel'; font-weight: 700;
-    border-radius: 8px; cursor: pointer; transition: 0.3s;
-    display: inline-block;
+    border-radius: 10px; cursor: pointer; transition: 0.3s;
 }
-.arcane-btn:hover { background: var(--accent); color: #000; box-shadow: 0 0 20px var(--accent); }
-.mini-btn { margin-top: 10px; } /* Дополнительный отступ для кнопки под котиками */
+.arcane-btn:hover { background: var(--accent); color: #000; box-shadow: 0 0 25px var(--accent); }
 
-/* ЧАТ */
-.arcane-chat { height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
-.msg-box { max-width: 80%; padding: 10px 15px; border-radius: 10px; font-size: 14px; }
-.sent { align-self: flex-end; background: var(--accent); color: #000; }
-.received { align-self: flex-start; background: rgba(255,255,255,0.05); border: 1px solid var(--border); }
-
-/* МОБИЛКА */
+/* Адаптив для телефонов */
 @media (max-width: 768px) {
-    .nav-links { display: none; }
-    .cat-grid { grid-template-columns: repeat(2, 1fr); min-height: 120px; }
-    .cat-pic { height: 120px; }
+    .chat-panel { width: 95%; }
+    .cat-grid { grid-template-columns: repeat(2, 1fr); }
+    .cat-pic { height: 150px; }
 }
