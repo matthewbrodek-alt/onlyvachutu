@@ -1,9 +1,8 @@
 :root {
     --bg-dark: #060a11;
     --panel-dark: #121620;
-    --accent: #ff9f43; /* Теплое золото/огонь */
+    --accent: #ff9f43; 
     --neon-blue: #00d2ff;
-    --neon-blue-glow: rgba(0, 210, 255, 0.4);
     --text-main: #fff;
     --text-sec: #94a3b8;
     --border: rgba(255, 255, 255, 0.1);
@@ -16,19 +15,15 @@ body, html {
     overflow: hidden;
 }
 
-/* ФОН И МАГИЧЕСКИЕ ЭФФЕКТЫ */
+/* ФОН */
 .forest-bg {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
     background: url('https://img.freepik.com/free-photo/mystical-dark-forest-night_23-2150913217.jpg');
     background-size: cover; background-position: center; filter: brightness(0.4) saturate(1.2);
 }
-.runes-overlay {
-    position: fixed; inset: 0; z-index: -1;
-    background: url('https://www.transparenttextures.com/patterns/p5.png'); /* Текстура карты */
-    opacity: 0.1;
-}
+.runes-overlay { position: fixed; inset: 0; z-index: -1; background: url('https://www.transparenttextures.com/patterns/p5.png'); opacity: 0.1; }
 
-/* Искры */
+/* ИСКРЫ */
 .embers span {
     position: absolute; bottom: -10px; width: 3px; height: 3px;
     background: var(--accent); border-radius: 50%;
@@ -38,115 +33,69 @@ body, html {
 .embers span:nth-child(1) { left: 20%; animation-duration: 4s; }
 .embers span:nth-child(2) { left: 50%; animation-duration: 6s; animation-delay: 1s; }
 .embers span:nth-child(3) { left: 80%; animation-duration: 5s; animation-delay: 2s; }
+@keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100vh); opacity: 0; } }
 
-@keyframes floatUp {
-    0% { transform: translateY(0) scale(1); opacity: 1; }
-    100% { transform: translateY(-100vh) scale(0); opacity: 0; }
-}
-
-/* ЗАГОЛОВКИ И ШРИФТЫ */
-h1, h2, h3, .nav-brand { font-family: 'Cinzel', serif; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
-
-/* ВЕРХНЯЯ ПАНЕЛЬ */
+/* НАВИГАЦИЯ */
 .tavern-header {
     position: fixed; top: 0; left: 0; width: 100%; height: 80px;
     display: flex; justify-content: space-between; align-items: center;
     padding: 0 40px; box-sizing: border-box; z-index: 100;
     background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
 }
-.nav-brand { color: var(--accent); text-shadow: 0 0 10px var(--accent); font-size: 1.2rem; }
+.nav-brand { color: var(--accent); text-shadow: 0 0 10px var(--accent); font-family: 'Cinzel'; }
 .nav-links { display: flex; gap: 30px; }
-.nav-links a { text-decoration: none; color: #fff; font-family: 'Cinzel'; font-size: 0.9rem; transition: 0.3s; display: flex; align-items: center; gap: 5px;}
-.nav-links a:hover { color: var(--accent); text-shadow: 0 0 10px var(--accent); }
-.globe-icon { font-size: 1.1rem; color: #aaa; }
+.nav-links a { text-decoration: none; color: #fff; font-family: 'Cinzel'; font-size: 0.9rem; transition: 0.3s; }
+.nav-links a:hover { color: var(--accent); }
 
-/* СКРОЛЛ */
+/* СКРОЛЛ ПАНЕЛИ */
 .scroll-container { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
-.panel { height: 100vh; scroll-snap-align: start; display: flex; justify-content: center; align-items: center; position: relative; }
+.panel { height: 100vh; scroll-snap-align: start; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; padding: 20px; box-sizing: border-box; }
 
-/* МАГИЧЕСКИЕ ПАНЕЛИ */
+/* КАРТОЧКИ И ПАНЕЛИ */
 .arcane-panel {
-    background: var(--panel-dark); border-radius: 20px;
-    border: 1px solid var(--border);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.7);
-    padding: 30px; box-sizing: border-box; position: relative;
-    overflow: hidden;
+    background: var(--panel-dark); border-radius: 20px; border: 1px solid var(--border);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.7); padding: 30px; position: relative;
 }
-.wide { width: 90%; max-width: 900px; }
+.wide { width: 95%; max-width: 900px; }
 
-/* КАРТОЧКА НА ГЛАВНОЙ */
-.hero-card {
-    background: none; border: none; box-shadow: none; text-align: center;
-}
-.glow-text {
-    font-size: 4rem; color: #fff;
-    text-shadow: 0 0 15px var(--neon-blue), 0 0 30px var(--neon-blue);
-    margin: 0;
-}
-.sub-text { font-size: 1rem; color: var(--text-sec); margin-top: 10px; font-weight: 300; }
+/* ГЕРОЙ (WELCOME) */
+.glow-text { font-family: 'Cinzel'; font-size: clamp(2rem, 8vw, 4rem); text-shadow: 0 0 20px var(--neon-blue); text-align: center; }
 
-/* АРТЕФАКТЫ (3D КАРТОЧКИ) */
-.artifacts-grid { display: flex; gap: 30px; }
-.artifact-card {
-    background: var(--panel-dark); width: 260px; height: 320px;
-    border-radius: 15px; border: 1px solid var(--border);
-    padding: 20px; text-align: center;
-    transition: 0.3s; cursor: pointer; transform-style: preserve-3d;
-}
-.artifact-card:hover { border-color: var(--accent); box-shadow: 0 0 20px rgba(255, 159, 67, 0.3); }
-
-.art-icon {
-    width: 60px; height: 60px; margin: 0 auto 15px;
-    background-size: contain; background-repeat: no-repeat;
-}
-.fire-icon { background-image: url('https://img.icons8.com/fluency/96/fire-element.png'); filter: drop-shadow(0 0 5px var(--accent)); }
-.bot-icon { background-image: url('https://img.icons8.com/color/96/robot-shadow.png'); filter: drop-shadow(0 0 5px var(--accent)); }
-
-/* КОМНАТА (ЧАТ) */
-.room-section { gap: 30px; flex-wrap: wrap; }
-.login-panel { width: 350px; }
-.chat-panel { width: 500px; }
-
-.arcane-chat { height: 300px; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; margin: 15px 0;}
-.msg-box { max-width: 80%; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-family: 'Poppins';}
-.sent { align-self: flex-end; background: var(--accent); color: #000; font-weight: 500;}
-.received { align-self: flex-start; background: rgba(255,255,255,0.05); color: #ccc; border: 1px solid rgba(255,255,255,0.1); }
-
-/* ИНПУТЫ И КНОПКИ */
-.arcane-input, .arcane-chat textarea {
-    width: 100%; padding: 12px; background: rgba(0,0,0,0.4);
-    border: 1px solid var(--border); border-radius: 8px;
-    color: #fff; font-family: 'Poppins'; font-size: 13px;
-    box-sizing: border-box; outline: none; transition: 0.3s;
-}
-.arcane-input:focus { border-color: var(--accent); }
-
-.arcane-btn {
-    width: 100%; padding: 12px; background: none;
-    border: 1px solid var(--accent); color: var(--accent);
-    font-family: 'Cinzel'; font-weight: 700; text-transform: uppercase;
-    border-radius: 8px; cursor: pointer; transition: 0.3s;
-}
-.arcane-btn:hover { background: var(--accent); color: #000; box-shadow: 0 0 15px var(--accent); }
-
-/* КОТИКИ (СЕТКА) */
+/* КОТИКИ (ИСПРАВЛЕНО) */
 .cat-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
-    height: 150px; overflow: hidden; margin-top: 15px;
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+    gap: 20px; 
+    width: 100%;
+    min-height: 220px; /* Увеличили минимальную высоту */
+    margin: 20px 0 30px 0; /* Добавили больше отступа снизу до кнопки */
 }
 .cat-pic {
-    width: 100%; height: 100%; object-fit: cover;
-    border-radius: 8px; border: 1px solid var(--border);
-    transition: 0.3s;
+    width: 100%; height: 200px; /* Увеличили размер самих фото */
+    object-fit: cover; border-radius: 12px; border: 2px solid var(--border);
+    transition: 0.4s;
 }
-.cat-pic:hover { border-color: var(--accent); transform: scale(1.05); }
+.cat-pic:hover { border-color: var(--accent); transform: translateY(-5px); box-shadow: 0 5px 15px rgba(255, 159, 67, 0.4); }
 
-/* АДАПТИВНОСТЬ */
-@media (max-width: 900px) {
-    .tavern-header { padding: 0 15px; }
-    .nav-links { display: none; } /* Скрываем навигацию на мобильных */
-    .hero-card { transform: scale(0.7); }
-    .artifacts-grid { flex-direction: column; }
-    .room-section { flex-direction: column; }
-    .chat-panel { width: 90%; }
+/* КНОПКИ */
+.arcane-btn {
+    padding: 12px 30px; background: none; border: 1px solid var(--accent);
+    color: var(--accent); font-family: 'Cinzel'; font-weight: 700;
+    border-radius: 8px; cursor: pointer; transition: 0.3s;
+    display: inline-block;
+}
+.arcane-btn:hover { background: var(--accent); color: #000; box-shadow: 0 0 20px var(--accent); }
+.mini-btn { margin-top: 10px; } /* Дополнительный отступ для кнопки под котиками */
+
+/* ЧАТ */
+.arcane-chat { height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+.msg-box { max-width: 80%; padding: 10px 15px; border-radius: 10px; font-size: 14px; }
+.sent { align-self: flex-end; background: var(--accent); color: #000; }
+.received { align-self: flex-start; background: rgba(255,255,255,0.05); border: 1px solid var(--border); }
+
+/* МОБИЛКА */
+@media (max-width: 768px) {
+    .nav-links { display: none; }
+    .cat-grid { grid-template-columns: repeat(2, 1fr); min-height: 120px; }
+    .cat-pic { height: 120px; }
 }
