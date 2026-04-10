@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nitro Hub v3</title>
+    <title>Nitro Hub v3.2 | Logout Update</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -16,45 +16,52 @@
 
 <nav class="top-nav">
     <div class="logo">NITRO<span>HUB</span></div>
-    <button id="lang-btn" class="magic-btn">🇺🇸 EN</button>
+    <button id="lang-btn" class="lang-globe-btn" onclick="toggleLang()">
+        <span id="lang-icon">🌐 🇷🇺</span>
+    </button>
 </nav>
 
 <main class="dashboard">
     <div class="card profile-card">
-        <div class="status">ONLINE</div>
-        <h2 id="user-name">Traveler</h2>
-        <p class="sub">Automation Mage</p>
+        <div class="status-wrapper">
+            <div class="status-badge">ONLINE</div>
+            <button id="logout-btn" class="logout-link" onclick="handleLogout()" style="display: none;">Logout ➔</button>
+        </div>
+        <h2 id="user-name">Guest</h2>
+        <p class="sub" data-lang="welcomeSub">Automation Mage</p>
     </div>
 
     <div class="card chat-card">
-        <div id="login-form" class="auth-ui">
-            <h3>Secret Entrance</h3>
+        <div id="login-form" class="auth-box">
+            <h3 data-lang="todoTitle">Secret Entrance</h3>
             <input type="email" id="auth-email" placeholder="Email" class="n-input">
             <input type="password" id="auth-pass" placeholder="Password" class="n-input">
-            <button onclick="handleLogin()" class="n-btn primary">Open Door</button>
+            <button onclick="handleLogin()" class="n-btn primary" data-lang="loginBtn">Authorize</button>
         </div>
 
-        <div id="user-info" style="display:none;" class="chat-ui">
+        <div id="user-info" style="display:none;" class="chat-container">
             <div id="chat-window" class="chat-feed"></div>
             <div class="chat-controls">
-                <input type="text" id="chat-msg" placeholder="Write a message..." class="n-input">
+                <input type="text" id="chat-msg" placeholder="Send a message..." class="n-input">
                 <button onclick="sendMessage()" class="send-btn">➔</button>
             </div>
         </div>
     </div>
 
     <div class="card cats-card">
-        <h3>Tavern Cats</h3>
-        <div id="cat-container" class="cat-grid"></div>
+        <h3 data-lang="catsTitle">Tavern Cats</h3>
+        <div id="cat-container" class="cat-feed"></div>
         <button onclick="fetchCats()" class="n-btn secondary">Summon Cats</button>
     </div>
 
     <div class="card skills-card">
-        <h3>Arsenal</h3>
+        <h3 data-lang="skillTech">Arsenal</h3>
         <ul class="skill-list">
-            <li>JS Alchemy</li>
-            <li>Python Runes</li>
-            <li>Firebase Souls</li>
+            <li><span class="skill-icon">🔮</span> JS Alchemy & DOM</li>
+            <li><span class="skill-icon">🐍</span> Python Telegram Bridges</li>
+            <li><span class="skill-icon">🔥</span> Firebase Realtime Architecture</li>
+            <li><span class="skill-icon">📱</span> Adaptive Mobile-First UX</li>
+            <li><span class="skill-icon">🛡️</span> Security Rules Sorcery</li>
         </ul>
     </div>
 </main>
