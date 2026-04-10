@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Arcane Tavern | Full Edition</title>
+    <title>Arcane Tavern | Final Stable</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tilt.js/1.2.1/tilt.jquery.min.js"></script>
 
     <link rel="stylesheet" href="style.css">
@@ -20,14 +20,10 @@
     <div class="arcane-bg">
         <div class="smoke"></div>
         <div class="sparks"><i></i><i></i><i></i><i></i><i></i></div>
-        <div class="ghost-people">
-            <div class="ghost p1"></div>
-            <div class="ghost p2"></div>
-        </div>
     </div>
 
     <header class="tavern-header">
-        <div class="logo" data-lang="navLogo">Arcane.Hub</div>
+        <div class="logo">Arcane.Hub</div>
         <nav class="nav-links">
             <a href="javascript:void(0)" onclick="scrollToPanel('home')" data-lang="navHome">Таверна</a>
             <a href="javascript:void(0)" onclick="scrollToPanel('portfolio')" data-lang="navPortfolio">Свитки</a>
@@ -38,7 +34,6 @@
     </header>
 
     <main class="scroll-container">
-        
         <section id="home" class="panel">
             <div class="hero-content">
                 <h1 class="glow-text" data-lang="welcomeTitle">Усталый путник</h1>
@@ -49,19 +44,13 @@
         <section id="portfolio" class="panel">
             <h2 class="section-title" data-lang="portfolioTitle">Артефакты</h2>
             <div class="artifacts-grid">
-                <div class="art-card" data-tilt>
+                <div class="art-card" data-tilt data-tilt-max="10" data-tilt-glare="true" data-tilt-max-glare="0.2">
                     <div class="card-bg" style="background-image: url('https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400')"></div>
-                    <div class="card-content">
-                        <h3>Web Spells</h3>
-                        <p>Frontend Alchemy</p>
-                    </div>
+                    <div class="card-content"><h3>Web Spells</h3><p>Alchemy</p></div>
                 </div>
-                <div class="art-card" data-tilt>
+                <div class="art-card" data-tilt data-tilt-max="10" data-tilt-glare="true" data-tilt-max-glare="0.2">
                     <div class="card-bg" style="background-image: url('https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=400')"></div>
-                    <div class="card-content">
-                        <h3>Bot Magic</h3>
-                        <p>Python Telegram Souls</p>
-                    </div>
+                    <div class="card-content"><h3>Bot Magic</h3><p>Python Souls</p></div>
                 </div>
             </div>
         </section>
@@ -78,7 +67,7 @@
                     <div id="chat-window" class="arcane-chat"></div>
                     <div class="chat-input-group">
                         <input type="text" id="chat-msg" placeholder="Послать ворона...">
-                        <button id="send-btn" onclick="sendMessage()" class="m-btn-icon">→</button>
+                        <button onclick="sendMessage()" class="m-btn-icon">→</button>
                     </div>
                 </div>
             </div>
