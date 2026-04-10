@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nitro Hub v3.5</title>
+    <title>Nitro Hub v3.6</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -15,55 +15,67 @@
 <body>
 
 <nav class="top-nav">
-    <div class="logo">NITRO<span>HUB</span></div>
+    <div class="logo" onclick="showPage('main')" style="cursor:pointer">NITRO<span>HUB</span></div>
+    <div class="nav-links">
+        <a href="#" onclick="showPage('ads')" data-lang="adsLink">Реклама</a>
+    </div>
     <button id="lang-btn" class="lang-globe-btn" onclick="toggleLang()">
         <span id="lang-icon">🌐 🇷🇺</span>
     </button>
 </nav>
 
 <main class="dashboard">
-    <div class="card profile-card">
-        <div class="status-wrapper">
-            <div class="status-badge">ONLINE</div>
-            <button id="logout-btn" class="logout-link" onclick="handleLogout()" style="display: none;">Logout ➔</button>
-        </div>
-        <h2 id="user-name">Guest</h2>
-        <p class="sub" data-lang="welcomeSub">Automation Mage</p>
-    </div>
-
-    <div class="card chat-card">
-        <div id="login-form" class="auth-box">
-            <h3 data-lang="todoTitle">Secret Entrance</h3>
-            <input type="email" id="auth-email" placeholder="Email" class="n-input">
-            <input type="password" id="auth-pass" placeholder="Password" class="n-input">
-            <button onclick="handleLogin()" class="n-btn primary" data-lang="loginBtn">Authorize</button>
+    <section id="main-content" class="page-content active">
+        <div class="card profile-card">
+            <div class="status-wrapper">
+                <div class="status-badge">ONLINE</div>
+                <button id="logout-btn" class="logout-link" onclick="handleLogout()" style="display: none;">Logout ➔</button>
+            </div>
+            <h2 id="user-name">Guest</h2>
+            <p class="sub" data-lang="welcomeSub">Маг Автоматизации</p>
         </div>
 
-        <div id="user-info" style="display:none;" class="chat-container">
-            <div id="chat-window" class="chat-feed"></div>
-            <div class="chat-controls">
-                <input type="text" id="chat-msg" placeholder="Send a message..." class="n-input">
-                <button onclick="sendMessage()" class="n-btn secondary" data-lang="sendBtn">Send</button>
+        <div class="card chat-card">
+            <div id="login-form" class="auth-box">
+                <h3 data-lang="todoTitle">Secret Entrance</h3>
+                <input type="email" id="auth-email" placeholder="Email" class="n-input">
+                <input type="password" id="auth-pass" placeholder="Password" class="n-input">
+                <button onclick="handleLogin()" class="n-btn primary" data-lang="loginBtn">Authorize</button>
+            </div>
+
+            <div id="user-info" style="display:none;" class="chat-container">
+                <div id="chat-window" class="chat-feed"></div>
+                <div class="chat-controls">
+                    <input type="text" id="chat-msg" placeholder="Send a message..." class="n-input">
+                    <button onclick="sendMessage()" class="n-btn secondary" data-lang="sendBtn">Отправить</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="card cats-card">
-        <h3 data-lang="catsTitle">Tavern Cats</h3>
-        <div id="cat-container" class="cat-viewer"></div>
-        <button onclick="fetchCats()" class="n-btn secondary" data-lang="catsBtn">Summon Cats</button>
-    </div>
+        <div class="card cats-card">
+            <h3 data-lang="catsTitle">Tavern Cats</h3>
+            <div id="cat-container" class="cat-viewer"></div>
+            <button onclick="fetchCats()" class="n-btn secondary" data-lang="catsBtn">Призвать котика</button>
+        </div>
 
-    <div class="card skills-card">
-        <h3 data-lang="skillTech">Arsenal</h3>
-        <ul class="skill-list">
-            <li><span class="skill-icon">🔮</span> <span data-lang="skill1">JS Alchemy & DOM</span></li>
-            <li><span class="skill-icon">🐍</span> <span data-lang="skill2">Python Telegram Bridges</span></li>
-            <li><span class="skill-icon">🔥</span> <span data-lang="skill3">Firebase Realtime Architecture</span></li>
-            <li><span class="skill-icon">📱</span> <span data-lang="skill4">Adaptive Mobile-First UX</span></li>
-            <li><span class="skill-icon">🛡️</span> <span data-lang="skill5">Security Rules Sorcery</span></li>
-        </ul>
-    </div>
+        <div class="card skills-card">
+            <h3 data-lang="skillTech">Arsenal</h3>
+            <ul class="skill-list">
+                <li><span class="skill-icon">🔮</span> <span data-lang="skill1">Алхимия JS и DOM</span></li>
+                <li><span class="skill-icon">🐍</span> <span data-lang="skill2">Python мосты для Telegram</span></li>
+                <li><span class="skill-icon">🔥</span> <span data-lang="skill3">Архитектура Firebase Realtime</span></li>
+                <li><span class="skill-icon">📱</span> <span data-lang="skill4">Адаптивный Mobile-First UX</span></li>
+                <li><span class="skill-icon">🛡️</span> <span data-lang="skill5">Магия правил безопасности</span></li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="ads-page" class="page-content">
+        <div class="card ads-card">
+            <h1 class="promo-text" data-lang="promoText">Здесь могла быть ваша реклама</h1>
+            <p class="sub-text">Contact: @your_telegram</p>
+        </div>
+    </section>
 </main>
 
 <script src="script.js"></script>
