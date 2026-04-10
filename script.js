@@ -22,13 +22,10 @@ const dict = {
     en: { welcomeSub: "Automation Mage", todoTitle: "Secret Room", loginBtn: "Open Door", catsTitle: "Tavern Cats", skillTech: "Arsenal" }
 };
 
-// --- ФУНКЦИИ ---
-
 function toggleLang() {
     currentLang = currentLang === 'ru' ? 'en' : 'ru';
     const btn = document.getElementById('lang-btn');
     if (btn) btn.innerText = currentLang === 'ru' ? '🇺🇸 EN' : '🇷🇺 RU';
-    
     document.querySelectorAll('[data-lang]').forEach(el => {
         const key = el.getAttribute('data-lang');
         if (dict[currentLang][key]) el.innerText = dict[currentLang][key];
@@ -38,19 +35,16 @@ function toggleLang() {
 async function handleLogin() {
     const email = document.getElementById('auth-email').value;
     const pass = document.getElementById('auth-pass').value;
-    if(!email || !pass) return alert("Назовите себя, путник!");
-
+    if(!email || !pass) return alert("Введите данные!");
     try {
         const userCred = await auth.signInWithEmailAndPassword(email, pass)
             .catch(() => auth.createUserWithEmailAndPassword(email, pass));
-        
         currentUser = userCred.user;
         document.getElementById('login-form').style.display = 'none';
         document.getElementById('user-info').style.display = 'flex';
         document.getElementById('user-name').innerText = currentUser.email.split('@')[0];
-        
         startChatListener(currentUser.uid);
-    } catch (e) { alert("Магия входа не сработала: " + e.message); }
+    } catch (e) { alert("Ошибка входа: " + e.message); }
 }
 
 async function sendMessage() {
@@ -71,7 +65,6 @@ async function sendMessage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: botText })
     });
-
     msgInput.value = "";
 }
 
@@ -97,25 +90,17 @@ async function fetchCats() {
         const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=3');
         const data = await res.json();
         const container = document.getElementById('cat-container');
-        if(container) {
-            container.innerHTML = data.map(cat => `<img src="${cat.url}">`).join('');
-        }
-    } catch(e) { console.error("Коты сбежали", e); }
+        if(container) container.innerHTML = data.map(cat => `<img src="${cat.url}">`).join('');
+    } catch(e) { console.log("Коты заняты"); }
 }
 
-// --- ИНИЦИАЛИЗАЦИЯ ---
 $(document).ready(() => {
     fetchCats();
-    
-    // Привязка кнопки языка
-    const langBtn = document.getElementById('lang-btn');
-    if (langBtn) langBtn.addEventListener('click', toggleLang);
-
-    // Мягкий наклон
+    document.getElementById('lang-btn')?.addEventListener('click', toggleLang);
     if ($('.bento-item').length) {
         $('.bento-item').tilt({
-            maxTilt: 4,
-            perspective: 1000,
+            maxTilt: 3, // Уменьшили, чтобы текст не пропадал
+            perspective: 1500,
             glare: true,
             maxGlare: 0.05
         });
