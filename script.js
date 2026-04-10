@@ -1,4 +1,3 @@
-// ... (Конфигурация Firebase та же) ...
 const firebaseConfig = {
     apiKey: "AIzaSyA_7n34vc1JM5PER6kvU9mMSzKfpu8s5YE",
     authDomain: "my-portfolio-auth-ff1ce.firebaseapp.com",
