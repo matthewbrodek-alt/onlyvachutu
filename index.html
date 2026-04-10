@@ -4,113 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Arcane Tavern HUB</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tilt.js/1.2.1/tilt.jquery.min.js"></script>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="forest-bg"></div>
     <div class="runes-overlay"></div>
-    <div class="embers">
-        <span></span><span></span><span></span><span></span><span></span>
-    </div>
 
     <header class="tavern-header">
-        <div class="nav-brand" data-lang="navLogo">TAVERN.HUB</div>
+        <div class="nav-brand">TAVERN.HUB</div>
         <nav class="nav-links">
-            <a href="javascript:void(0)" onclick="scrollToPanel('home')">
-                <span class="icon">🔥</span> <span data-lang="navHome">Таверна</span>
-            </a>
-            <a href="javascript:void(0)" onclick="scrollToPanel('portfolio')">
-                <span class="icon">📜</span> <span data-lang="navPortfolio">Свитки</span>
-            </a>
-            <a href="javascript:void(0)" onclick="scrollToPanel('todo')">
-                <span class="icon">🕯️</span> <span data-lang="navRoom">Кабинет</span>
-            </a>
-            <a href="javascript:void(0)" onclick="toggleLang()" id="lang-btn" class="globe-icon">🌐</a>
+            <a href="javascript:void(0)" onclick="scrollToPanel('home')">Таверна</a>
+            <a href="javascript:void(0)" onclick="scrollToPanel('portfolio')">Свитки</a>
+            <a href="javascript:void(0)" onclick="scrollToPanel('todo')">Кабинет</a>
+            <a href="javascript:void(0)" onclick="toggleLang()" class="globe-icon">🌐</a>
         </nav>
     </header>
 
     <main class="scroll-container">
         
         <section id="home" class="panel">
-            <div class="arcane-card hero-card">
-                <div class="card-inner">
-                    <h1 class="glow-text" data-lang="welcomeTitle">Утро в Таверне</h1>
-                    <p class="sub-text" data-lang="welcomeSub">Современные решения для старых задач</p>
-                    <div class="card-glow"></div>
-                </div>
+            <div class="hero-card">
+                <h1 class="glow-text">Утро в Таверне</h1>
+                <p class="sub-text">Современные решения для старых задач</p>
             </div>
         </section>
 
         <section id="portfolio" class="panel">
-            <h2 class="section-title" data-lang="portfolioTitle">Выполненные квесты</h2>
+            <h2 class="section-title">Артефакты кода</h2>
             <div class="artifacts-grid">
-                <div class="artifact-card" data-tilt>
+                <div class="artifact-card">
                     <div class="art-icon fire-icon"></div>
                     <h3>WEB MAGIC</h3>
-                    <p>Alchemy of frontend and JS.</p>
+                    <p>Alchemy of JS</p>
                 </div>
-                <div class="artifact-card" data-tilt>
+                <div class="artifact-card">
                     <div class="art-icon bot-icon"></div>
                     <h3>BOT SPELLS</h3>
-                    <p>Runes of Python and Automation.</p>
+                    <p>Runes of Python</p>
                 </div>
             </div>
         </section>
 
         <section id="todo" class="panel room-section">
-            
             <div id="login-form" class="arcane-panel login-panel">
-                <h2 data-lang="todoTitle" class="panel-title">Вход в Кабинет</h2>
-                <div class="input-group">
-                    <label>Email свиток</label>
-                    <input type="email" id="auth-email" class="arcane-input" placeholder="mage@tower.com">
-                </div>
-                <div class="input-group">
-                    <label>Парольное заклинание</label>
-                    <input type="password" id="auth-pass" class="arcane-input" placeholder="********">
-                </div>
-                <button onclick="handleLogin()" class="arcane-btn" data-lang="loginBtn">Открыть дверь</button>
+                <h2 class="panel-title">Вход в Кабинет</h2>
+                <input type="email" id="auth-email" class="arcane-input" placeholder="Email...">
+                <input type="password" id="auth-pass" class="arcane-input" placeholder="Password...">
+                <button onclick="handleLogin()" class="arcane-btn">Открыть дверь</button>
             </div>
 
             <div id="user-info" class="arcane-panel chat-panel" style="display:none;">
-                <div class="chat-header">
-                    <div class="status-orb online"></div>
-                    <span id="user-display-email">Mage</span>
-                </div>
-                <div id="chat-window" class="arcane-chat">
-                    </div>
+                <div id="chat-window" class="arcane-chat"></div>
                 <div class="chat-inputs">
                     <textarea id="chat-msg" placeholder="Послать ворона..."></textarea>
                     <button onclick="sendMessage()" class="send-btn">→</button>
                 </div>
             </div>
-
         </section>
 
         <section id="cats" class="panel">
             <div class="arcane-panel cats-panel wide">
-                <h2 data-lang="catsTitle" class="panel-title">Коты Таверны (Cat API)</h2>
-                <div id="cat-container" class="cat-grid">
-                    </div>
-                <button onclick="fetchCats()" class="arcane-btn mini-btn" data-lang="catsBtn">Приманить новых</button>
+                <h2 class="panel-title">Коты Таверны</h2>
+                <div id="cat-container" class="cat-grid"></div>
+                <button onclick="fetchCats()" class="arcane-btn">Приманить новых</button>
             </div>
         </section>
 
     </main>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tilt.js/1.2.1/tilt.jquery.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
