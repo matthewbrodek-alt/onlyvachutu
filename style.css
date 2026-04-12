@@ -16,32 +16,57 @@ body, html {
     overflow: hidden;
 }
 
-/* Навигация */
-.top-nav { height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; border-bottom: 1px solid var(--border); z-index: 100; position: relative; }
-.nav-links a { color: var(--text); text-decoration: none; font-weight: 600; margin-right: 20px; opacity: 0.6; transition: 0.3s; }
+/* Верхняя Навигация */
+.top-nav { height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; border-bottom: 1px solid var(--border); background: var(--bg); z-index: 100; position: relative; }
+.nav-links a { color: var(--text); text-decoration: none; font-weight: 600; margin-right: 15px; opacity: 0.6; transition: 0.3s; }
 .nav-links a:hover { opacity: 1; color: var(--accent); }
 
-/* Главный контейнер */
-.dashboard { height: calc(100vh - 70px); padding: 15px; position: relative; }
-
-/* Логика страниц */
-.page-content { display: none; width: 100%; height: 100%; }
-.page-content.active { display: grid; gap: 15px; }
-
-/* Вернул сетку для главной */
-@media (min-width: 1024px) {
-    #main-content.active {
-        grid-template-columns: 300px 1fr 300px;
-        grid-template-rows: auto 1fr;
-    }
-    .chat-card { grid-row: span 2; }
-    .cats-card { grid-row: span 2; }
-}
+/* Контейнер (Учитываем высоту мобильной панели) */
+.dashboard { height: calc(100vh - 70px - 60px); padding: 15px; position: relative; overflow-y: auto; }
 
 /* Карточки */
 .card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 22px; display: flex; flex-direction: column; min-height: 0; }
 
-/* Коты (Фикс отображения) */
+/* --- МОБИЛЬНЫЙ ВИД (UX Приложения) --- */
+.page-content { display: none; width: 100%; height: 100%; flex-direction: column; gap: 15px; }
+.page-content.active { display: flex; }
+
+/* Прячем все карточки по умолчанию */
+#main-content.active > .card { display: none; }
+
+/* Показываем карточки в зависимости от активной вкладки */
+#main-content.tab-profile .mobile-target-profile { display: flex; flex-shrink: 0; }
+#main-content.tab-chat .mobile-target-chat { display: flex; height: 100%; flex-grow: 1; }
+#main-content.tab-cats .mobile-target-cats { display: flex; height: 100%; flex-grow: 1; }
+
+/* Нижняя панель */
+.mobile-nav { 
+    display: flex; position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; 
+    background: var(--card); border-top: 1px solid var(--border); 
+    justify-content: space-around; align-items: center; z-index: 100; 
+}
+.nav-btn { background: none; border: none; font-size: 24px; opacity: 0.4; transition: 0.3s; padding: 10px 20px; }
+.nav-btn.active-btn { opacity: 1; transform: scale(1.1); text-shadow: 0 0 10px var(--accent); }
+
+/* --- ДЕСКТОПНЫЙ ВИД (Широкие экраны) --- */
+@media (min-width: 1024px) {
+    .mobile-nav { display: none; } /* Прячем нижнюю панель */
+    .dashboard { height: calc(100vh - 70px); } /* Возвращаем высоту без нижней панели */
+    
+    #main-content.active {
+        display: grid !important; /* Форсируем Grid вместо Flex */
+        grid-template-columns: 300px 1fr 300px;
+        grid-template-rows: auto 1fr;
+    }
+    
+    /* Форсируем показ всех карточек, игнорируя мобильные вкладки */
+    #main-content.active > .card { display: flex !important; }
+    
+    .chat-card { grid-row: span 2; }
+    .cats-card { grid-row: span 2; }
+}
+
+/* Коты */
 .cat-viewer { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; margin: 15px 0; }
 .cat-viewer img { width: 100%; border-radius: 16px; border: 1px solid var(--border); display: block; }
 
@@ -49,27 +74,27 @@ body, html {
 .chat-container { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
 .chat-feed { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px; }
 .chat-controls { display: flex; gap: 10px; margin-top: 15px; }
-.msg-box { padding: 12px 18px; border-radius: 20px; max-width: 80%; font-size: 14px; line-height: 1.4; }
+.msg-box { padding: 12px 18px; border-radius: 20px; max-width: 85%; font-size: 14px; line-height: 1.4; word-wrap: break-word; }
 .sent { align-self: flex-end; background: var(--accent); color: #000; font-weight: 700; }
 .received { align-self: flex-start; background: #222; }
 
-/* Кнопки и Инпуты */
+/* Кнопки, Инпуты, Текст */
 .n-input { background: #161616; border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 12px; outline: none; width: 100%; font-size: 16px; }
 .n-btn { padding: 12px 20px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; white-space: nowrap; }
 .primary { background: var(--accent); color: #000; }
 .secondary { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
 .secondary:hover { background: var(--accent); color: #000; }
 
-/* Профиль */
 .status-wrapper { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .status-badge { background: rgba(0, 255, 136, 0.1); color: var(--accent); padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 800; letter-spacing: 1px; }
 .logout-link { background: none; border: none; color: var(--error); font-size: 0.8rem; cursor: pointer; opacity: 0.7; }
+.skill-list { list-style: none; padding: 0; font-size: 14px; line-height: 1.8; opacity: 0.8; }
 
 /* Реклама */
 #ads-page.active { display: flex; justify-content: center; align-items: center; }
-.ads-card { text-align: center; border: 2px dashed var(--accent); padding: 40px; }
-.promo-text { font-size: 2.2rem; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
-
+.ads-card { text-align: center; border: 2px dashed var(--accent); padding: 40px; margin: auto; }
+.promo-text { font-size: 2rem; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
 .lang-globe-btn { background: #161616; border: 1px solid var(--border); color: #fff; padding: 8px 16px; border-radius: 30px; cursor: pointer; }
+
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
