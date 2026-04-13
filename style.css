@@ -2,87 +2,74 @@
 
 :root {
     --accent: #00ff88;
-    --card: rgba(15, 15, 15, 0.5); /* Прозрачные карточки */
+    --card-bg: rgba(20, 20, 20, 0.4);
     --border: rgba(255, 255, 255, 0.1);
 }
 
 body, html {
     width: 100%; height: 100%;
-    background: transparent; /* Полная прозрачность */
-    color: #fff; font-family: 'Plus Jakarta Sans', sans-serif;
+    background: #000; color: #fff;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     overflow: hidden;
 }
 
-/* ФОНОВОЕ ВИДЕО */
-.video-container {
+/* Video Layer */
+.video-bg-wrapper {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     z-index: -1; pointer-events: none;
 }
-#bg-video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.4); }
+#bg-video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.5); }
 .video-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle, transparent 20%, #000 100%);
+    background: radial-gradient(circle, transparent 10%, rgba(0,0,0,0.8) 100%);
 }
 
-/* ШАПКА - ФИКС РАСТЯГИВАНИЯ */
+/* Navigation */
 .top-nav {
     position: fixed; top: 0; left: 0; width: 100%; height: 70px;
-    display: flex; justify-content: space-between; align-items: center;
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
     padding: 0 4%; z-index: 1000;
-    backdrop-filter: blur(15px);
-    border-bottom: 1px solid var(--border);
-    background: rgba(0,0,0,0.2);
+    backdrop-filter: blur(15px); border-bottom: 1px solid var(--border);
 }
+.nav-right { justify-self: end; }
+.ads-link { color: #fff; text-decoration: none; font-weight: 600; opacity: 0.7; }
 
-.nav-center { position: absolute; left: 50%; transform: translateX(-50%); }
-.ads-link { color: #fff; text-decoration: none; font-weight: 600; font-size: 14px; opacity: 0.7; }
-.ads-link:hover { color: var(--accent); opacity: 1; }
+/* Grid System */
+.dashboard { height: 100vh; overflow-y: auto; padding-top: 90px; padding-bottom: 100px; }
+.view-container { display: none; padding: 0 4%; max-width: 1400px; margin: 0 auto; }
+.view-container.active { display: block; }
 
-/* КОНТЕНТ */
-.dashboard {
-    height: 100vh; overflow-y: auto; padding-top: 90px;
-    padding-bottom: 100px; position: relative; z-index: 1;
-    background: transparent;
-}
-.view { display: none; padding: 0 4%; }
-.view.active { display: block; }
-
-.card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 24px; padding: 24px; backdrop-filter: blur(25px);
-    margin-bottom: 20px;
-}
-
-/* СЕТКА */
 @media (min-width: 1024px) {
-    .grid-layout { display: grid; grid-template-columns: 300px 1fr 300px; gap: 24px; }
-    .full-width { grid-column: 1 / -1; }
+    .main-grid { display: grid; grid-template-columns: 320px 1fr 320px; gap: 24px; }
 }
 
-/* ЧАТ */
-.chat-container { display: flex; flex-direction: column; height: 350px; }
-.chat-feed { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
-.msg-box { padding: 10px 15px; border-radius: 15px; font-size: 14px; max-width: 80%; }
+/* UI Components */
+.card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 24px; padding: 24px; backdrop-filter: blur(30px);
+    margin-bottom: 24px;
+}
+
+.faraday-content p { line-height: 1.6; opacity: 0.9; font-size: 15px; }
+.quote { border-left: 3px solid var(--accent); padding-left: 15px; margin-top: 15px; font-style: italic; color: var(--accent); }
+
+/* Chat */
+.chat-inner { display: flex; flex-direction: column; height: 350px; }
+.chat-feed { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.msg-box { padding: 10px 14px; border-radius: 16px; font-size: 13px; max-width: 85%; }
 .sent { align-self: flex-end; background: var(--accent); color: #000; }
 .received { align-self: flex-start; background: rgba(255,255,255,0.1); }
 
-.chat-controls { display: flex; gap: 10px; }
-.send-btn { width: 45px; height: 45px; border-radius: 50%; border: none; background: var(--accent); cursor: pointer; }
-
-/* КНОПКИ И ВВОД */
+/* Buttons & Inputs */
 .n-input { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 12px; width: 100%; outline: none; }
-.n-btn { padding: 12px 24px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; }
+.n-btn { padding: 12px 24px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; }
 .primary { background: var(--accent); color: #000; }
 .secondary { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
 
-#unmute-btn { position: fixed; bottom: 85px; right: 25px; z-index: 100; border-radius: 50%; width: 45px; height: 45px; border: none; background: var(--accent); cursor: pointer; }
+#unmute-btn { position: fixed; bottom: 85px; right: 25px; z-index: 100; width: 45px; height: 45px; border-radius: 50%; border: none; background: var(--accent); cursor: pointer; }
 
-/* РЕКЛАМА VIEW */
-.ads-hero { text-align: center; padding: 100px 0; }
-.ads-hero h1 { font-size: 3rem; margin-bottom: 20px; }
-
-/* MOB NAV */
-.mob-nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: rgba(0,0,0,0.8); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 1000; }
-@media (min-width: 1024px) { .mob-nav { display: none; } }
-.m-btn { background: none; border: none; font-size: 24px; opacity: 0.4; cursor: pointer; }
+/* Mobile Nav */
+.mobile-nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: rgba(0,0,0,0.8); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); z-index: 1000; }
+@media (min-width: 1024px) { .mobile-nav { display: none; } }
+.m-btn { background: none; border: none; font-size: 24px; opacity: 0.4; }
 .m-btn.active { opacity: 1; transform: scale(1.1); }
