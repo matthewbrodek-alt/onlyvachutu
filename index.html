@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nitro Hub v4.0 (Premium Portfolio)</title>
+    <title>Nitro Hub v4.0 | Premium Portfolio</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -14,8 +14,15 @@
 </head>
 <body>
 
+<div class="video-bg-wrapper">
+    <div class="video-overlay"></div>
+    <video id="bg-video" autoplay loop muted playsinline>
+        <source src="твой_ролик.mp4" type="video/mp4">
+    </video>
+</div>
+
 <nav class="top-nav">
-    <div class="logo" onclick="showPage('main')" style="cursor:pointer">NITRO<span>HUB</span></div>
+    <div class="logo" onclick="showPage('main')">NITRO<span>HUB</span></div>
     <div class="nav-links">
         <a href="#" onclick="showPage('ads')" data-lang="adsLink">Реклама</a>
     </div>
@@ -27,56 +34,35 @@
 <main class="dashboard">
     <div id="main-content" class="page-content active tab-profile">
         
-        <section class="card hero-card mobile-target-profile full-width-card">
-            <div class="video-bg">
-                <div class="overlay"></div>
-            </div>
-            <div class="hero-content">
-                <h1 data-lang="heroTitle">A NEW STANDARD OF DIGITAL EXPERIENCE</h1>
-                <p data-lang="heroSub">Crafting premium web interfaces and scalable frontend architectures.</p>
-                <button class="n-btn primary" data-lang="exploreBtn">Explore Work</button>
-            </div>
+        <section class="hero-section mobile-target-profile">
+            <h1 data-lang="heroTitle">A NEW STANDARD OF DIGITAL EXPERIENCE</h1>
+            <p data-lang="heroSub">Crafting premium web interfaces and scalable frontend architectures.</p>
+            <button class="n-btn primary" data-lang="exploreBtn">Explore Work</button>
         </section>
 
         <section class="card projects-card mobile-target-profile full-width-card">
             <h3 data-lang="projectsTitle">Selected Works</h3>
-            <div id="portfolio-container" class="portfolio-grid">
-                </div>
+            <div id="portfolio-container" class="portfolio-grid"></div>
         </section>
 
-        <section class="card stack-card mobile-target-profile full-width-card">
-            <h3 data-lang="stackTitle">Technical Infrastructure</h3>
-            <div class="stack-grid">
-                <div class="stack-item">
-                    <span class="icon">🏗️</span>
-                    <h4>Architecture</h4>
-                    <p class="sub">React, Vue, SPA & SSR</p>
+        <div class="side-column-left">
+            <div class="card profile-card mobile-target-profile">
+                <div class="status-wrapper">
+                    <div class="status-badge">ONLINE</div>
+                    <button id="logout-btn" class="logout-link" onclick="handleLogout()" style="display: none;">Logout ➔</button>
                 </div>
-                <div class="stack-item">
-                    <span class="icon">🎨</span>
-                    <h4>UI/UX Design</h4>
-                    <p class="sub">Figma, Framer, Microinteractions</p>
-                </div>
-                <div class="stack-item">
-                    <span class="icon">⚡</span>
-                    <h4>Performance</h4>
-                    <p class="sub">Lazy loading, WebGL, 60fps</p>
-                </div>
-                <div class="stack-item">
-                    <span class="icon">🛡️</span>
-                    <h4>Backend & Cloud</h4>
-                    <p class="sub">Firebase, Node.js, Python API</p>
-                </div>
+                <h2 id="user-name">Guest</h2>
+                <p class="sub" data-lang="welcomeSub">Маг Автоматизации</p>
             </div>
-        </section>
 
-        <div class="card profile-card mobile-target-profile">
-            <div class="status-wrapper">
-                <div class="status-badge">ONLINE</div>
-                <button id="logout-btn" class="logout-link" onclick="handleLogout()" style="display: none;">Logout ➔</button>
+            <div class="card stack-card mobile-target-profile">
+                <h3 data-lang="skillTech">Arsenal</h3>
+                <ul class="skill-list">
+                    <li><span class="skill-icon">🔮</span> <span data-lang="skill1">Алхимия JS и DOM</span></li>
+                    <li><span class="skill-icon">🐍</span> <span data-lang="skill2">Python мосты</span></li>
+                    <li><span class="skill-icon">🔥</span> <span data-lang="skill3">Firebase Realtime</span></li>
+                </ul>
             </div>
-            <h2 id="user-name">Guest</h2>
-            <p class="sub" data-lang="welcomeSub">Маг Автоматизации</p>
         </div>
 
         <div class="card chat-card mobile-target-chat">
@@ -86,7 +72,6 @@
                 <input type="password" id="auth-pass" placeholder="Password" class="n-input">
                 <button onclick="handleLogin()" class="n-btn primary" data-lang="loginBtn">Authorize</button>
             </div>
-
             <div id="user-info" style="display:none;" class="chat-container">
                 <div id="chat-window" class="chat-feed"></div>
                 <div class="chat-controls">
@@ -101,6 +86,7 @@
             <div id="cat-container" class="cat-viewer"></div>
             <button onclick="fetchCats()" class="n-btn secondary" data-lang="catsBtn">Призвать</button>
         </div>
+
     </div>
 
     <div id="ads-page" class="page-content">
@@ -110,6 +96,8 @@
         </div>
     </div>
 </main>
+
+<button id="unmute-btn" onclick="toggleVideoSound()">🔊</button>
 
 <nav class="mobile-nav" id="mob-nav">
     <button class="nav-btn active-btn" onclick="switchMobileTab('profile', this)">👤</button>
