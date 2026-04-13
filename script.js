@@ -20,7 +20,7 @@ let currentLang = 'ru';
 
 const dict = {
     ru: {
-        adsLink: "Реклама", heroTitle: "НОВЫЙ СТАНДАРТ ЦИФРОВОГО ОПЫТА", heroSub: "Премиальные интерфейсы.",
+        adsLink: "Реклама", heroTitle: "НОВЫЙ СТАНДАРТ ЦИФРОВОГО ОПЫТА", heroSub: "Премиальные интерфейсы.(Все еще в проекте)",
         welcomeSub: "Маг Автоматизации", chatTitle: "Мессенджер", loginBtn: "Войти",
         aboutTitle: "Майкл Фарадей", projectsTitle: "Выбранные Работы", skillTech: "Арсенал",
         catsTitle: "Коты Таверны", catsBtn: "Призвать", promoText: "Здесь могла быть ваша реклама",
