@@ -17,29 +17,29 @@ const auth = firebase.auth();
 let currentUser = null;
 let unsubscribe = null;
 
-// --- CORE LOGIC ---
-
+// --- Инициализация ---
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Enter key for Chat
-    const msgInput = document.getElementById('chat-msg');
-    if (msgInput) {
-        msgInput.addEventListener('keypress', (e) => {
+    // 1. Обработка Enter в чате
+    const chatInput = document.getElementById('chat-msg');
+    if (chatInput) {
+        chatInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMessage();
         });
     }
 
-    // 2. Browser Video Autoplay Fix
+    // 2. Видео автоплей (фикс браузера)
     document.body.addEventListener('click', () => {
-        const video = document.getElementById('bg-video');
-        if (video && video.paused) video.play();
+        const v = document.getElementById('bg-video');
+        if (v && v.paused) v.play();
     }, { once: true });
 
     loadProjects();
     fetchCats();
 });
 
+// --- Навигация ---
 function showPage(pageId) {
-    document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     if (pageId === 'ads') {
         document.getElementById('ads-page').classList.add('active');
         document.getElementById('mob-nav').style.display = 'none';
@@ -47,34 +47,30 @@ function showPage(pageId) {
         document.getElementById('main-content').classList.add('active');
         document.getElementById('mob-nav').style.display = 'flex';
     }
-    // Скролл в начало при смене страницы
-    document.getElementById('main-scroll-container').scrollTop = 0;
+    document.getElementById('main-scroll').scrollTop = 0;
 }
 
-// --- FIREBASE ---
-
+// --- Firebase ---
 auth.onAuthStateChanged(user => {
     currentUser = user;
     document.getElementById('login-form').style.display = user ? 'none' : 'flex';
     document.getElementById('user-info').style.display = user ? 'flex' : 'none';
     document.getElementById('logout-btn').style.display = user ? 'block' : 'none';
     document.getElementById('user-name').innerText = user ? user.email.split('@')[0] : "Guest";
-    if (user) startChat(user.uid);
+    if (user) syncChat(user.uid);
 });
 
 async function handleLogin() {
     const email = document.getElementById('auth-email').value;
     const pass = document.getElementById('auth-pass').value;
     try {
-        await auth.signInWithEmailAndPassword(email, pass)
-            .catch(() => auth.createUserWithEmailAndPassword(email, pass));
+        await auth.signInWithEmailAndPassword(email, pass).catch(() => auth.createUserWithEmailAndPassword(email, pass));
     } catch (e) { alert(e.message); }
 }
 
 function handleLogout() { auth.signOut(); }
 
-// --- CHAT & TELEGRAM ---
-
+// --- Чат и Telegram ---
 async function sendMessage() {
     const input = document.getElementById('chat-msg');
     const text = input.value.trim();
@@ -92,28 +88,27 @@ async function sendMessage() {
     input.value = "";
 }
 
-function startChat(uid) {
+function syncChat(uid) {
     if (unsubscribe) unsubscribe();
     unsubscribe = db.collection("users").doc(uid).collection("messages").orderBy("timestamp", "asc").onSnapshot(snap => {
         const win = document.getElementById('chat-window');
         win.innerHTML = "";
         snap.forEach(doc => {
-            const d = doc.data();
+            const m = doc.data();
             const div = document.createElement('div');
-            div.className = `msg-box ${d.sender === 'user' ? 'sent' : 'received'}`;
-            div.innerText = d.message;
+            div.className = `msg-box ${m.sender === 'user' ? 'sent' : 'received'}`;
+            div.innerText = m.message;
             win.appendChild(div);
         });
         win.scrollTop = win.scrollHeight;
     });
 }
 
-// --- CONTENT ---
-
+// --- Контент ---
 async function loadProjects() {
     const container = document.getElementById('portfolio-container');
-    const snapshot = await db.collection("projects").get();
-    container.innerHTML = snapshot.docs.map(doc => {
+    const snap = await db.collection("projects").get();
+    container.innerHTML = snap.docs.map(doc => {
         const p = doc.data();
         return `<div class="portfolio-item card"><h4>${p.title}</h4><p>${p.metric || ''}</p></div>`;
     }).join('');
@@ -125,8 +120,14 @@ async function fetchCats() {
     document.getElementById('cat-container').innerHTML = `<img src="${data[0].url}" style="width:100%; border-radius:15px;">`;
 }
 
-function toggleVideoSound() {
+function toggleSound() {
     const v = document.getElementById('bg-video');
     v.muted = !v.muted;
     document.getElementById('unmute-btn').innerText = v.muted ? "🔊" : "🔇";
+}
+
+function switchTab(tab, btn) {
+    document.getElementById('main-content').className = `view active tab-${tab}`;
+    document.querySelectorAll('.m-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
 }
