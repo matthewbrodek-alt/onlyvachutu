@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nitro Hub | Faraday Edition</title>
+    <title>Nitro Hub | Faraday Edition v5.0</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -15,8 +15,8 @@
 <body>
 
 <div class="video-bg-wrapper">
-    <video id="bg-video" autoplay loop muted playsinline>
-        <source src="https://static.videezy.com/system/resources/previews/000/052/734/original/Flying_Over_The_Forest_4K_2.mp4" type="video/mp4">
+    <video id="bg-video" autoplay loop muted playsinline poster="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2560&auto=format&fit=crop">
+        <source src="https://player.vimeo.com/external/434045526.sd.mp4?s=c27cf341d76f6466f212f8a1ad39da9022e0308a&profile_id=165&oauth2_token_id=57447761" type="video/mp4">
     </video>
     <div class="video-overlay"></div>
 </div>
@@ -37,12 +37,11 @@
     <div id="main-content" class="view-container active">
         
         <section class="hero-section">
-            <h1 data-lang="heroTitle">A NEW STANDARD OF DIGITAL EXPERIENCE</h1>
-            <p data-lang="heroSub">Premium interfaces & scalable architectures.</p>
+            <h1 data-lang="heroTitle">НОВЫЙ СТАНДАРТ ЦИФРОВОГО ОПЫТА</h1>
+            <p data-lang="heroSub">Премиальные интерфейсы и архитектура.</p>
         </section>
 
         <div class="main-grid">
-            
             <div class="col-side">
                 <div class="card profile-card">
                     <div class="status-badge">ONLINE</div>
@@ -55,7 +54,7 @@
                     <h3 data-lang="chatTitle">Messenger</h3>
                     <div id="login-form" class="auth-box">
                         <input type="email" id="auth-email" placeholder="Email" class="n-input">
-                        <input type="password" id="auth-pass" placeholder="Pass" class="n-input">
+                        <input type="password" id="auth-pass" placeholder="Password" class="n-input">
                         <button onclick="handleLogin()" class="n-btn primary" data-lang="loginBtn">Authorize</button>
                     </div>
                     <div id="user-info" style="display:none;" class="chat-inner">
@@ -80,7 +79,7 @@
                     </div>
                 </div>
                 <div class="card projects-card">
-                    <h3 data-lang="projectsTitle">Works</h3>
+                    <h3 data-lang="projectsTitle">Selected Works</h3>
                     <div id="portfolio-container" class="portfolio-list"></div>
                 </div>
             </div>
@@ -98,7 +97,6 @@
                     <button onclick="fetchCats()" class="n-btn secondary" data-lang="catsBtn">Summon</button>
                 </div>
             </div>
-
         </div>
     </div>
 
