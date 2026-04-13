@@ -19,94 +19,65 @@ let unsubscribe = null;
 
 const dict = {
     ru: { 
-        welcomeSub: "Архитектор Интерфейсов", todoTitle: "Тайная комната", loginBtn: "Войти", catsTitle: "Коты Таверны", 
+        welcomeSub: "Маг Автоматизации", todoTitle: "Тайная комната", loginBtn: "Войти", catsTitle: "Коты Таверны", skillTech: "Арсенал",
+        skill1: "Алхимия JS и DOM", skill2: "Python мосты", skill3: "Firebase Realtime",
         sendBtn: "Отправить", catsBtn: "Призвать", adsLink: "Реклама", promoText: "Здесь могла быть реклама",
-        heroTitle: "НОВЫЙ СТАНДАРТ ЦИФРОВОГО ОПЫТА", heroSub: "Создание премиальных веб-интерфейсов и масштабируемой frontend-архитектуры.", exploreBtn: "Смотреть работы",
-        projectsTitle: "Избранные Проекты", stackTitle: "Техническая Инфраструктура"
+        heroTitle: "НОВЫЙ СТАНДАРТ ЦИФРОВОГО ОПЫТА", heroSub: "Премиальные интерфейсы и архитектура.", exploreBtn: "Работы",
+        projectsTitle: "Проекты", stackTitle: "Стек"
     },
     en: { 
-        welcomeSub: "UI/UX Architect", todoTitle: "Secret Room", loginBtn: "Authorize", catsTitle: "Tavern Cats", 
+        welcomeSub: "Automation Mage", todoTitle: "Secret Room", loginBtn: "Authorize", catsTitle: "Tavern Cats", skillTech: "Arsenal",
+        skill1: "JS Alchemy & DOM", skill2: "Python Bridges", skill3: "Firebase Realtime",
         sendBtn: "Send", catsBtn: "Summon", adsLink: "Ads", promoText: "Your ad could be here",
-        heroTitle: "A NEW STANDARD OF DIGITAL EXPERIENCE", heroSub: "Crafting premium web interfaces and scalable frontend architectures.", exploreBtn: "Explore Work",
-        projectsTitle: "Selected Works", stackTitle: "Technical Infrastructure"
+        heroTitle: "A NEW STANDARD OF DIGITAL EXPERIENCE", heroSub: "Premium interfaces & architecture.", exploreBtn: "Explore",
+        projectsTitle: "Projects", stackTitle: "Stack"
     }
 };
 
-auth.onAuthStateChanged((user) => {
-    if (user) {
-        currentUser = user;
-        showUserInterface(user);
-        startChatListener(user.uid);
-    } else {
-        handleLogoutUI();
-    }
-});
+// --- СИСТЕМНЫЕ ФУНКЦИИ ---
 
-// --- НАВИГАЦИЯ ---
-
-function showPage(pageId) {
-    document.getElementById('main-content').classList.remove('active');
-    document.getElementById('ads-page').classList.remove('active');
-    
-    const mobNav = document.getElementById('mob-nav');
-    
-    if (pageId === 'main') {
-        document.getElementById('main-content').classList.add('active');
-        mobNav.style.display = 'flex';
-    } else {
-        document.getElementById('ads-page').classList.add('active');
-        mobNav.style.display = 'none';
-    }
-}
-
-function switchMobileTab(tabName, btnElement) {
-    const main = document.getElementById('main-content');
-    main.className = `page-content active tab-${tabName}`;
-    
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-btn'));
-    btnElement.classList.add('active-btn');
-}
-
-// --- ИНТЕРФЕЙС И ЛОГИКА ---
-
-function showUserInterface(user) {
-    document.getElementById('login-form').style.display = 'none';
-    document.getElementById('user-info').style.display = 'flex';
-    document.getElementById('logout-btn').style.display = 'block';
-    document.getElementById('user-name').innerText = user.email.split('@')[0];
-    document.getElementById('chat-msg').onkeydown = (e) => { if (e.key === 'Enter') sendMessage(); };
-}
-
-function handleLogoutUI() {
-    document.getElementById('login-form').style.display = 'flex';
-    document.getElementById('user-info').style.display = 'none';
-    document.getElementById('logout-btn').style.display = 'none';
-    document.getElementById('user-name').innerText = "Guest";
-    document.getElementById('chat-window').innerHTML = "";
-    if (unsubscribe) unsubscribe();
+function toggleVideoSound() {
+    const video = document.getElementById('bg-video');
+    const btn = document.getElementById('unmute-btn');
+    video.muted = !video.muted;
+    btn.innerText = video.muted ? "🔊" : "🔇";
 }
 
 function toggleLang() {
-    const icon = document.getElementById('lang-icon');
     currentLang = currentLang === 'ru' ? 'en' : 'ru';
-    icon.innerText = currentLang === 'ru' ? "🌐 🇷🇺" : "🌐 🇺🇸";
+    document.getElementById('lang-icon').innerText = currentLang === 'ru' ? "🌐 🇷🇺" : "🌐 🇺🇸";
     document.querySelectorAll('[data-lang]').forEach(el => {
         const key = el.getAttribute('data-lang');
         if (dict[currentLang][key]) el.innerText = dict[currentLang][key];
     });
 }
 
+// --- FIREBASE & ЧАТ ---
+
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        currentUser = user;
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('user-info').style.display = 'flex';
+        document.getElementById('logout-btn').style.display = 'block';
+        document.getElementById('user-name').innerText = user.email.split('@')[0];
+        startChatListener(user.uid);
+    } else {
+        document.getElementById('login-form').style.display = 'flex';
+        document.getElementById('user-info').style.display = 'none';
+        document.getElementById('logout-btn').style.display = 'none';
+        document.getElementById('user-name').innerText = "Guest";
+    }
+});
+
 async function handleLogin() {
     const email = document.getElementById('auth-email').value;
     const pass = document.getElementById('auth-pass').value;
-    try {
-        await auth.signInWithEmailAndPassword(email, pass).catch(() => auth.createUserWithEmailAndPassword(email, pass));
-    } catch (e) { alert(e.message); }
+    try { await auth.signInWithEmailAndPassword(email, pass).catch(() => auth.createUserWithEmailAndPassword(email, pass)); } 
+    catch (e) { alert(e.message); }
 }
 
-async function handleLogout() {
-    try { await auth.signOut(); showPage('main'); } catch (e) { console.error(e); }
-}
+async function handleLogout() { await auth.signOut(); }
 
 async function sendMessage() {
     const input = document.getElementById('chat-msg');
@@ -141,35 +112,44 @@ function startChatListener(uid) {
     });
 }
 
+// --- КОНТЕНТ ---
+
 async function fetchCats() {
     const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=2');
     const data = await res.json();
     document.getElementById('cat-container').innerHTML = data.map(c => `<img src="${c.url}">`).join('');
 }
 
-// НОВОЕ: Динамическая подгрузка портфолио
 async function loadPortfolioProjects() {
     const container = document.getElementById('portfolio-container');
     if (!container) return;
-    
-    // Эмуляция данных из БД. Позже можно заменить на db.collection("projects").get()
-    const projects = [
-        { title: "Aura Fintech Dashboard", role: "Senior Frontend", metric: "+40% Retention" },
-        { title: "Lumina E-Commerce", role: "UX/UI Architect", metric: "1.2M Users" },
-        { title: "Eden Real Estate", role: "Fullstack", metric: "Premium WebGL" }
-    ];
+    try {
+        const snap = await db.collection("projects").get();
+        container.innerHTML = snap.docs.map(doc => {
+            const p = doc.data();
+            return `
+                <div class="portfolio-item">
+                    <h4>${p.title || 'Project'}</h4>
+                    <div class="status-badge" style="background:var(--accent); color:#000; padding:2px 8px; border-radius:10px; font-size:10px; width:fit-content; margin-bottom:10px;">${p.role || 'Dev'}</div>
+                    <p class="metric" style="color:var(--accent); font-family:monospace; margin:0;">${p.metric || ''}</p>
+                </div>
+            `;
+        }).join('');
+    } catch (e) { console.error("Projects error:", e); }
+}
 
-    container.innerHTML = projects.map(p => `
-        <div class="portfolio-item">
-            <div class="port-bg"></div>
-            <div class="port-content">
-                <h4>${p.title}</h4>
-                <span class="status-badge">${p.role}</span>
-                <p class="metric">${p.metric}</p>
-                <button class="n-btn secondary">View Case</button>
-            </div>
-        </div>
-    `).join('');
+// --- НАВИГАЦИЯ ---
+
+function showPage(pageId) {
+    document.getElementById('main-content').classList.toggle('active', pageId === 'main');
+    document.getElementById('ads-page').classList.toggle('active', pageId === 'ads');
+    document.getElementById('mob-nav').style.display = pageId === 'main' ? 'flex' : 'none';
+}
+
+function switchMobileTab(tabName, btnElement) {
+    document.getElementById('main-content').className = `page-content active tab-${tabName}`;
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-btn'));
+    btnElement.classList.add('active-btn');
 }
 
 window.onload = () => {
