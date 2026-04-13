@@ -19,14 +19,16 @@ let unsubscribe = null;
 
 const dict = {
     ru: { 
-        welcomeSub: "Маг Автоматизации", todoTitle: "Тайная комната", loginBtn: "Войти", catsTitle: "Коты Таверны", skillTech: "Арсенал",
-        skill1: "Алхимия JS и DOM", skill2: "Python мосты", skill3: "Firebase Realtime", skill4: "Mobile-First UX", skill5: "Безопасность",
-        sendBtn: "Отправить", catsBtn: "Призвать", adsLink: "Реклама", promoText: "Здесь могла быть реклама"
+        welcomeSub: "Архитектор Интерфейсов", todoTitle: "Тайная комната", loginBtn: "Войти", catsTitle: "Коты Таверны", 
+        sendBtn: "Отправить", catsBtn: "Призвать", adsLink: "Реклама", promoText: "Здесь могла быть реклама",
+        heroTitle: "НОВЫЙ СТАНДАРТ ЦИФРОВОГО ОПЫТА", heroSub: "Создание премиальных веб-интерфейсов и масштабируемой frontend-архитектуры.", exploreBtn: "Смотреть работы",
+        projectsTitle: "Избранные Проекты", stackTitle: "Техническая Инфраструктура"
     },
     en: { 
-        welcomeSub: "Automation Mage", todoTitle: "Secret Room", loginBtn: "Authorize", catsTitle: "Tavern Cats", skillTech: "Arsenal",
-        skill1: "JS Alchemy & DOM", skill2: "Python Bridges", skill3: "Firebase Realtime", skill4: "Mobile-First UX", skill5: "Security",
-        sendBtn: "Send", catsBtn: "Summon", adsLink: "Ads", promoText: "Your ad could be here"
+        welcomeSub: "UI/UX Architect", todoTitle: "Secret Room", loginBtn: "Authorize", catsTitle: "Tavern Cats", 
+        sendBtn: "Send", catsBtn: "Summon", adsLink: "Ads", promoText: "Your ad could be here",
+        heroTitle: "A NEW STANDARD OF DIGITAL EXPERIENCE", heroSub: "Crafting premium web interfaces and scalable frontend architectures.", exploreBtn: "Explore Work",
+        projectsTitle: "Selected Works", stackTitle: "Technical Infrastructure"
     }
 };
 
@@ -46,24 +48,21 @@ function showPage(pageId) {
     document.getElementById('main-content').classList.remove('active');
     document.getElementById('ads-page').classList.remove('active');
     
-    // Прячем нижнее меню, если ушли в рекламу
     const mobNav = document.getElementById('mob-nav');
     
     if (pageId === 'main') {
         document.getElementById('main-content').classList.add('active');
-        mobNav.style.display = 'flex'; // Возвращаем меню
+        mobNav.style.display = 'flex';
     } else {
         document.getElementById('ads-page').classList.add('active');
-        mobNav.style.display = 'none'; // Прячем меню
+        mobNav.style.display = 'none';
     }
 }
 
 function switchMobileTab(tabName, btnElement) {
-    // Меняем класс у контейнера
     const main = document.getElementById('main-content');
     main.className = `page-content active tab-${tabName}`;
     
-    // Подсвечиваем активную кнопку
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-btn'));
     btnElement.classList.add('active-btn');
 }
@@ -147,4 +146,33 @@ async function fetchCats() {
     const data = await res.json();
     document.getElementById('cat-container').innerHTML = data.map(c => `<img src="${c.url}">`).join('');
 }
-window.onload = fetchCats;
+
+// НОВОЕ: Динамическая подгрузка портфолио
+async function loadPortfolioProjects() {
+    const container = document.getElementById('portfolio-container');
+    if (!container) return;
+    
+    // Эмуляция данных из БД. Позже можно заменить на db.collection("projects").get()
+    const projects = [
+        { title: "Aura Fintech Dashboard", role: "Senior Frontend", metric: "+40% Retention" },
+        { title: "Lumina E-Commerce", role: "UX/UI Architect", metric: "1.2M Users" },
+        { title: "Eden Real Estate", role: "Fullstack", metric: "Premium WebGL" }
+    ];
+
+    container.innerHTML = projects.map(p => `
+        <div class="portfolio-item">
+            <div class="port-bg"></div>
+            <div class="port-content">
+                <h4>${p.title}</h4>
+                <span class="status-badge">${p.role}</span>
+                <p class="metric">${p.metric}</p>
+                <button class="n-btn secondary">View Case</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+window.onload = () => {
+    fetchCats();
+    loadPortfolioProjects();
+};
