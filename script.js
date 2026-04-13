@@ -22,35 +22,41 @@ const dict = {
     ru: {
         adsLink: "Реклама", heroTitle: "НОВЫЙ СТАНДАРТ ЦИФРОВОГО ОПЫТА", heroSub: "Премиальные интерфейсы.",
         welcomeSub: "Маг Автоматизации", chatTitle: "Мессенджер", loginBtn: "Войти",
-        aboutTitle: "Майкл Фарадей", projectsTitle: "Проекты", skillTech: "Арсенал",
+        aboutTitle: "Майкл Фарадей", projectsTitle: "Выбранные Работы", skillTech: "Арсенал",
         catsTitle: "Коты Таверны", catsBtn: "Призвать", promoText: "Здесь могла быть ваша реклама",
-        faradayDesc: "Майкл Фарадей — выдающийся физик, основоположник учения об электромагнитном поле."
+        faradayDesc: "Майкл Фарадей — выдающийся английский физик и химик, основоположник учения об электромагнитном поле. Его открытия легли в основу современной электротехники."
     },
     en: {
-        adsLink: "Advertising", heroTitle: "A NEW DIGITAL STANDARD", heroSub: "Premium UI & Architectures.",
+        adsLink: "Ads", heroTitle: "NEW DIGITAL EXPERIENCE STANDARD", heroSub: "Premium UI & Scalable Architectures.",
         welcomeSub: "Automation Mage", chatTitle: "Messenger", loginBtn: "Login",
-        aboutTitle: "Michael Faraday", projectsTitle: "Projects", skillTech: "Tech Stack",
-        catsTitle: "Tavern Cats", catsBtn: "Summon", promoText: "Your Ad Here",
-        faradayDesc: "Michael Faraday was an English scientist who contributed to the study of electromagnetism."
+        aboutTitle: "Michael Faraday", projectsTitle: "Selected Works", skillTech: "Tech Stack",
+        catsTitle: "Tavern Cats", catsBtn: "Summon", promoText: "Your Ad Could Be Here",
+        faradayDesc: "Michael Faraday was an English scientist who contributed to the study of electromagnetism and electrochemistry."
     }
 };
 
+// --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Enter key
+    // Enter Key Listener
     document.getElementById('chat-msg')?.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendMessage();
     });
 
-    // Autoplay fix
-    document.body.addEventListener('click', () => {
+    // Forced Video Play on User Interaction
+    const playVideo = () => {
         const v = document.getElementById('bg-video');
-        if (v && v.paused) v.play();
-    }, { once: true });
+        if (v && v.paused) {
+            v.play().catch(err => console.error("Playback failed:", err));
+        }
+    };
+    document.body.addEventListener('click', playVideo, { once: true });
+    document.body.addEventListener('touchstart', playVideo, { once: true });
 
     loadProjects();
     fetchCats();
 });
 
+// --- UI Logic ---
 function toggleLang() {
     currentLang = currentLang === 'ru' ? 'en' : 'ru';
     document.getElementById('lang-icon').innerText = currentLang === 'ru' ? "🌐 🇷🇺" : "🌐 🇺🇸";
@@ -66,7 +72,14 @@ function showPage(p) {
     document.getElementById('mob-nav').style.display = p === 'ads' ? 'none' : 'flex';
 }
 
-// --- Firebase ---
+function switchTab(tab, btn) {
+    // Для мобильных устройств — логика переключения в CSS/JS
+    document.querySelectorAll('.m-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    // Можно добавить плавный скролл к нужной карточке на мобилке
+}
+
+// --- Firebase Auth & Chat ---
 auth.onAuthStateChanged(user => {
     currentUser = user;
     document.getElementById('login-form').style.display = user ? 'none' : 'block';
@@ -81,27 +94,28 @@ async function handleLogin() {
     const p = document.getElementById('auth-pass').value;
     if (!e || !p) return;
     try { await auth.signInWithEmailAndPassword(e, p).catch(() => auth.createUserWithEmailAndPassword(e, p)); } 
-    catch (err) { alert(err.message); }
+    catch (err) { alert("Auth Error: " + err.message); }
 }
 
-function handleLogout() { auth.signOut(); }
+function handleLogout() { auth.signOut(); if (unsubscribe) unsubscribe(); }
 
 async function sendMessage() {
     const input = document.getElementById('chat-msg');
     const txt = input.value.trim();
     if (!txt || !currentUser) return;
 
-    // Сохраняем в users/{uid}/messages согласно структуре БД
-    await db.collection("users").doc(currentUser.uid).collection("messages").add({
-        message: txt, sender: "user", timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    });
+    try {
+        await db.collection("users").doc(currentUser.uid).collection("messages").add({
+            message: txt, sender: "user", timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
 
-    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: `👤 ${currentUser.email}: ${txt}` })
-    });
-    input.value = "";
+        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: `👤 ${currentUser.email}: ${txt}` })
+        });
+        input.value = "";
+    } catch (e) { console.error("Firebase Send Error:", e); }
 }
 
 function syncChat(uid) {
@@ -120,20 +134,31 @@ function syncChat(uid) {
     });
 }
 
+// --- Content Loading ---
 async function loadProjects() {
-    const snap = await db.collection("projects").get();
-    document.getElementById('portfolio-container').innerHTML = snap.docs.map(doc => {
-        const p = doc.data();
-        return `<div class="portfolio-item" style="padding:10px; border-bottom:1px solid var(--border)">
-            <strong>${p.title}</strong><br><small>${p.tech ? p.tech.join(', ') : ''}</small>
-        </div>`;
-    }).join('');
+    try {
+        const snap = await db.collection("projects").get();
+        const container = document.getElementById('portfolio-container');
+        if (snap.empty) {
+            container.innerHTML = "<p style='opacity:0.5'>Projects database is empty...</p>";
+            return;
+        }
+        container.innerHTML = snap.docs.map(doc => {
+            const p = doc.data();
+            return `<div class="portfolio-item" style="padding:15px 0; border-bottom:1px solid var(--border)">
+                <h4 style="color:var(--accent)">${p.title}</h4>
+                <p style="font-size:12px; opacity:0.7">${p.metric || 'Performance Optimized'}</p>
+            </div>`;
+        }).join('');
+    } catch (e) { console.error("Projects Load Error:", e); }
 }
 
 async function fetchCats() {
-    const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=1');
-    const data = await res.json();
-    document.getElementById('cat-container').innerHTML = `<img src="${data[0].url}" style="width:100%; border-radius:12px;">`;
+    try {
+        const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=1');
+        const data = await res.json();
+        document.getElementById('cat-container').innerHTML = `<img src="${data[0].url}" style="width:100%; border-radius:18px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);">`;
+    } catch (e) { console.error("Cat API Error"); }
 }
 
 function toggleSound() {
