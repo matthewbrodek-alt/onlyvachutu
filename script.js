@@ -16,18 +16,32 @@ const auth = firebase.auth();
 
 let currentUser = null;
 let unsubscribe = null;
+let currentLang = 'ru';
 
-// --- Инициализация ---
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. Обработка Enter в чате
-    const chatInput = document.getElementById('chat-msg');
-    if (chatInput) {
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
+const dict = {
+    ru: {
+        adsLink: "Реклама", heroTitle: "НОВЫЙ СТАНДАРТ ЦИФРОВОГО ОПЫТА", heroSub: "Премиальные интерфейсы.",
+        welcomeSub: "Маг Автоматизации", chatTitle: "Мессенджер", loginBtn: "Войти",
+        aboutTitle: "Майкл Фарадей", projectsTitle: "Проекты", skillTech: "Арсенал",
+        catsTitle: "Коты Таверны", catsBtn: "Призвать", promoText: "Здесь могла быть ваша реклама",
+        faradayDesc: "Майкл Фарадей — выдающийся физик, основоположник учения об электромагнитном поле."
+    },
+    en: {
+        adsLink: "Advertising", heroTitle: "A NEW DIGITAL STANDARD", heroSub: "Premium UI & Architectures.",
+        welcomeSub: "Automation Mage", chatTitle: "Messenger", loginBtn: "Login",
+        aboutTitle: "Michael Faraday", projectsTitle: "Projects", skillTech: "Tech Stack",
+        catsTitle: "Tavern Cats", catsBtn: "Summon", promoText: "Your Ad Here",
+        faradayDesc: "Michael Faraday was an English scientist who contributed to the study of electromagnetism."
     }
+};
 
-    // 2. Видео автоплей (фикс браузера)
+document.addEventListener('DOMContentLoaded', () => {
+    // Enter key
+    document.getElementById('chat-msg')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
+
+    // Autoplay fix
     document.body.addEventListener('click', () => {
         const v = document.getElementById('bg-video');
         if (v && v.paused) v.play();
@@ -37,23 +51,25 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchCats();
 });
 
-// --- Навигация ---
-function showPage(pageId) {
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    if (pageId === 'ads') {
-        document.getElementById('ads-page').classList.add('active');
-        document.getElementById('mob-nav').style.display = 'none';
-    } else {
-        document.getElementById('main-content').classList.add('active');
-        document.getElementById('mob-nav').style.display = 'flex';
-    }
-    document.getElementById('main-scroll').scrollTop = 0;
+function toggleLang() {
+    currentLang = currentLang === 'ru' ? 'en' : 'ru';
+    document.getElementById('lang-icon').innerText = currentLang === 'ru' ? "🌐 🇷🇺" : "🌐 🇺🇸";
+    document.querySelectorAll('[data-lang]').forEach(el => {
+        const key = el.getAttribute('data-lang');
+        if (dict[currentLang][key]) el.innerText = dict[currentLang][key];
+    });
+}
+
+function showPage(p) {
+    document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
+    document.getElementById(p === 'ads' ? 'ads-page' : 'main-content').classList.add('active');
+    document.getElementById('mob-nav').style.display = p === 'ads' ? 'none' : 'flex';
 }
 
 // --- Firebase ---
 auth.onAuthStateChanged(user => {
     currentUser = user;
-    document.getElementById('login-form').style.display = user ? 'none' : 'flex';
+    document.getElementById('login-form').style.display = user ? 'none' : 'block';
     document.getElementById('user-info').style.display = user ? 'flex' : 'none';
     document.getElementById('logout-btn').style.display = user ? 'block' : 'none';
     document.getElementById('user-name').innerText = user ? user.email.split('@')[0] : "Guest";
@@ -61,29 +77,29 @@ auth.onAuthStateChanged(user => {
 });
 
 async function handleLogin() {
-    const email = document.getElementById('auth-email').value;
-    const pass = document.getElementById('auth-pass').value;
-    try {
-        await auth.signInWithEmailAndPassword(email, pass).catch(() => auth.createUserWithEmailAndPassword(email, pass));
-    } catch (e) { alert(e.message); }
+    const e = document.getElementById('auth-email').value;
+    const p = document.getElementById('auth-pass').value;
+    if (!e || !p) return;
+    try { await auth.signInWithEmailAndPassword(e, p).catch(() => auth.createUserWithEmailAndPassword(e, p)); } 
+    catch (err) { alert(err.message); }
 }
 
 function handleLogout() { auth.signOut(); }
 
-// --- Чат и Telegram ---
 async function sendMessage() {
     const input = document.getElementById('chat-msg');
-    const text = input.value.trim();
-    if (!text || !currentUser) return;
+    const txt = input.value.trim();
+    if (!txt || !currentUser) return;
 
+    // Сохраняем в users/{uid}/messages согласно структуре БД
     await db.collection("users").doc(currentUser.uid).collection("messages").add({
-        message: text, sender: "user", timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        message: txt, sender: "user", timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
 
     fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: `👤 ${currentUser.email}: ${text}` })
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: `👤 ${currentUser.email}: ${txt}` })
     });
     input.value = "";
 }
@@ -104,30 +120,24 @@ function syncChat(uid) {
     });
 }
 
-// --- Контент ---
 async function loadProjects() {
-    const container = document.getElementById('portfolio-container');
     const snap = await db.collection("projects").get();
-    container.innerHTML = snap.docs.map(doc => {
+    document.getElementById('portfolio-container').innerHTML = snap.docs.map(doc => {
         const p = doc.data();
-        return `<div class="portfolio-item card"><h4>${p.title}</h4><p>${p.metric || ''}</p></div>`;
+        return `<div class="portfolio-item" style="padding:10px; border-bottom:1px solid var(--border)">
+            <strong>${p.title}</strong><br><small>${p.tech ? p.tech.join(', ') : ''}</small>
+        </div>`;
     }).join('');
 }
 
 async function fetchCats() {
     const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=1');
     const data = await res.json();
-    document.getElementById('cat-container').innerHTML = `<img src="${data[0].url}" style="width:100%; border-radius:15px;">`;
+    document.getElementById('cat-container').innerHTML = `<img src="${data[0].url}" style="width:100%; border-radius:12px;">`;
 }
 
 function toggleSound() {
     const v = document.getElementById('bg-video');
     v.muted = !v.muted;
     document.getElementById('unmute-btn').innerText = v.muted ? "🔊" : "🔇";
-}
-
-function switchTab(tab, btn) {
-    document.getElementById('main-content').className = `view active tab-${tab}`;
-    document.querySelectorAll('.m-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
 }
