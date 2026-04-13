@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nitro Hub | Architecture v4.2</title>
+    <title>Nitro Hub | Production Ready</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -14,8 +14,8 @@
 </head>
 <body>
 
-<div class="video-bg-layer">
-    <video id="bg-video" autoplay loop muted playsinline poster="https://zrobim.by/images/video/zrobim_video_bg.jpg">
+<div class="video-container">
+    <video id="bg-video" autoplay loop muted playsinline>
         <source src="https://zrobim.by/images/video/zrobim_video_bg.mp4" type="video/mp4">
     </video>
     <div class="video-overlay"></div>
@@ -23,16 +23,18 @@
 
 <nav class="top-nav">
     <div class="logo" onclick="showPage('main')">NITRO<span>HUB</span></div>
-    <div class="nav-right">
+    <div class="nav-center">
         <a href="#" class="ads-link" onclick="showPage('ads')">Реклама</a>
+    </div>
+    <div class="nav-right">
         <button id="lang-btn" class="lang-globe-btn" onclick="toggleLang()">
             <span id="lang-icon">🌐 🇷🇺</span>
         </button>
     </div>
 </nav>
 
-<main class="dashboard" id="main-scroll-container">
-    <div id="main-content" class="page-view active">
+<main class="dashboard" id="main-scroll">
+    <div id="main-content" class="view active">
         <section class="hero-section">
             <h1 data-lang="heroTitle">A NEW STANDARD OF DIGITAL EXPERIENCE</h1>
             <p data-lang="heroSub">Crafting premium web interfaces and scalable frontend architectures.</p>
@@ -44,8 +46,8 @@
             <div id="portfolio-container" class="portfolio-grid"></div>
         </section>
 
-        <div class="layout-grid">
-            <div class="column side-left">
+        <div class="grid-layout">
+            <div class="side-col">
                 <div class="card profile-card">
                     <div class="status-wrapper">
                         <div class="status-badge">ONLINE</div>
@@ -56,7 +58,7 @@
                 </div>
                 <div class="card stack-card">
                     <h3>Arsenal</h3>
-                    <div class="stack-tags">
+                    <div class="tags">
                         <span>React</span> <span>Vue</span> <span>Firebase</span> <span>Python</span>
                     </div>
                 </div>
@@ -64,43 +66,43 @@
 
             <div class="card chat-card">
                 <div id="login-form" class="auth-box">
-                    <h3 data-lang="todoTitle">Secret Entrance</h3>
+                    <h3>Secret Entrance</h3>
                     <input type="email" id="auth-email" placeholder="Email" class="n-input">
                     <input type="password" id="auth-pass" placeholder="Password" class="n-input">
                     <button onclick="handleLogin()" class="n-btn primary">Authorize</button>
                 </div>
-                <div id="user-info" style="display:none;" class="chat-inner">
+                <div id="user-info" style="display:none;" class="chat-container">
                     <div id="chat-window" class="chat-feed"></div>
-                    <div class="chat-input-row">
+                    <div class="chat-controls">
                         <input type="text" id="chat-msg" placeholder="Write a message..." class="n-input">
-                        <button onclick="sendMessage()" class="send-circle-btn">➔</button>
+                        <button onclick="sendMessage()" class="send-btn">➔</button>
                     </div>
                 </div>
             </div>
 
             <div class="card cats-card">
                 <h3>Tavern Cats</h3>
-                <div id="cat-container" class="cat-viewer"></div>
+                <div id="cat-container" class="cat-box"></div>
                 <button onclick="fetchCats()" class="n-btn secondary">Summon</button>
             </div>
         </div>
     </div>
 
-    <div id="ads-page" class="page-view">
-        <div class="card ads-display">
+    <div id="ads-page" class="view">
+        <div class="ads-hero">
             <h1>Здесь могла быть ваша реклама</h1>
-            <p class="contact-hint">Contact: @your_telegram</p>
-            <button onclick="showPage('main')" class="n-btn secondary">← Вернуться</button>
+            <p>Contact: @your_telegram</p>
+            <button onclick="showPage('main')" class="n-btn secondary">← На главную</button>
         </div>
     </div>
 </main>
 
-<button id="unmute-btn" onclick="toggleVideoSound()">🔊</button>
+<button id="unmute-btn" onclick="toggleSound()">🔊</button>
 
-<nav class="mobile-bottom-nav" id="mob-nav">
-    <button class="m-btn active" onclick="switchMobileTab('profile', this)">👤</button>
-    <button class="m-btn" onclick="switchMobileTab('chat', this)">💬</button>
-    <button class="m-btn" onclick="switchMobileTab('cats', this)">🐱</button>
+<nav class="mob-nav" id="mob-nav">
+    <button class="m-btn active" onclick="switchTab('profile', this)">👤</button>
+    <button class="m-btn" onclick="switchTab('chat', this)">💬</button>
+    <button class="m-btn" onclick="switchTab('cats', this)">🐱</button>
 </nav>
 
 <script src="script.js"></script>
