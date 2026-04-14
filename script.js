@@ -135,8 +135,9 @@ async function fetchCats() {
 
 document.addEventListener('DOMContentLoaded', () => {
     const v = document.getElementById('bg-video');
+    // Минимальный код для запуска видео, чтобы не грузить скрипт
     if (v) v.play().catch(() => {
-        window.addEventListener('mousedown', () => v.play(), { once: true });
+        window.addEventListener('click', () => v.play(), { once: true });
     });
     fetchCats();
 });
