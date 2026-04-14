@@ -145,3 +145,80 @@ body, html {
 .n-btn { padding: 12px 24px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; }
 .primary { background: var(--accent); color: #000; }
 .secondary { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+
+/* === КАРУСЕЛЬ === */
+.carousel-section {
+    padding: 60px 4% 80px;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+.carousel-title {
+    text-align: center;
+    font-size: 13px;
+    letter-spacing: 4px;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+.carousel-stage {
+    width: 100%;
+    height: 480px;
+    overflow: hidden;
+    position: relative;
+    border-radius: 30px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    backdrop-filter: blur(35px);
+}
+.carousel-scene {
+    position: absolute;
+    left: 50%;
+    top: -260px;
+    transform: translateX(-50%);
+    width: 1000px;
+    height: 1000px;
+    pointer-events: none;
+}
+.c-card {
+    position: absolute;
+    width: 150px;
+    height: 190px;
+    border-radius: 18px;
+    overflow: hidden;
+    pointer-events: auto;
+    cursor: pointer;
+    border: 1px solid rgba(0,255,136,0.15);
+    transition: border-color 0.2s;
+}
+.c-card:hover { border-color: rgba(0,255,136,0.6); }
+.c-card img {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+}
+.c-card-placeholder {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 8px; font-size: 12px; font-weight: 700;
+    letter-spacing: 1px; color: rgba(255,255,255,0.7);
+    background: rgba(0,255,136,0.06);
+}
+.carousel-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+.carousel-btn {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+}
+.carousel-btn:hover { background: rgba(0,255,136,0.1); }
+.carousel-btn-pause { width: 48px; height: 48px; font-size: 16px; }
