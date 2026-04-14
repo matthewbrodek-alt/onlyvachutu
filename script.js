@@ -63,9 +63,11 @@ const auth = firebase.auth();
 let currentLang = 'ru';
 
 // Переключение языка
-function toggleLang() {
-    currentLang = currentLang === 'ru' ? 'en' : 'ru';
-    document.getElementById('lang-icon').innerText = currentLang === 'ru' ? "🇺🇸" : "🇷🇺";
+function setLang(lang) {
+    currentLang = lang;
+    document.querySelectorAll('.lang-option').forEach(el => el.classList.remove('active'));
+    document.getElementById(`lang-${lang}`).classList.add('active');
+    
     document.querySelectorAll('[data-lang]').forEach(el => {
         const key = el.getAttribute('data-lang');
         const text = translations[currentLang][key];
