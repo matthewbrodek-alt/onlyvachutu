@@ -7,167 +7,148 @@ const firebaseConfig = {
     appId: "1:391088510675:web:ff1c4d866c37f921886626"
 };
 
+// --- КОНФИГУРАЦИЯ TELEGRAM ---
 const TELEGRAM_BOT_TOKEN = "8664813567:AAEkqGdXuyrS43Pjfc1gB-KdVuOOReWrkGw";
 const TELEGRAM_CHAT_ID = "7451263058";
 
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+// Инициализация
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-let currentUser = null;
-let unsubscribe = null;
 let currentLang = 'ru';
 
-const dict = {
-    ru: {
-        adsLink: "Реклама", heroTitle: "НОВЫЙ СТАНДАРТ ЦИФРОВОГО ОПЫТА", heroSub: "Премиальные интерфейсы.",
-        welcomeSub: "Маг Автоматизации", chatTitle: "Мессенджер", loginBtn: "Войти",
-        aboutTitle: "Майкл Фарадей", projectsTitle: "Выбранные Работы", skillTech: "Арсенал",
-        catsTitle: "Коты Таверны", catsBtn: "Призвать", promoText: "Здесь могла быть ваша реклама",
-        faradayDesc: "Майкл Фарадей — выдающийся английский физик и химик, основоположник учения об электромагнитном поле. Его открытия легли в основу современной электротехники."
-    },
-    en: {
-        adsLink: "Ads", heroTitle: "NEW DIGITAL EXPERIENCE STANDARD", heroSub: "Premium UI & Scalable Architectures.",
-        welcomeSub: "Automation Mage", chatTitle: "Messenger", loginBtn: "Login",
-        aboutTitle: "Michael Faraday", projectsTitle: "Selected Works", skillTech: "Tech Stack",
-        catsTitle: "Tavern Cats", catsBtn: "Summon", promoText: "Your Ad Could Be Here",
-        faradayDesc: "Michael Faraday was an English scientist who contributed to the study of electromagnetism and electrochemistry."
-    }
-};
-
-// --- Initialization ---
-document.addEventListener('DOMContentLoaded', () => {
-    // Enter Key Listener
-    document.getElementById('chat-msg')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendMessage();
-    });
-
-    // Forced Video Play on User Interaction
-    const playVideo = () => {
-        const v = document.getElementById('bg-video');
-        if (v && v.paused) {
-            v.play().catch(err => console.error("Playback failed:", err));
-        }
-    };
-    document.body.addEventListener('click', playVideo, { once: true });
-    document.body.addEventListener('touchstart', playVideo, { once: true });
-
-    loadProjects();
-    fetchCats();
-});
-
-// --- UI Logic ---
+// --- ЛОГИКА ЯЗЫКА (ФЛАГИ) ---
 function toggleLang() {
     currentLang = currentLang === 'ru' ? 'en' : 'ru';
-    document.getElementById('lang-icon').innerText = currentLang === 'ru' ? "🌐 🇷🇺" : "🌐 🇺🇸";
-    document.querySelectorAll('[data-lang]').forEach(el => {
-        const key = el.getAttribute('data-lang');
-        if (dict[currentLang][key]) el.innerText = dict[currentLang][key];
-    });
+    const langIcon = document.getElementById('lang-icon');
+    if (langIcon) {
+        langIcon.innerText = currentLang === 'ru' ? "🇷🇺" : "🇺🇸";
+    }
+    // Здесь можно вызвать функцию обновления текстов, если есть словарь dict
 }
 
-function showPage(p) {
-    document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
-    document.getElementById(p === 'ads' ? 'ads-page' : 'main-content').classList.add('active');
-    document.getElementById('mob-nav').style.display = p === 'ads' ? 'none' : 'flex';
-}
-
-function switchTab(tab, btn) {
-    // Для мобильных устройств — логика переключения в CSS/JS
-    document.querySelectorAll('.m-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    // Можно добавить плавный скролл к нужной карточке на мобилке
-}
-
-// --- Firebase Auth & Chat ---
+// --- УПРАВЛЕНИЕ СОСТОЯНИЕМ ПОЛЬЗОВАТЕЛЯ ---
 auth.onAuthStateChanged(user => {
-    currentUser = user;
-    document.getElementById('login-form').style.display = user ? 'none' : 'block';
-    document.getElementById('user-info').style.display = user ? 'flex' : 'none';
-    document.getElementById('logout-btn').style.display = user ? 'block' : 'none';
-    document.getElementById('user-name').innerText = user ? user.email.split('@')[0] : "Guest";
-    if (user) syncChat(user.uid);
+    const loginForm = document.getElementById('login-form');
+    const userInfo = document.getElementById('user-info');
+    const userNameDisplay = document.getElementById('user-name');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    if (user) {
+        if (loginForm) loginForm.style.display = 'none';
+        if (userInfo) userInfo.style.display = 'flex';
+        if (logoutBtn) logoutBtn.style.display = 'block';
+        if (userNameDisplay) userNameDisplay.innerText = user.email.split('@')[0];
+        
+        // Важно: сохраняем email в профиль, чтобы Python-мост мог сопоставить его
+        db.collection("users").doc(user.uid).set({
+            email: user.email,
+            lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        syncChat(user.uid);
+    } else {
+        if (loginForm) loginForm.style.display = 'block';
+        if (userInfo) userInfo.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+        if (userNameDisplay) userNameDisplay.innerText = "Guest";
+    }
 });
 
+// --- АВТОРИЗАЦИЯ ---
 async function handleLogin() {
-    const e = document.getElementById('auth-email').value;
-    const p = document.getElementById('auth-pass').value;
-    if (!e || !p) return;
-    try { await auth.signInWithEmailAndPassword(e, p).catch(() => auth.createUserWithEmailAndPassword(e, p)); } 
-    catch (err) { alert("Auth Error: " + err.message); }
+    const email = document.getElementById('auth-email').value;
+    const pass = document.getElementById('auth-pass').value;
+    if (!email || !pass) return alert("Введите данные!");
+
+    try {
+        await auth.signInWithEmailAndPassword(email, pass);
+    } catch (error) {
+        try {
+            await auth.createUserWithEmailAndPassword(email, pass);
+        } catch (regError) {
+            alert("Ошибка: " + regError.message);
+        }
+    }
 }
 
-function handleLogout() { auth.signOut(); if (unsubscribe) unsubscribe(); }
+function handleLogout() {
+    auth.signOut();
+}
 
+// --- ЧАТ И TELEGRAM ---
 async function sendMessage() {
     const input = document.getElementById('chat-msg');
-    const txt = input.value.trim();
-    if (!txt || !auth.currentUser) return;
+    const text = input.value.trim();
+    
+    if (!text || !auth.currentUser) return;
 
-    // Сохраняем в Firebase
+    // 1. Сохраняем сообщение в Firebase пользователя
     await db.collection("users").doc(auth.currentUser.uid).collection("messages").add({
-        message: txt, 
-        sender: "user", 
+        message: text,
+        sender: "user",
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // Отправляем в Telegram: сначала email, потом сообщение с новой строки
+    // 2. Отправляем в Telegram в строгом формате для bridge.py
+    // Первая строка ДОЛЖНА содержать только 👤 Email
+    const tgMessage = `👤 ${auth.currentUser.email}\n💬 ${text}`;
+
     fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ 
-            chat_id: TELEGRAM_CHAT_ID, 
-            text: `👤 ${auth.currentUser.email}\n💬 ${txt}` 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: TELEGRAM_CHAT_ID,
+            text: tgMessage
         })
     });
+
     input.value = "";
 }
 
 function syncChat(uid) {
-    if (unsubscribe) unsubscribe();
-    unsubscribe = db.collection("users").doc(uid).collection("messages").orderBy("timestamp", "asc").onSnapshot(snap => {
-        const win = document.getElementById('chat-window');
-        win.innerHTML = "";
-        snap.forEach(doc => {
-            const m = doc.data();
-            const div = document.createElement('div');
-            div.className = `msg-box ${m.sender === 'user' ? 'sent' : 'received'}`;
-            div.innerText = m.message;
-            win.appendChild(div);
+    db.collection("users").doc(uid).collection("messages")
+        .orderBy("timestamp", "asc")
+        .onSnapshot(snap => {
+            const win = document.getElementById('chat-window');
+            if (!win) return;
+            
+            win.innerHTML = "";
+            snap.forEach(doc => {
+                const m = doc.data();
+                const div = document.createElement('div');
+                div.className = `msg-box ${m.sender === 'user' ? 'sent' : 'received'}`;
+                div.innerText = m.message;
+                win.appendChild(div);
+            });
+            win.scrollTop = win.scrollHeight;
         });
-        win.scrollTop = win.scrollHeight;
-    });
 }
 
-// --- Content Loading ---
-async function loadProjects() {
-    try {
-        const snap = await db.collection("projects").get();
-        const container = document.getElementById('portfolio-container');
-        if (snap.empty) {
-            container.innerHTML = "<p style='opacity:0.5'>Projects database is empty...</p>";
-            return;
-        }
-        container.innerHTML = snap.docs.map(doc => {
-            const p = doc.data();
-            return `<div class="portfolio-item" style="padding:15px 0; border-bottom:1px solid var(--border)">
-                <h4 style="color:var(--accent)">${p.title}</h4>
-                <p style="font-size:12px; opacity:0.7">${p.metric || 'Performance Optimized'}</p>
-            </div>`;
-        }).join('');
-    } catch (e) { console.error("Projects Load Error:", e); }
-}
-
+// --- ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ ---
 async function fetchCats() {
     try {
-        const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=1');
+        const res = await fetch('https://api.thecatapi.com/v1/images/search');
         const data = await res.json();
-        document.getElementById('cat-container').innerHTML = `<img src="${data[0].url}" style="width:100%; border-radius:18px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);">`;
-    } catch (e) { console.error("Cat API Error"); }
+        const container = document.getElementById('cat-container');
+        if (container) {
+            container.innerHTML = `<img src="${data[0].url}" style="width:100%; border-radius:12px; margin-top:10px; border: 1px solid rgba(0,255,136,0.3);">`;
+        }
+    } catch (e) {
+        console.error("Ошибка при загрузке котиков", e);
+    }
 }
 
-function toggleSound() {
-    const v = document.getElementById('bg-video');
-    v.muted = !v.muted;
-    document.getElementById('unmute-btn').innerText = v.muted ? "🔊" : "🔇";
-}
+// Запуск видео и первичная загрузка
+document.addEventListener('DOMContentLoaded', () => {
+    const video = document.getElementById('bg-video');
+    // Обход политики автоплея: запускаем видео после первого клика по экрану
+    document.body.addEventListener('click', () => {
+        if (video) video.play();
+    }, { once: true });
+
+    fetchCats();
+});
