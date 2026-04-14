@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nitro Hub | Tavern Edition</title>
+    <title>Nitro Hub | Faraday Edition v5.0</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -11,45 +11,51 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js"></script>
 </head>
 <body>
 
-<div class="video-bg-container">
-    <video id="bg-video" autoplay loop muted playsinline>
-        <source src="bg_video.mp4" type="video/mp4">
+<div class="video-bg-wrapper">
+    <video id="bg-video" autoplay loop muted playsinline poster="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2560&auto=format&fit=crop">
+        <source src="https://player.vimeo.com/external/434045526.sd.mp4?s=c27cf341d76f6466f212f8a1ad39da9022e0308a&profile_id=165&oauth2_token_id=57447761" type="video/mp4">
     </video>
+    <div class="video-overlay"></div>
 </div>
 
 <nav class="top-nav">
-    <div class="logo neon-text" onclick="showPage('main')">NITRO<span>HUB</span></div>
+    <div class="logo" onclick="showPage('main')">NITRO<span>HUB</span></div>
     <div class="nav-center">
-        <a href="#" class="projects-link-nav neon-text" onclick="showPage('projects-page')" data-lang="projectsLink">МОИ ПРОЕКТЫ</a>
+        <a href="#" class="ads-link" onclick="showPage('ads')" data-lang="adsLink">Реклама</a>
     </div>
     <div class="nav-right">
-        <button id="lang-btn" class="lang-btn neon-border" onclick="toggleLang()">
-            <span id="lang-icon">🇷🇺</span>
+        <button id="lang-btn" class="lang-globe-btn" onclick="toggleLang()">
+            <span id="lang-icon">🌐 🇷🇺</span>
         </button>
     </div>
 </nav>
 
 <main class="dashboard" id="main-scroll">
     <div id="main-content" class="view-container active">
+        
+        <section class="hero-section">
+            <h1 data-lang="heroTitle">НОВЫЙ СТАНДАРТ ЦИФРОВОГО ОПЫТА</h1>
+            <p data-lang="heroSub">Премиальные интерфейсы и архитектура.</p>
+        </section>
+
         <div class="main-grid">
             <div class="col-side">
-                <div class="card profile-card" data-tilt>
-                    <div class="status-badge neon-border neon-text">ONLINE</div>
-                    <h2 id="user-name" class="neon-text">Guest</h2>
+                <div class="card profile-card">
+                    <div class="status-badge">ONLINE</div>
+                    <h2 id="user-name">Guest</h2>
                     <p class="sub" data-lang="welcomeSub">Маг Автоматизации</p>
-                    <button id="logout-btn" class="logout-link neon-text" onclick="handleLogout()" style="display:none">Logout ➔</button>
+                    <button id="logout-btn" class="logout-link" onclick="handleLogout()" style="display:none">Logout ➔</button>
                 </div>
                 
-                <div class="card chat-card" data-tilt data-tilt-max="5">
+                <div class="card chat-card">
                     <h3 data-lang="chatTitle">Messenger</h3>
                     <div id="login-form" class="auth-box">
                         <input type="email" id="auth-email" placeholder="Email" class="n-input">
-                        <input type="password" id="auth-pass" placeholder="Pass" class="n-input">
-                        <button onclick="handleLogin()" class="n-btn primary" data-lang="loginBtn">Войти</button>
+                        <input type="password" id="auth-pass" placeholder="Password" class="n-input">
+                        <button onclick="handleLogin()" class="n-btn primary" data-lang="loginBtn">Authorize</button>
                     </div>
                     <div id="user-info" style="display:none;" class="chat-inner">
                         <div id="chat-window" class="chat-feed"></div>
@@ -62,36 +68,54 @@
             </div>
 
             <div class="col-center">
-                <div class="card about-card" data-tilt>
+                <div class="card about-card">
                     <h3 data-lang="aboutTitle">Michael Faraday</h3>
                     <div class="faraday-content">
-                        <p data-lang="faradayDesc">Майкл Фарадей — английский физик, внесший вклад в электромагнетизм.</p>
-                        <div class="quote" data-lang="faradayQuote">"Ничто не слишком чудесно, чтобы быть истинным."</div>
+                        <p data-lang="faradayDesc">
+                            Майкл Фарадей — выдающийся английский физик и химик, основоположник учения об электромагнитном поле. 
+                            Его открытия в области электромагнитной индукции легли в основу современной электротехники.
+                        </p>
+                        <div class="quote">"Ничто не слишком прекрасно, чтобы быть истинным, если оно соответствует законам природы."</div>
                     </div>
                 </div>
                 <div class="card projects-card">
-                    <h3 class="neon-text" data-lang="worksTitle">Выбранные Работы</h3>
+                    <h3 data-lang="projectsTitle">Selected Works</h3>
                     <div id="portfolio-container" class="portfolio-list"></div>
                 </div>
             </div>
 
             <div class="col-side">
-                <div class="card tech-card" data-tilt>
+                <div class="card tech-card">
                     <h3 data-lang="skillTech">Arsenal</h3>
                     <div class="tech-tags">
-                        <span class="neon-border">React</span> <span class="neon-border">Firebase</span> 
-                        <span class="neon-border">Python</span> <span class="neon-border">UI/UX</span>
+                        <span>React</span> <span>Firebase</span> <span>D3.js</span> <span>Node</span>
                     </div>
                 </div>
-                <div class="card cats-card" data-tilt>
+                <div class="card cats-card">
                     <h3 data-lang="catsTitle">Tavern Cats</h3>
                     <div id="cat-container" class="cat-box"></div>
-                    <button onclick="fetchCats()" class="n-btn secondary" data-lang="catsBtn">Призвать</button>
+                    <button onclick="fetchCats()" class="n-btn secondary" data-lang="catsBtn">Summon</button>
                 </div>
             </div>
         </div>
     </div>
+
+    <div id="ads-page" class="view-container">
+        <div class="card ads-display">
+            <h1 data-lang="promoText">Здесь могла быть ваша реклама</h1>
+            <p>Contact: @your_telegram</p>
+            <button onclick="showPage('main')" class="n-btn secondary">← Back</button>
+        </div>
+    </div>
 </main>
+
+<button id="unmute-btn" onclick="toggleSound()">🔊</button>
+
+<nav class="mobile-nav" id="mob-nav">
+    <button class="m-btn active" onclick="switchTab('profile', this)">👤</button>
+    <button class="m-btn" onclick="switchTab('chat', this)">💬</button>
+    <button class="m-btn" onclick="switchTab('cats', this)">🐱</button>
+</nav>
 
 <script src="script.js"></script>
 </body>
