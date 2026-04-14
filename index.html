@@ -22,7 +22,7 @@
 </div>
 
 <nav class="top-nav">
-    <div class="logo nitro-glow" onclick="showPage('main')">NITRO<span>HUB</span></div>
+    <div class="logo nitro-glow" onclick="showPage('main-content')" style="cursor: pointer;">NITRO<span>HUB</span></div>
     <div class="nav-center">
         <a href="#" class="ads-link nitro-glow" onclick="showPage('ads-page')" data-lang="projectsLink">Мои проекты</a>
     </div>
@@ -35,7 +35,6 @@
 
 <main class="dashboard" id="main-scroll">
     <div id="main-content" class="view-container active">
-        
         <section class="hero-section">
             <h1 data-lang="heroTitle">НОВЫЙ СТАНДАРТ ЦИФРОВОГО ОПЫТА</h1>
             <p data-lang="heroSub">Премиальные интерфейсы и архитектура.</p>
@@ -71,11 +70,8 @@
                 <div class="card about-card">
                     <h3 data-lang="aboutTitle">Michael Faraday</h3>
                     <div class="faraday-content">
-                        <p data-lang="faradayDesc">
-                            Майкл Фарадей — выдающийся английский физик и химик, основоположник учения об электромагнитном поле. 
-                            Его открытия в области электромагнитной индукции легли в основу современной электротехники.
-                        </p>
-                        <div class="quote">"Ничто не слишком прекрасно, чтобы быть истинным, если оно соответствует законам природы."</div>
+                        <p data-lang="faradayDesc">Майкл Фарадей — выдающийся английский физик и химик...</p>
+                        <div class="quote">"Ничто не слишком прекрасно, чтобы быть истинным..."</div>
                     </div>
                 </div>
                 <div class="card projects-card">
@@ -110,18 +106,12 @@
                 <h3 class="nitro-glow">Career Portal</h3>
                 <iframe src="https://kotokafe-kotiki-i-lyudi.webflow.io/career" frameborder="0"></iframe>
             </div>
-            <button onclick="showPage('main')" class="n-btn secondary" style="margin-top: 20px;">← Back</button>
+            <button onclick="showPage('main-content')" class="n-btn secondary" style="margin-top: 20px;">← Back</button>
         </div>
     </div>
 </main>
 
 <button id="unmute-btn" onclick="toggleSound()">🔊</button>
-
-<nav class="mobile-nav" id="mob-nav">
-    <button class="m-btn active" onclick="switchTab('profile', this)">👤</button>
-    <button class="m-btn" onclick="switchTab('chat', this)">💬</button>
-    <button class="m-btn" onclick="switchTab('cats', this)">🐱</button>
-</nav>
 
 <script src="script.js"></script>
 </body>
