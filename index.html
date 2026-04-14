@@ -36,6 +36,8 @@
 </nav>
 
 <main class="dashboard" id="main-scroll">
+
+    <!-- ГЛАВНАЯ СТРАНИЦА -->
     <div id="main-content" class="view-container active">
         <section class="hero-section">
             <h1 data-lang="heroTitle">НОВЫЙ СТАНДАРТ ЦИФРОВОГО ОПЫТА</h1>
@@ -43,6 +45,7 @@
         </section>
 
         <div class="main-grid">
+            <!-- ЛЕВАЯ КОЛОНКА -->
             <div class="col-side">
                 <div class="card profile-card">
                     <div class="status-badge nitro-glow" data-lang="statusOnline">В СЕТИ</div>
@@ -77,6 +80,7 @@
                 </div>
             </div>
 
+            <!-- ЦЕНТРАЛЬНАЯ КОЛОНКА -->
             <div class="col-center">
                 <div class="card projects-card">
                     <h3 class="nitro-glow" data-lang="projectsTitle">ПРЯМАЯ СВЯЗЬ</h3>
@@ -100,6 +104,7 @@
                 </div>
             </div>
 
+            <!-- ПРАВАЯ КОЛОНКА -->
             <div class="col-side">
                 <div class="card tech-card">
                     <h3 class="nitro-glow" data-lang="skillTech">Арсенал</h3>
@@ -114,22 +119,24 @@
                 </div>
             </div>
         </div>
-    </div>
 
-   <!-- КАРУСЕЛЬ -->
-   <section class="carousel-section" id="carousel-section">
-       <h2 class="carousel-title nitro-glow" data-lang="staffTitle">НАШИ СОТРУДНИКИ</h2>
-       <div class="carousel-stage">
-           <div class="carousel-scene" id="carousel-scene"></div>
-       </div>
-       <div class="carousel-controls">
-           <button class="carousel-btn" id="car-prev">&#8592;</button>
-           <button class="carousel-btn carousel-btn-pause" id="car-pause">&#9646;&#9646;</button>
-           <button class="carousel-btn" id="car-next">&#8594;</button>
-       </div>
-   </section>
+        <!-- КАРУСЕЛЬ — только на главной, в нижней части -->
+        <section class="carousel-section" id="carousel-section">
+            <h2 class="carousel-title nitro-glow" data-lang="staffTitle">НАШИ СОТРУДНИКИ</h2>
+            <div class="carousel-stage">
+                <div class="carousel-scene" id="carousel-scene"></div>
+            </div>
+            <div class="carousel-controls">
+                <button class="carousel-btn" id="car-prev">&#8592;</button>
+                <button class="carousel-btn carousel-btn-pause" id="car-pause">&#9646;&#9646;</button>
+                <button class="carousel-btn" id="car-next">&#8594;</button>
+            </div>
+        </section>
 
-   <div id="ads-page" class="view-container">
+    </div><!-- /main-content -->
+
+    <!-- СТРАНИЦА "МОИ ПРОЕКТЫ" — без карусели -->
+    <div id="ads-page" class="view-container">
         <div class="projects-preview-grid">
             <div class="card project-preview-card">
                 <h3 class="nitro-glow" data-lang="teamProject">Командный проект</h3>
@@ -149,6 +156,7 @@
         </div>
         <button onclick="showPage('main-content')" class="n-btn secondary" style="margin-top: 20px;" data-lang="backBtn">← Назад</button>
     </div>
+
 </main>
 
 <script src="script.js"></script>
