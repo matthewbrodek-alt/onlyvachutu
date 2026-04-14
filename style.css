@@ -1,14 +1,15 @@
 :root {
     --accent: #00ff88;
-    --neon-glow: 0 0 10px rgba(0, 255, 136, 0.6);
+    --neon-glow: 0 0 12px rgba(0, 255, 136, 0.6);
     --neon-strong: 0 0 20px rgba(0, 255, 136, 0.8);
-    --card-bg: rgba(5, 5, 5, 0.8);
+    --card-bg: rgba(8, 8, 8, 0.75);
+    --border: rgba(0, 255, 136, 0.2);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; }
+body, html { width: 100%; height: 100%; background: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; }
 
-/* ВИДЕО ФОН - ГАРАНТИРОВАННОЕ ОТОБРАЖЕНИЕ */
+/* Видеофон */
 .video-bg-wrapper {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     z-index: -2; pointer-events: none;
@@ -20,45 +21,62 @@ body { background: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-ser
     z-index: -1;
 }
 
-/* НЕОНОВЫЙ СТИЛЬ ДЛЯ ВЫДЕЛЕННЫХ ЭЛЕМЕНТОВ */
-.neon-text {
-    color: var(--accent) !important;
-    text-shadow: var(--neon-glow);
-    font-weight: 800;
+/* Навигация (Неон) */
+.top-nav {
+    position: fixed; top: 0; left: 0; width: 100%; height: 75px;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 4%; z-index: 1000; backdrop-filter: blur(25px); border-bottom: 1px solid var(--border);
 }
-.neon-border {
-    border: 1px solid var(--accent) !important;
-    box-shadow: var(--neon-glow);
-}
+.neon-text { color: var(--accent) !important; text-shadow: var(--neon-glow); font-weight: 800; }
+.neon-border { border: 1px solid var(--accent) !important; box-shadow: var(--neon-glow); }
 
-.logo { cursor: pointer; font-size: 1.5rem; letter-spacing: 2px; }
+.logo { cursor: pointer; font-size: 1.6rem; letter-spacing: 2px; }
 .logo span { color: #fff; text-shadow: none; }
+.nav-center { position: absolute; left: 50%; transform: translateX(-50%); }
+.projects-link-nav { text-decoration: none; font-size: 0.85rem; letter-spacing: 2px; transition: 0.3s; }
+.projects-link-nav:hover { text-shadow: var(--neon-strong); }
 
-.status-badge {
-    padding: 4px 12px; border-radius: 20px; font-size: 10px;
-    display: inline-block; margin-bottom: 10px;
+/* Сетка Dashboard */
+.dashboard { height: 100vh; overflow-y: auto; padding: 100px 4% 100px; }
+.view-container { display: none; max-width: 1500px; margin: 0 auto; }
+.view-container.active { display: block; }
+
+@media (min-width: 1024px) {
+    .main-grid { display: grid; grid-template-columns: 320px 1fr 320px; gap: 24px; }
 }
 
-.lang-globe-btn {
-    background: transparent; padding: 8px 15px; border-radius: 12px;
-    cursor: pointer; transition: 0.3s;
-}
+/* Карточки */
+.card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 24px; padding: 24px; backdrop-filter: blur(40px); margin-bottom: 24px; }
+.status-badge { padding: 4px 12px; border-radius: 20px; font-size: 10px; display: inline-block; margin-bottom: 10px; }
+.logout-link { background: none; border: none; cursor: pointer; font-size: 0.8rem; margin-top: 10px; }
 
-/* DASHBOARD */
-.dashboard { height: 100vh; overflow-y: auto; padding: 100px 4% 80px; }
-.card { background: var(--card-bg); border: 1px solid rgba(0,255,136,0.1); border-radius: 20px; padding: 20px; backdrop-filter: blur(20px); }
+/* Элементы из Firestore */
+.project-item-card { border-bottom: 1px solid rgba(0,255,136,0.15); padding: 15px 0; display: flex; flex-direction: column; gap: 8px; }
+.project-metric { font-size: 0.8rem; opacity: 0.7; }
+.project-tech-list { display: flex; gap: 6px; flex-wrap: wrap; }
+.tech-tag { font-size: 10px; padding: 3px 10px; border-radius: 6px; background: rgba(0,255,136,0.1); color: var(--accent); border: 1px solid var(--border); }
 
-/* ПАНЕЛЬ ПРОЕКТОВ ИЗ FIRESTORE */
-.project-item-card {
-    border-bottom: 1px solid rgba(0,255,136,0.2); padding: 15px 0;
-    display: flex; flex-direction: column; gap: 8px;
-}
-.project-metric { font-size: 0.8rem; color: #fff; opacity: 0.8; }
-.project-tech-list { display: flex; gap: 5px; flex-wrap: wrap; }
-.tech-tag { font-size: 10px; padding: 2px 8px; border-radius: 4px; background: rgba(0,255,136,0.1); color: var(--accent); }
-
-/* КНОПКИ */
-.n-btn { border-radius: 12px; padding: 10px 20px; cursor: pointer; transition: 0.3s; font-weight: 700; }
-.primary { background: var(--accent); color: #000; box-shadow: var(--neon-glow); border: none; }
-.primary:hover { box-shadow: var(--neon-strong); transform: translateY(-2px); }
+/* Кнопки и Инпуты */
+.n-btn { border-radius: 12px; padding: 12px 24px; cursor: pointer; transition: 0.3s; font-weight: 800; border: none; }
+.primary { background: var(--accent); color: #000; box-shadow: var(--neon-glow); }
+.primary:hover { box-shadow: var(--neon-strong); transform: scale(1.03); }
 .secondary { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+.n-input { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 12px; width: 100%; margin-bottom: 10px; outline: none; transition: 0.3s; }
+.n-input:focus { border-color: var(--accent); box-shadow: var(--neon-glow); }
+
+/* Мессенджер */
+.chat-inner { display: flex; flex-direction: column; height: 350px; }
+.chat-feed { flex-grow: 1; overflow-y: auto; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
+.msg-box { padding: 10px 14px; border-radius: 16px; font-size: 13px; max-width: 85%; }
+.sent { align-self: flex-end; background: var(--accent); color: #000; font-weight: 600; }
+.received { align-self: flex-start; background: rgba(255,255,255,0.1); }
+
+/* Проекты превью */
+.preview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; margin-top: 30px; }
+.preview-header { height: 180px; background-size: cover; background-position: center; position: relative; }
+.kotokafe-bg { background-image: url('https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=500&q=60'); }
+.team-bg { background-image: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=500&q=60'); }
+.preview-overlay-btn { position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; opacity: 0; transition: 0.3s; }
+.preview-card:hover .preview-overlay-btn { opacity: 1; }
+
+#unmute-btn { position: fixed; bottom: 30px; right: 30px; z-index: 100; width: 50px; height: 50px; border-radius: 50%; background: var(--accent); cursor: pointer; }
