@@ -6,18 +6,21 @@
     --border: rgba(255, 255, 255, 0.12);
 }
 
+/* УБРАН ЦВЕТ ФОНА BODY, ЧТОБЫ ВИДЕО БЫЛО ВИДНО */
 body, html {
     width: 100%; height: 100%;
-    background: #000; color: #fff;
+    background: transparent; /* Обязательно прозрачный */
+    color: #fff;
     font-family: 'Plus Jakarta Sans', sans-serif;
     overflow: hidden;
 }
 
-/* ФОНОВОЕ ВИДЕО: ПРИОРИТЕТ Z-INDEX */
+/* ФИКСИРОВАННЫЙ СЛОЙ ВИДЕО */
 .video-bg-wrapper {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    z-index: -10; /* Максимально глубоко */
+    z-index: -10; /* Под всем контентом */
     pointer-events: none; overflow: hidden;
+    background: #000; /* Резервный фон */
 }
 #bg-video { 
     width: 100%; height: 100%; 
@@ -30,7 +33,6 @@ body, html {
     z-index: -5;
 }
 
-/* NITRO ПОДСВЕТКА */
 .nitro-glow {
     color: var(--accent) !important;
     text-shadow: 0 0 10px rgba(0, 255, 136, 0.8), 0 0 20px rgba(0, 255, 136, 0.4);
@@ -43,9 +45,11 @@ body, html {
     backdrop-filter: blur(20px); border-bottom: 1px solid var(--border);
 }
 
+/* КОНТЕНТНЫЙ СЛОЙ */
 .dashboard { 
     height: 100vh; overflow-y: auto; padding-top: 100px; 
-    position: relative; z-index: 10; /* Контент выше видео */
+    position: relative; z-index: 10; 
+    background: transparent; /* Убрано перекрытие видео */
 }
 
 .view-container { display: none; padding: 0 4%; max-width: 1600px; margin: 0 auto; }
