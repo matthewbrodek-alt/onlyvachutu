@@ -62,16 +62,6 @@ function showPage(pageId) {
     if(target) target.classList.add('active');
 }
 
-// Технический запуск видео
-function initVideo() {
-    const v = document.getElementById('bg-video');
-    if (v) {
-        v.play().catch(() => {
-            window.addEventListener('mousedown', () => v.play(), { once: true });
-        });
-    }
-}
-
 auth.onAuthStateChanged(user => {
     const loginForm = document.getElementById('login-form');
     const userInfo = document.getElementById('user-info');
@@ -144,6 +134,9 @@ async function fetchCats() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    initVideo();
+    const v = document.getElementById('bg-video');
+    if (v) v.play().catch(() => {
+        window.addEventListener('mousedown', () => v.play(), { once: true });
+    });
     fetchCats();
 });
