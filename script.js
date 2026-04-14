@@ -19,7 +19,7 @@ const translations = {
         chatTitle: "Messenger",
         loginBtn: "Authorize",
         aboutTitle: "Michael Faraday",
-        faradayDesc: "Майкл Фарадей — выдающийся английский физик и химик...",
+        faradayDesc: "Майкл Фарадей — английский физик и химик...",
         projectsTitle: "Selected Works",
         skillTech: "Arsenal",
         catsTitle: "Tavern Cats",
@@ -27,7 +27,7 @@ const translations = {
     },
     en: {
         projectsLink: "My Projects",
-        heroTitle: "NEW STANDARD OF DIGITAL EXPERIENCE",
+        heroTitle: "NEW DIGITAL STANDARD",
         heroSub: "Premium interfaces and architecture.",
         welcomeSub: "Automation Mage",
         chatTitle: "Messenger",
@@ -56,14 +56,31 @@ function toggleLang() {
     });
 }
 
-// Улучшенная функция переключения страниц
 function showPage(pageId) {
     document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
     const target = document.getElementById(pageId);
-    if(target) {
-        target.classList.add('active');
-        // Сброс скролла при переключении
-        document.getElementById('main-scroll').scrollTop = 0;
+    if(target) target.classList.add('active');
+}
+
+// ФУНКЦИЯ 100% ЗАПУСКА ВИДЕО
+function initVideo() {
+    const video = document.getElementById('bg-video');
+    if (!video) return;
+
+    // Попытка 1: Программный запуск
+    const promise = video.play();
+
+    if (promise !== undefined) {
+        promise.catch(() => {
+            // Попытка 2: Если заблокировано, ждем взаимодействия
+            const runOnInteract = () => {
+                video.play();
+                document.body.removeEventListener('click', runOnInteract);
+                document.body.removeEventListener('touchstart', runOnInteract);
+            };
+            document.body.addEventListener('click', runOnInteract);
+            document.body.addEventListener('touchstart', runOnInteract);
+        });
     }
 }
 
@@ -71,94 +88,65 @@ auth.onAuthStateChanged(user => {
     const loginForm = document.getElementById('login-form');
     const userInfo = document.getElementById('user-info');
     const userNameDisplay = document.getElementById('user-name');
-    const logoutBtn = document.getElementById('logout-btn');
-
     if (user) {
         if (loginForm) loginForm.style.display = 'none';
         if (userInfo) userInfo.style.display = 'flex';
-        if (logoutBtn) logoutBtn.style.display = 'block';
         if (userNameDisplay) userNameDisplay.innerText = user.email.split('@')[0];
-        
-        db.collection("users").doc(user.uid).set({
-            email: user.email,
-            lastSeen: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-
+        db.collection("users").doc(user.uid).set({ email: user.email }, { merge: true });
         syncChat(user.uid);
     } else {
         if (loginForm) loginForm.style.display = 'block';
         if (userInfo) userInfo.style.display = 'none';
-        if (userNameDisplay) userNameDisplay.innerText = "Guest";
     }
 });
 
 async function handleLogin() {
     const email = document.getElementById('auth-email').value;
     const pass = document.getElementById('auth-pass').value;
-    if (!email || !pass) return alert("Введите данные!");
-    try {
-        await auth.signInWithEmailAndPassword(email, pass);
-    } catch (error) {
-        try { await auth.createUserWithEmailAndPassword(email, pass); } 
-        catch (regError) { alert("Ошибка: " + regError.message); }
+    if (email && pass) {
+        try { await auth.signInWithEmailAndPassword(email, pass); } 
+        catch { await auth.createUserWithEmailAndPassword(email, pass); }
     }
 }
-
-function handleLogout() { auth.signOut(); }
 
 async function sendMessage() {
     const input = document.getElementById('chat-msg');
     const text = input.value.trim();
     if (!text || !auth.currentUser) return;
-
     await db.collection("users").doc(auth.currentUser.uid).collection("messages").add({
         message: text, sender: "user", timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
-
-    const tgMessage = `👤 ${auth.currentUser.email}\n💬 ${text}`;
     fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: tgMessage })
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: `👤 ${auth.currentUser.email}\n💬 ${text}` })
     });
     input.value = "";
 }
 
 function syncChat(uid) {
-    db.collection("users").doc(uid).collection("messages")
-        .orderBy("timestamp", "asc")
-        .onSnapshot(snap => {
-            const win = document.getElementById('chat-window');
-            if (!win) return;
-            win.innerHTML = "";
-            snap.forEach(doc => {
-                const m = doc.data();
-                const div = document.createElement('div');
-                div.className = `msg-box ${m.sender === 'user' ? 'sent' : 'received'}`;
-                div.innerText = m.message;
-                win.appendChild(div);
-            });
-            win.scrollTop = win.scrollHeight;
+    db.collection("users").doc(uid).collection("messages").orderBy("timestamp", "asc").onSnapshot(snap => {
+        const win = document.getElementById('chat-window');
+        if (!win) return;
+        win.innerHTML = "";
+        snap.forEach(doc => {
+            const m = doc.data();
+            const div = document.createElement('div');
+            div.className = `msg-box ${m.sender === 'user' ? 'sent' : 'received'}`;
+            div.innerText = m.message;
+            win.appendChild(div);
         });
+        win.scrollTop = win.scrollHeight;
+    });
 }
 
 async function fetchCats() {
-    try {
-        const res = await fetch('https://api.thecatapi.com/v1/images/search');
-        const data = await res.json();
-        const container = document.getElementById('cat-container');
-        if (container) {
-            container.innerHTML = `<img src="${data[0].url}" style="width:100%; border-radius:12px; margin-top:10px; border: 1px solid rgba(0,255,136,0.3);">`;
-        }
-    } catch (e) { console.error(e); }
+    const res = await fetch('https://api.thecatapi.com/v1/images/search');
+    const data = await res.json();
+    document.getElementById('cat-container').innerHTML = `<img src="${data[0].url}" style="width:100%; border-radius:12px; margin-top:10px;">`;
 }
 
-// Принудительный запуск видео
 document.addEventListener('DOMContentLoaded', () => {
-    const video = document.getElementById('bg-video');
-    const playVideo = () => { if (video) video.play(); };
-    document.body.addEventListener('click', playVideo, { once: true });
-    // Проверка на запуск
-    setTimeout(playVideo, 1000);
+    initVideo();
     fetchCats();
 });
