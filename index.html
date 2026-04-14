@@ -27,9 +27,11 @@
         <a href="#" class="ads-link nitro-glow" onclick="showPage('ads-page')" data-lang="projectsLink">Мои проекты</a>
     </div>
     <div class="nav-right">
-        <button id="lang-btn" class="lang-globe-btn" onclick="toggleLang()">
-            <span id="lang-icon">🇺🇸</span>
-        </button>
+        <div class="lang-switcher">
+            <span id="lang-ru" class="lang-option active" onclick="setLang('ru')">RU</span>
+            <span class="lang-divider">|</span>
+            <span id="lang-en" class="lang-option" onclick="setLang('en')">EN</span>
+        </div>
     </div>
 </nav>
 
@@ -116,7 +118,7 @@
 
    <!-- КАРУСЕЛЬ -->
    <section class="carousel-section" id="carousel-section">
-       <h2 class="carousel-title nitro-glow">ГАЛЕРЕЯ</h2>
+       <h2 class="carousel-title nitro-glow" data-lang="staffTitle">НАШИ СОТРУДНИКИ</h2>
        <div class="carousel-stage">
            <div class="carousel-scene" id="carousel-scene"></div>
        </div>
