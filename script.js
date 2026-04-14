@@ -58,9 +58,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Enter') sendMessage();
     });
 
-    // Фикс автоплея видео
+    // Строгий фикс автоплея видео для всех браузеров
     const v = document.getElementById('bg-video');
-    document.body.addEventListener('click', () => { if(v.paused) v.play(); }, { once: true });
+    if (v) {
+        v.play().catch(e => console.log("Autoplay prevented, waiting for interaction..."));
+        document.body.addEventListener('click', () => { if(v.paused) v.play(); }, { once: true });
+    }
 
     loadProjects();
     fetchCats();
@@ -147,7 +150,7 @@ async function loadProjects() {
     document.getElementById('portfolio-container').innerHTML = snap.docs.map(doc => {
         const p = doc.data();
         return `<div class="portfolio-item" style="padding:10px 0; border-bottom:1px solid var(--border)">
-            <strong>${p.title || 'Project'}</strong><br>
+            <strong style="color: var(--accent); text-shadow: 0 0 5px rgba(0,255,136,0.3);">${p.title || 'Project'}</strong><br>
             <small>${p.tech ? p.tech.join(' • ') : ''}</small>
         </div>`;
     }).join('');
@@ -157,7 +160,7 @@ async function fetchCats() {
     try {
         const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=1');
         const data = await res.json();
-        document.getElementById('cat-container').innerHTML = `<img src="${data[0].url}" style="width:100%; border-radius:15px;">`;
+        document.getElementById('cat-container').innerHTML = `<img src="${data[0].url}" style="width:100%; border-radius:15px; box-shadow: 0 0 15px rgba(0,0,0,0.5);">`;
     } catch(e) {}
 }
 
