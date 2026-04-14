@@ -46,7 +46,6 @@
                     <div class="status-badge nitro-glow" data-lang="statusOnline">В СЕТИ</div>
                     <h2 id="user-name">Guest</h2>
                     <p class="sub" data-lang="welcomeSub">Маг Автоматизации</p>
-                    <button id="logout-btn" class="logout-link" onclick="handleLogout()" style="display:none">Logout ➔</button>
                 </div>
                 
                 <div class="card chat-card">
@@ -58,6 +57,16 @@
                     </div>
                     <div id="user-info" style="display:none;" class="chat-inner">
                         <div id="chat-window" class="chat-feed"></div>
+                        
+                        <div class="emoji-bar">
+                            <span onclick="addEmoji('😊')">😊</span>
+                            <span onclick="addEmoji('🔥')">🔥</span>
+                            <span onclick="addEmoji('💻')">💻</span>
+                            <span onclick="addEmoji('✨')">✨</span>
+                            <span onclick="addEmoji('🤝')">🤝</span>
+                            <span onclick="addEmoji('🚀')">🚀</span>
+                        </div>
+
                         <div class="chat-input-row">
                             <input type="text" id="chat-msg" data-lang="chatPlaceholder" placeholder="Напишите сообщение..." class="n-input">
                             <button onclick="sendMessage()" class="send-btn">➔</button>
@@ -67,16 +76,25 @@
             </div>
 
             <div class="col-center">
+                <div class="card projects-card">
+                    <h3 class="nitro-glow" data-lang="projectsTitle">ПРЯМАЯ СВЯЗЬ</h3>
+                    <div class="contact-info-box">
+                        <p data-lang="projectsDesc" style="line-height: 1.6; color: rgba(255,255,255,0.7); margin-bottom: 15px;">
+                            Вы можете написать мне прямо здесь. Мессенджер синхронизирован с моими личными каналами связи для мгновенного ответа.
+                        </p>
+                        <div class="sync-indicator">
+                            <span class="pulse-dot"></span>
+                            <span style="font-size: 11px; color: var(--accent); letter-spacing: 2px; font-weight: 800;">SYSTEM SYNCED</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="card about-card">
                     <h3 data-lang="aboutTitle">Майкл Фарадей</h3>
                     <div class="faraday-content">
-                        <p data-lang="faradayDesc">Майкл Фарадей — выдающийся английский физик и химик, основоположник учения об электромагнитном поле.</p>
+                        <p data-lang="faradayDesc">Выдающийся английский физик и химик, основоположник учения об электромагнитном поле.</p>
                         <div class="quote" data-lang="faradayQuote">"Ничто не слишком прекрасно, чтобы быть истинным..."</div>
                     </div>
-                </div>
-                <div class="card projects-card">
-                    <h3 data-lang="projectsTitle">Избранные работы</h3>
-                    <div id="portfolio-container" class="portfolio-list"></div>
                 </div>
             </div>
 
@@ -84,13 +102,13 @@
                 <div class="card tech-card">
                     <h3 class="nitro-glow" data-lang="skillTech">Арсенал</h3>
                     <div class="tech-tags">
-                        <span>React</span> <span>Firebase</span> <span>D3.js</span> <span>Node</span>
+                        <span>React</span> <span>Firebase</span> <span>Python</span> <span>Node</span>
                     </div>
                 </div>
                 <div class="card cats-card">
                     <h3 data-lang="catsTitle">Таверна Котиков</h3>
                     <div id="cat-container" class="cat-box"></div>
-                    <button onclick="fetchCats()" class="n-btn secondary" data-lang="catsBtn">Призвать</button>
+                    <button onclick="fetchCats()" class="n-btn secondary" data-lang="catsBtn" style="margin-top: 15px; width: 100%;">Призвать</button>
                 </div>
             </div>
         </div>
