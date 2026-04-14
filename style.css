@@ -13,10 +13,11 @@ body, html {
     overflow: hidden;
 }
 
-/* ФОНОВОЕ ВИДЕО */
+/* ФОНОВОЕ ВИДЕО: ПРИОРИТЕТ Z-INDEX */
 .video-bg-wrapper {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    z-index: -2; pointer-events: none; overflow: hidden;
+    z-index: -10; /* Максимально глубоко */
+    pointer-events: none; overflow: hidden;
 }
 #bg-video { 
     width: 100%; height: 100%; 
@@ -26,7 +27,7 @@ body, html {
 .video-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: radial-gradient(circle, transparent 0%, rgba(0,0,0,0.8) 100%);
-    z-index: -1;
+    z-index: -5;
 }
 
 /* NITRO ПОДСВЕТКА */
@@ -42,7 +43,11 @@ body, html {
     backdrop-filter: blur(20px); border-bottom: 1px solid var(--border);
 }
 
-.dashboard { height: 100vh; overflow-y: auto; padding-top: 100px; position: relative; z-index: 10; }
+.dashboard { 
+    height: 100vh; overflow-y: auto; padding-top: 100px; 
+    position: relative; z-index: 10; /* Контент выше видео */
+}
+
 .view-container { display: none; padding: 0 4%; max-width: 1600px; margin: 0 auto; }
 .view-container.active { display: block; }
 
@@ -50,11 +55,18 @@ body, html {
     .main-grid { display: grid; grid-template-columns: 320px 1fr 320px; gap: 30px; }
 }
 
-.card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 30px; padding: 25px; backdrop-filter: blur(35px); margin-bottom: 25px; }
+.card { 
+    background: var(--card-bg); border: 1px solid var(--border); 
+    border-radius: 30px; padding: 25px; backdrop-filter: blur(35px); 
+    margin-bottom: 25px; 
+}
 
 /* ПРОЕКТЫ */
 .projects-preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .project-preview-card iframe { width: 100%; height: 400px; border-radius: 15px; margin-top: 15px; background: #fff; }
+
+.chat-inner { display: flex; flex-direction: column; height: 380px; }
+.chat-feed { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
 
 .msg-box { padding: 12px 18px; border-radius: 20px; font-size: 14px; max-width: 85%; margin-bottom: 10px; }
 .sent { align-self: flex-end; background: var(--accent); color: #000; font-weight: 600; }
