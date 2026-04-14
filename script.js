@@ -21,7 +21,7 @@ const translations = {
         chatPlaceholder: "Напишите сообщение...",
         loginBtn: "Авторизоваться",
         projectsTitle: "ПРЯМАЯ СВЯЗЬ",
-        projectsDesc: "Вы можете написать мне прямо здесь. Мессенджер синхронизирован с моими личными каналами связи для мгновенного ответа.",
+        projectsDesc: "Вы можете написать мне прямо здесь. Мессенджер синхронизирован с моими личными каналами связи.",
         aboutTitle: "Майкл Фарадей",
         faradayDesc: "Выдающийся английский физик и химик, основоположник учения об электромагнитном поле.",
         faradayQuote: '"Ничто не слишком прекрасно, чтобы быть истинным..."',
@@ -43,7 +43,7 @@ const translations = {
         chatPlaceholder: "Type a message...",
         loginBtn: "Authorize",
         projectsTitle: "DIRECT CONTACT",
-        projectsDesc: "Feel free to message me right here. This messenger is synced with my private channels for an instant response.",
+        projectsDesc: "Feel free to message me right here. This messenger is synced with my private channels.",
         aboutTitle: "Michael Faraday",
         faradayDesc: "Famous physicist and chemist who contributed to the study of electromagnetism.",
         faradayQuote: '"Nothing is too wonderful to be true..."',
@@ -152,7 +152,6 @@ async function fetchCars() {
 window.onload = () => { fetchCars(); initCarousel(); };
 
 function initCarousel() {
-    // ВОССТАНОВЛЕНЫ ИСХОДНЫЕ ДАННЫЕ v5.0
     const IMAGES = [
         { src: 'gallery/photo1.jpg', label: 'ФОТО 1' },
         { src: 'gallery/photo2.jpg', label: 'ФОТО 2' },
