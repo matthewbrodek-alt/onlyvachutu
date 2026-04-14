@@ -62,14 +62,14 @@ function showPage(pageId) {
     if(target) target.classList.add('active');
 }
 
-// ГАРАНТИРОВАННЫЙ ЗАПУСК
+// Ультра-быстрый запуск видео
 function initVideo() {
     const v = document.getElementById('bg-video');
-    if (!v) return;
-    v.play().catch(() => {
-        const playOnce = () => { v.play(); window.removeEventListener('mousedown', playOnce); };
-        window.addEventListener('mousedown', playOnce);
-    });
+    if (v) {
+        v.play().catch(() => {
+            window.addEventListener('mousedown', () => v.play(), { once: true });
+        });
+    }
 }
 
 auth.onAuthStateChanged(user => {
