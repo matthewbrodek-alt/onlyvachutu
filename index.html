@@ -15,7 +15,7 @@
 <body>
 
 <div class="video-bg-wrapper">
-    <video id="bg-video" autoplay loop muted playsinline>
+    <video id="bg-video" autoplay loop muted playsinline preload="auto">
         <source src="bg_video.mp4" type="video/mp4">
     </video>
     <div class="video-overlay"></div>
@@ -110,8 +110,6 @@
         </div>
     </div>
 </main>
-
-<button id="unmute-btn" onclick="toggleSound()">🔊</button>
 
 <script src="script.js"></script>
 </body>
