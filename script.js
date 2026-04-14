@@ -159,4 +159,71 @@ async function fetchCats() {
     document.getElementById('cat-container').innerHTML = `<img src="${data[0].url}" style="width:100%; border-radius:15px;">`;
 }
 
-window.onload = () => { fetchCats(); };
+window.onload = () => { fetchCats(); initCarousel(); };
+
+// === КАРУСЕЛЬ ===
+function initCarousel() {
+    // Список картинок — замени на свои файлы в папке проекта
+    const IMAGES = [
+        { src: 'gallery/photo1.jpg', label: 'ФОТО 1' },
+        { src: 'gallery/photo2.jpg', label: 'ФОТО 2' },
+        { src: 'gallery/photo3.jpg', label: 'ФОТО 3' },
+        { src: 'gallery/photo4.jpg', label: 'ФОТО 4' },
+        { src: 'gallery/photo5.jpg', label: 'ФОТО 5' },
+        { src: 'gallery/photo6.jpg', label: 'ФОТО 6' },
+        { src: 'gallery/photo7.jpg', label: 'ФОТО 7' },
+        { src: 'gallery/photo8.jpg', label: 'ФОТО 8' },
+    ];
+
+    const scene = document.getElementById('carousel-scene');
+    if (!scene) return;
+
+    const N = IMAGES.length;
+    const RX = 460, RY = 460, CX = 500, CY = 500;
+    const els = [];
+
+    IMAGES.forEach((item) => {
+        const div = document.createElement('div');
+        div.className = 'c-card';
+        const img = new Image();
+        img.src = item.src;
+        img.onload = () => div.innerHTML = `<img src="${item.src}" alt="${item.label}">`;
+        img.onerror = () => {
+            div.innerHTML = `<div class="c-card-placeholder"><span style="font-size:26px">🖼</span><span>${item.label}</span></div>`;
+        };
+        scene.appendChild(div);
+        els.push(div);
+    });
+
+    let angle = 0, paused = false, last = null;
+
+    function render() {
+        els.forEach((el, i) => {
+            const theta = angle + (i / N) * Math.PI * 2;
+            const x = CX + RX * Math.cos(theta) - 75;
+            const y = CY + RY * 0.36 * Math.sin(theta) - 95;
+            const s = 0.5 + 0.5 * ((Math.sin(theta) + 1) / 2);
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            el.style.transform = `scale(${s.toFixed(3)}) rotate(${(Math.cos(theta) * -10).toFixed(1)}deg)`;
+            el.style.zIndex = Math.round(s * 100);
+            el.style.opacity = (0.4 + 0.6 * ((Math.sin(theta) + 1) / 2)).toFixed(3);
+        });
+    }
+
+    function loop(ts) {
+        if (!last) last = ts;
+        if (!paused) angle -= (ts - last) / 1000 * 0.04;
+        last = ts;
+        render();
+        requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+
+    document.getElementById('car-pause').addEventListener('click', () => {
+        paused = !paused;
+        document.getElementById('car-pause').innerHTML = paused ? '&#9654;' : '&#9646;&#9646;';
+    });
+    document.getElementById('car-prev').addEventListener('click', () => { angle += (2 * Math.PI / N); });
+    document.getElementById('car-next').addEventListener('click', () => { angle -= (2 * Math.PI / N); });
+}
