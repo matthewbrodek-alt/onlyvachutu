@@ -12,7 +12,7 @@ const TELEGRAM_CHAT_ID = "7451263058";
 
 const translations = {
     ru: {
-        projectsLink: "Мои проекты",
+        projectsTitle: "Избранные работы",
         heroTitle: "НОВЫЙ СТАНДАРТ ЦИФРОВОГО ОПЫТА",
         heroSub: "Премиальные интерфейсы и архитектура.",
         statusOnline: "В СЕТИ",
@@ -20,8 +20,6 @@ const translations = {
         chatTitle: "Мессенджер",
         chatPlaceholder: "Напишите сообщение...",
         loginBtn: "Авторизоваться",
-        projectsTitle: "ПРЯМАЯ СВЯЗЬ",
-        projectsDesc: "Вы можете написать мне прямо здесь. Мессенджер синхронизирован с моими личными каналами связи для мгновенного ответа.",
         aboutTitle: "Майкл Фарадей",
         faradayDesc: "Выдающийся английский физик и химик, основоположник учения об электромагнитном поле.",
         faradayQuote: '"Ничто не слишком прекрасно, чтобы быть истинным..."',
@@ -34,7 +32,7 @@ const translations = {
         backBtn: "← Назад"
     },
     en: {
-        projectsLink: "My Projects",
+        projectsTitle: "Selected Works",
         heroTitle: "NEW DIGITAL STANDARD",
         heroSub: "Premium interfaces and architecture.",
         statusOnline: "ONLINE",
@@ -42,8 +40,6 @@ const translations = {
         chatTitle: "Messenger",
         chatPlaceholder: "Type a message...",
         loginBtn: "Authorize",
-        projectsTitle: "DIRECT CONTACT",
-        projectsDesc: "Feel free to message me right here. This messenger is synced with my private channels for an instant response.",
         aboutTitle: "Michael Faraday",
         faradayDesc: "Famous physicist and chemist who contributed to the study of electromagnetism.",
         faradayQuote: '"Nothing is too wonderful to be true..."',
@@ -62,7 +58,6 @@ const db = firebase.firestore();
 const auth = firebase.auth();
 let currentLang = 'ru';
 
-// Переключение языка
 function toggleLang() {
     currentLang = currentLang === 'ru' ? 'en' : 'ru';
     document.getElementById('lang-icon').innerText = currentLang === 'ru' ? "🇺🇸" : "🇷🇺";
@@ -76,20 +71,17 @@ function toggleLang() {
     });
 }
 
-// Навигация
 function showPage(pageId) {
     document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
     document.getElementById(pageId).classList.add('active');
 }
 
-// Эмодзи
 function addEmoji(emoji) {
     const input = document.getElementById('chat-msg');
     input.value += emoji;
     input.focus();
 }
 
-// Отправка сообщения
 async function sendMessage() {
     const input = document.getElementById('chat-msg');
     const text = input.value.trim();
@@ -107,14 +99,12 @@ async function sendMessage() {
     input.value = "";
 }
 
-// Слушатель Enter
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && document.activeElement.id === 'chat-msg') {
         sendMessage();
     }
 });
 
-// Firebase Auth & Chat Sync
 auth.onAuthStateChanged(user => {
     const loginForm = document.getElementById('login-form');
     const userInfo = document.getElementById('user-info');
