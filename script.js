@@ -14,7 +14,6 @@ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-let currentUser = null;
 let currentLang = 'ru';
 
 const dict = {
@@ -26,12 +25,19 @@ const dict = {
         chatTitle: "Мессенджер",
         loginBtn: "Войти",
         aboutTitle: "Майкл Фарадей",
-        faradayDesc: "Майкл Фарадей — выдающийся физик, основоположник электромагнетизма.",
+        faradayDesc: "Майкл Фарадей — выдающийся английский физик и химик, основоположник учения об электромагнитном поле.",
+        faradayQuote: '"Ничто не слишком прекрасно, чтобы быть истинным."',
         worksTitle: "Выбранные работы",
         skillTech: "Арсенал",
         catsTitle: "Коты Таверны",
         catsBtn: "Призвать",
-        projectsTitlePage: "Портфолио разработок"
+        projectsTitlePage: "Портфолио разработок",
+        openBtn: "Открыть",
+        backBtn: "← На главную",
+        p1Title: "Котики и люди",
+        p1Desc: "Карьерная страница для сети котокафе на Webflow.",
+        p2Title: "Team Showcase",
+        p2Desc: "Интерактивный раздел команды на GitHub."
     },
     en: {
         projectsLink: "My Projects",
@@ -42,22 +48,20 @@ const dict = {
         loginBtn: "Login",
         aboutTitle: "Michael Faraday",
         faradayDesc: "Michael Faraday was an English scientist who contributed to electromagnetism.",
+        faradayQuote: '"Nothing is too wonderful to be true."',
         worksTitle: "Selected Works",
         skillTech: "Arsenal",
         catsTitle: "Tavern Cats",
         catsBtn: "Summon",
-        projectsTitlePage: "Development Portfolio"
+        projectsTitlePage: "Dev Portfolio",
+        openBtn: "Open",
+        backBtn: "← Back",
+        p1Title: "Cats & People",
+        p1Desc: "Career page for a cat cafe chain on Webflow.",
+        p2Title: "Team Showcase",
+        p2Desc: "Interactive team section on GitHub."
     }
 };
-
-function showPage(pageId) {
-    document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
-    if (pageId === 'projects-page') {
-        document.getElementById('projects-page').classList.add('active');
-    } else {
-        document.getElementById('main-content').classList.add('active');
-    }
-}
 
 function toggleLang() {
     currentLang = currentLang === 'ru' ? 'en' : 'ru';
@@ -68,11 +72,17 @@ function toggleLang() {
     });
 }
 
-// Firebase Auth Logic
+function showPage(pageId) {
+    document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
+    document.getElementById(pageId === 'projects-page' ? 'projects-page' : 'main-content').classList.add('active');
+    document.getElementById('main-scroll').scrollTop = 0;
+}
+
+// Firebase Auth
 auth.onAuthStateChanged(user => {
-    currentUser = user;
     document.getElementById('login-form').style.display = user ? 'none' : 'block';
     document.getElementById('user-info').style.display = user ? 'flex' : 'none';
+    document.getElementById('logout-btn').style.display = user ? 'block' : 'none';
     document.getElementById('user-name').innerText = user ? user.email.split('@')[0] : "Guest";
     if (user) syncChat(user.uid);
 });
@@ -83,19 +93,19 @@ async function handleLogin() {
     if (e && p) await auth.signInWithEmailAndPassword(e, p).catch(() => auth.createUserWithEmailAndPassword(e, p));
 }
 
+function handleLogout() { auth.signOut(); }
+
 async function sendMessage() {
     const input = document.getElementById('chat-msg');
     const txt = input.value.trim();
-    if (!txt || !currentUser) return;
-
-    await db.collection("users").doc(currentUser.uid).collection("messages").add({
+    if (!txt || !auth.currentUser) return;
+    await db.collection("users").doc(auth.currentUser.uid).collection("messages").add({
         message: txt, sender: "user", timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
-
     fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: `👤 ${currentUser.email}: ${txt}` })
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: `👤 ${auth.currentUser.email}: ${txt}` })
     });
     input.value = "";
 }
