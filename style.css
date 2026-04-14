@@ -8,7 +8,7 @@
 
 body, html {
     width: 100%; height: 100%;
-    background: #000; /* Резервный фон */
+    background: transparent; /* Оставляем прозрачным для видео */
     color: #fff;
     font-family: 'Plus Jakarta Sans', sans-serif;
     overflow: hidden;
@@ -17,8 +17,9 @@ body, html {
 /* ФОНОВОЕ ВИДЕО */
 .video-bg-wrapper {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 1; /* Видео в самом низу */
+    z-index: -1; 
     pointer-events: none; overflow: hidden;
+    background: #000;
 }
 #bg-video { 
     width: 100%; height: 100%; 
@@ -26,8 +27,8 @@ body, html {
 }
 .video-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.7); /* Наложение вместо тяжелых фильтров */
-    z-index: 2;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 0;
 }
 
 .nitro-glow {
@@ -44,8 +45,12 @@ body, html {
 
 .dashboard { 
     height: 100vh; overflow-y: auto; padding-top: 100px; 
-    position: relative; z-index: 10; /* Весь контент поверх видео */
-    background: transparent;
+    position: relative; z-index: 10; 
+}
+
+.main-grid { display: block; }
+@media (min-width: 1024px) {
+    .main-grid { display: grid; grid-template-columns: 320px 1fr 320px; gap: 30px; }
 }
 
 .card { 
