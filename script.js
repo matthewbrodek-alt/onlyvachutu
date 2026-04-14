@@ -14,7 +14,7 @@ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-let currentLang = 'en';
+let currentLang = 'ru';
 
 const dict = {
     ru: {
@@ -25,8 +25,8 @@ const dict = {
         chatTitle: "Мессенджер",
         loginBtn: "Войти",
         aboutTitle: "Майкл Фарадей",
-        faradayDesc: "Английский физик, открывший электромагнитную индукцию.",
-        faradayQuote: '"Ничто не слишком чудесно, чтобы быть правдой."',
+        faradayDesc: "Майкл Фарадей — выдающийся физик, открывший электромагнитную индукцию.",
+        faradayQuote: '"Ничто не слишком прекрасно, чтобы быть истинным."',
         worksTitle: "Выбранные Работы",
         skillTech: "Арсенал",
         catsTitle: "Коты Таверны",
@@ -53,28 +53,23 @@ const dict = {
     }
 };
 
-// Загрузка данных из скриншота (Firestore)
 async function loadProjects() {
     const container = document.getElementById('portfolio-container');
-    try {
-        const snap = await db.collection("projects").get();
-        container.innerHTML = snap.docs.map(doc => {
-            const p = doc.data();
-            const techHtml = p.tech ? p.tech.map(t => `<span class="tech-tag">${t}</span>`).join('') : '';
-            return `
-                <div class="project-item-card">
-                    <div class="neon-text" style="font-size:1.05rem">${p.title || 'Untitled'}</div>
-                    <div class="project-metric">Metric: ${p.metric || '0.0'}</div>
-                    <div class="project-tech-list">${techHtml}</div>
-                </div>
-            `;
-        }).join('');
-    } catch (e) { console.error("Firestore Load Error", e); }
+    const snap = await db.collection("projects").get();
+    container.innerHTML = snap.docs.map(doc => {
+        const p = doc.data();
+        const tech = p.tech ? p.tech.map(t => `<span class="tech-tag">${t}</span>`).join('') : '';
+        return `<div class="project-item-card">
+            <div class="neon-text">${p.title || 'Project'}</div>
+            <div style="font-size:0.8rem; margin: 5px 0;">Metric: ${p.metric || '0.0'}</div>
+            <div>${tech}</div>
+        </div>`;
+    }).join('');
 }
 
 function toggleLang() {
     currentLang = currentLang === 'ru' ? 'en' : 'ru';
-    document.getElementById('lang-icon').innerText = currentLang === 'ru' ? "🌐 RU" : "🌐 US";
+    document.getElementById('lang-icon').innerText = currentLang === 'ru' ? "🇷🇺" : "🇺🇸";
     document.querySelectorAll('[data-lang]').forEach(el => {
         const key = el.getAttribute('data-lang');
         if (dict[currentLang][key]) el.innerText = dict[currentLang][key];
@@ -86,17 +81,16 @@ function showPage(pageId) {
     document.getElementById(pageId === 'projects-page' ? 'projects-page' : 'main-content').classList.add('active');
 }
 
-// Инициализация
+// Инициализация видео и данных
 document.addEventListener('DOMContentLoaded', () => {
     const v = document.getElementById('bg-video');
-    v.play().catch(() => {
-        document.body.addEventListener('mousedown', () => v.play(), {once: true});
-    });
+    const playVideo = () => v.play().catch(() => {});
+    document.body.addEventListener('click', playVideo, { once: true });
     loadProjects();
     fetchCats();
 });
 
-// Firebase Auth & Chat
+// Firebase Auth
 auth.onAuthStateChanged(user => {
     document.getElementById('login-form').style.display = user ? 'none' : 'block';
     document.getElementById('user-info').style.display = user ? 'flex' : 'none';
@@ -117,13 +111,15 @@ async function sendMessage() {
     const input = document.getElementById('chat-msg');
     const txt = input.value.trim();
     if (!txt || !auth.currentUser) return;
+
     await db.collection("users").doc(auth.currentUser.uid).collection("messages").add({
         message: txt, sender: "user", timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
+
     fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: `👤 ${auth.currentUser.email}: ${txt}` })
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: `👤 ${auth.currentUser.email}:\n${txt}` })
     });
     input.value = "";
 }
@@ -144,11 +140,9 @@ function syncChat(uid) {
 }
 
 async function fetchCats() {
-    try {
-        const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=1');
-        const data = await res.json();
-        document.getElementById('cat-container').innerHTML = `<img src="${data[0].url}" style="width:100%; border-radius:15px; border: 1px solid var(--border);">`;
-    } catch(e) {}
+    const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=1');
+    const data = await res.json();
+    document.getElementById('cat-container').innerHTML = `<img src="${data[0].url}" style="width:100%; border-radius:15px; border: 1px solid var(--border);">`;
 }
 
 function toggleSound() {
