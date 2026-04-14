@@ -62,19 +62,13 @@ function showPage(pageId) {
     if(target) target.classList.add('active');
 }
 
-// ГАРАНТИРОВАННЫЙ ЗАПУСК ВИДЕО
-function forceVideoPlay() {
+// ГАРАНТИРОВАННЫЙ ЗАПУСК
+function initVideo() {
     const v = document.getElementById('bg-video');
     if (!v) return;
-    
-    v.muted = true;
     v.play().catch(() => {
-        // Если автоплей заблокирован, запускаем при первом клике/свайпе
-        const playOnInteraction = () => {
-            v.play();
-            window.removeEventListener('pointerdown', playOnInteraction);
-        };
-        window.addEventListener('pointerdown', playOnInteraction);
+        const playOnce = () => { v.play(); window.removeEventListener('mousedown', playOnce); };
+        window.addEventListener('mousedown', playOnce);
     });
 }
 
@@ -143,6 +137,6 @@ async function fetchCats() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    forceVideoPlay();
+    initVideo();
     fetchCats();
 });
