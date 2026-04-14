@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nitro Hub | Portfolio Edition</title>
+    <title>Nitro Hub | Portfolio</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -71,7 +71,7 @@
                     <h3 data-lang="aboutTitle">Michael Faraday</h3>
                     <div class="faraday-content">
                         <p data-lang="faradayDesc">Майкл Фарадей — выдающийся физик, чьи открытия в области электромагнетизма легли в основу технологий будущего.</p>
-                        <div class="quote">"Ничто не слишком прекрасно, чтобы быть истинным."</div>
+                        <div class="quote" data-lang="faradayQuote">"Ничто не слишком прекрасно, чтобы быть истинным."</div>
                     </div>
                 </div>
                 <div class="card projects-card">
@@ -102,44 +102,36 @@
             
             <div class="preview-grid">
                 <div class="card preview-card">
-                    <div class="preview-header" style="background-image: url('https://api.screenshotmachine.com?key=7f2c6e&url=https://kotokafe-kotiki-i-lyudi.webflow.io/career&dimension=1024x768')">
+                    <div class="preview-header kotokafe-bg">
                         <div class="preview-overlay-btn">
-                            <a href="https://kotokafe-kotiki-i-lyudi.webflow.io/career" target="_blank" class="n-btn primary">Смотреть проект</a>
+                            <a href="https://kotokafe-kotiki-i-lyudi.webflow.io/career" target="_blank" class="n-btn primary" data-lang="openBtn">Открыть</a>
                         </div>
                     </div>
                     <div class="preview-body">
-                        <h3>Котики и люди</h3>
-                        <p>Карьерная страница для сети котокафе. Реализовано на Webflow с акцентом на уютный дизайн.</p>
-                        <div class="tech-tags"><span>Webflow</span> <span>Design</span></div>
+                        <h3 data-lang="p1Title">Котики и люди</h3>
+                        <p data-lang="p1Desc">Карьерная страница для сети котокафе. Реализовано на Webflow.</p>
                     </div>
                 </div>
 
                 <div class="card preview-card">
-                    <div class="preview-header" style="background-image: url('https://api.screenshotmachine.com?key=7f2c6e&url=https://matthewbrodek-alt.github.io/new-project/#team&dimension=1024x768')">
+                    <div class="preview-header team-bg">
                         <div class="preview-overlay-btn">
-                            <a href="https://matthewbrodek-alt.github.io/new-project/#team" target="_blank" class="n-btn primary">Смотреть проект</a>
+                            <a href="https://matthewbrodek-alt.github.io/new-project/#team" target="_blank" class="n-btn primary" data-lang="openBtn">Открыть</a>
                         </div>
                     </div>
                     <div class="preview-body">
-                        <h3>Team Showcase</h3>
-                        <p>Интерактивный раздел команды с адаптивной версткой и современными эффектами на GitHub Pages.</p>
-                        <div class="tech-tags"><span>GitHub</span> <span>JS</span> <span>CSS</span></div>
+                        <h3 data-lang="p2Title">Team Showcase</h3>
+                        <p data-lang="p2Desc">Интерактивный раздел команды с адаптивной версткой на GitHub.</p>
                     </div>
                 </div>
             </div>
             
-            <button onclick="showPage('main')" class="n-btn secondary" style="margin-top: 30px;">← На главную</button>
+            <button onclick="showPage('main')" class="n-btn secondary" style="margin-top: 30px;" data-lang="backBtn">← На главную</button>
         </div>
     </div>
 </main>
 
 <button id="unmute-btn" onclick="toggleSound()">🔊</button>
-
-<nav class="mobile-nav" id="mob-nav">
-    <button class="m-btn active" onclick="switchTab('profile', this)">👤</button>
-    <button class="m-btn" onclick="switchTab('chat', this)">💬</button>
-    <button class="m-btn" onclick="switchTab('cats', this)">🐱</button>
-</nav>
 
 <script src="script.js"></script>
 </body>
