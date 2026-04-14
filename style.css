@@ -2,10 +2,9 @@
 
 :root {
     --accent: #00ff88;
-    --card-bg: rgba(10, 10, 10, 0.6);
-    --border: rgba(0, 255, 136, 0.2);
-    --neon-glow: 0 0 15px rgba(0, 255, 136, 0.4);
-    --neon-strong: 0 0 25px rgba(0, 255, 136, 0.6);
+    --card-bg: rgba(10, 10, 10, 0.7);
+    --border: rgba(0, 255, 136, 0.3);
+    --neon-glow: 0 0 15px rgba(0, 255, 136, 0.5);
 }
 
 body, html {
@@ -15,37 +14,32 @@ body, html {
     overflow: hidden;
 }
 
-/* Фикс Видеофона */
+/* ФИКС ВИДЕО */
 .video-bg-wrapper {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    z-index: -2; pointer-events: none;
+    z-index: -2; pointer-events: none; overflow: hidden;
 }
-#bg-video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.35); }
+#bg-video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.3); }
 .video-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.9) 100%);
+    background: radial-gradient(circle, transparent 20%, #000 120%);
     z-index: -1;
 }
 
-/* Навигация */
+/* NAV */
 .top-nav {
     position: fixed; top: 0; left: 0; width: 100%; height: 75px;
     display: flex; justify-content: space-between; align-items: center;
     padding: 0 4%; z-index: 1000;
-    backdrop-filter: blur(25px); border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(20px); border-bottom: 1px solid var(--border);
 }
-.projects-link-nav { 
-    color: var(--accent); text-decoration: none; font-weight: 800; 
-    text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem;
-    text-shadow: var(--neon-glow);
-}
+.projects-link-nav { color: var(--accent); text-decoration: none; font-weight: 800; text-shadow: var(--neon-glow); text-transform: uppercase; }
 
-/* Кнопки и Инпуты (НЕОН) */
+/* КНОПКИ И НЕОН */
 .n-btn { padding: 12px 24px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; transition: 0.3s; }
 .primary { background: var(--accent); color: #000; box-shadow: var(--neon-glow); }
-.primary:hover { box-shadow: var(--neon-strong); transform: scale(1.02); }
+.primary:hover { transform: scale(1.05); box-shadow: 0 0 25px var(--accent); }
 .secondary { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
-.secondary:hover { background: var(--accent); color: #000; box-shadow: var(--neon-glow); }
 
 .n-input { 
     background: rgba(255,255,255,0.05); border: 1px solid var(--border); 
@@ -54,10 +48,14 @@ body, html {
 }
 .n-input:focus { border-color: var(--accent); box-shadow: var(--neon-glow); }
 
-/* Карточки */
-.dashboard { height: 100vh; overflow-y: auto; padding-top: 100px; padding-bottom: 100px; }
-.view-container { display: none; padding: 0 4%; max-width: 1400px; margin: 0 auto; }
+/* CONTENT */
+.dashboard { height: 100vh; overflow-y: auto; padding: 100px 4% 100px; }
+.view-container { display: none; max-width: 1400px; margin: 0 auto; }
 .view-container.active { display: block; }
+
+@media (min-width: 1024px) {
+    .main-grid { display: grid; grid-template-columns: 320px 1fr 320px; gap: 24px; }
+}
 
 .card {
     background: var(--card-bg); border: 1px solid var(--border);
@@ -65,17 +63,17 @@ body, html {
     margin-bottom: 24px;
 }
 
-/* Сетка проектов */
-.preview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; margin-top: 30px; }
-.preview-card { padding: 0 !important; overflow: hidden; transition: 0.4s; }
-.preview-card:hover { border-color: var(--accent); box-shadow: var(--neon-glow); }
-.preview-header { height: 200px; background-size: cover; background-position: top; position: relative; }
-.preview-overlay-btn { position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; opacity:0; transition:0.3s; }
+/* ПРОЕКТЫ */
+.preview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-top: 30px; }
+.preview-card { padding: 0 !important; overflow: hidden; }
+.preview-header { height: 180px; background-size: cover; background-position: center; position: relative; background-color: #111; }
+.kotokafe-bg { background-image: url('https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=500&q=60'); }
+.team-bg { background-image: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=500&q=60'); }
+.preview-overlay-btn { position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center; opacity:0; transition:0.3s; }
 .preview-card:hover .preview-overlay-btn { opacity:1; }
-.preview-body { padding: 20px; text-align: left; }
-.preview-body h3 { color: var(--accent); margin-bottom: 10px; }
+.preview-body { padding: 20px; }
 
-/* Чат */
+/* CHAT */
 .chat-inner { display: flex; flex-direction: column; height: 350px; }
 .chat-feed { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
 .msg-box { padding: 10px 14px; border-radius: 16px; font-size: 13px; max-width: 85%; }
@@ -83,4 +81,4 @@ body, html {
 .received { align-self: flex-start; background: rgba(255,255,255,0.1); }
 .send-btn { width: 45px; height: 45px; border-radius: 50%; border: none; background: var(--accent); box-shadow: var(--neon-glow); cursor: pointer; }
 
-#unmute-btn { position: fixed; bottom: 85px; right: 25px; z-index: 100; width: 45px; height: 45px; border-radius: 50%; border: none; background: var(--accent); box-shadow: var(--neon-glow); cursor: pointer; }
+#unmute-btn { position: fixed; bottom: 30px; right: 30px; z-index: 100; width: 45px; height: 45px; border-radius: 50%; border: none; background: var(--accent); cursor: pointer; }
