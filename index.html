@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nitro Hub | Portfolio</title>
+    <title>Nitro Hub | Professional Portfolio</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -15,20 +15,20 @@
 <body>
 
 <div class="video-bg-wrapper">
-    <video id="bg-video" autoplay loop muted playsinline>
+    <video id="bg-video" autoplay loop muted playsinline preload="auto">
         <source src="bg_video.mp4" type="video/mp4">
     </video>
     <div class="video-overlay"></div>
 </div>
 
 <nav class="top-nav">
-    <div class="logo" onclick="showPage('main')">NITRO<span>HUB</span></div>
+    <div class="logo neon-text" onclick="showPage('main')">NITRO<span>HUB</span></div>
     <div class="nav-center">
-        <a href="#" class="projects-link-nav" onclick="showPage('projects-page')" data-lang="projectsLink">Мои проекты</a>
+        <a href="#" class="projects-link-nav neon-text" onclick="showPage('projects-page')" data-lang="projectsLink">MY PROJECTS</a>
     </div>
     <div class="nav-right">
-        <button id="lang-btn" class="lang-globe-btn" onclick="toggleLang()">
-            <span id="lang-icon">🌐 🇷🇺</span>
+        <button id="lang-btn" class="lang-globe-btn neon-border" onclick="toggleLang()">
+            <span id="lang-icon" class="neon-text">🌐 US</span>
         </button>
     </div>
 </nav>
@@ -36,17 +36,17 @@
 <main class="dashboard" id="main-scroll">
     <div id="main-content" class="view-container active">
         <section class="hero-section">
-            <h1 data-lang="heroTitle">A NEW STANDARD OF DIGITAL EXPERIENCE</h1>
-            <p data-lang="heroSub">Premium interfaces & scalable architectures.</p>
+            <h1 data-lang="heroTitle">NEW DIGITAL STANDARD</h1>
+            <p data-lang="heroSub">Premium interfaces & architectures.</p>
         </section>
 
         <div class="main-grid">
             <div class="col-side">
                 <div class="card profile-card">
-                    <div class="status-badge">ONLINE</div>
-                    <h2 id="user-name">Guest</h2>
-                    <p class="sub" data-lang="welcomeSub">Маг Автоматизации</p>
-                    <button id="logout-btn" class="logout-link" onclick="handleLogout()" style="display:none">Logout ➔</button>
+                    <div class="status-badge neon-border neon-text">ONLINE</div>
+                    <h2 id="user-name" class="neon-text">Guest</h2>
+                    <p class="sub" data-lang="welcomeSub">Automation Mage</p>
+                    <button id="logout-btn" class="logout-link neon-text" onclick="handleLogout()" style="display:none">Logout ➔</button>
                 </div>
                 
                 <div class="card chat-card">
@@ -70,12 +70,12 @@
                 <div class="card about-card">
                     <h3 data-lang="aboutTitle">Michael Faraday</h3>
                     <div class="faraday-content">
-                        <p data-lang="faradayDesc">Майкл Фарадей — выдающийся физик, чьи открытия в области электромагнетизма легли в основу технологий будущего.</p>
-                        <div class="quote" data-lang="faradayQuote">"Ничто не слишком прекрасно, чтобы быть истинным."</div>
+                        <p data-lang="faradayDesc">Michael Faraday was an English scientist who contributed to electromagnetism.</p>
+                        <div class="quote" data-lang="faradayQuote">"Nothing is too wonderful to be true."</div>
                     </div>
                 </div>
                 <div class="card projects-card">
-                    <h3 data-lang="worksTitle">Selected Works</h3>
+                    <h3 class="neon-text" data-lang="worksTitle">Selected Works</h3>
                     <div id="portfolio-container" class="portfolio-list"></div>
                 </div>
             </div>
@@ -84,7 +84,7 @@
                 <div class="card tech-card">
                     <h3 data-lang="skillTech">Arsenal</h3>
                     <div class="tech-tags">
-                        <span>React</span> <span>Firebase</span> <span>Python</span> <span>UI/UX</span>
+                        <span class="neon-border">React</span> <span class="neon-border">Firebase</span> <span class="neon-border">Python</span> <span class="neon-border">UI/UX</span>
                     </div>
                 </div>
                 <div class="card cats-card">
@@ -98,41 +98,27 @@
 
     <div id="projects-page" class="view-container">
         <div class="projects-showcase">
-            <h1 class="page-title" data-lang="projectsTitlePage">Портфолио разработок</h1>
-            
+            <h1 class="page-title neon-text" data-lang="projectsTitlePage">Development Portfolio</h1>
             <div class="preview-grid">
-                <div class="card preview-card">
+                <div class="card preview-card neon-hover">
                     <div class="preview-header kotokafe-bg">
-                        <div class="preview-overlay-btn">
-                            <a href="https://kotokafe-kotiki-i-lyudi.webflow.io/career" target="_blank" class="n-btn primary" data-lang="openBtn">Открыть</a>
-                        </div>
+                        <div class="preview-overlay-btn"><a href="https://kotokafe-kotiki-i-lyudi.webflow.io/career" target="_blank" class="n-btn primary">Open</a></div>
                     </div>
-                    <div class="preview-body">
-                        <h3 data-lang="p1Title">Котики и люди</h3>
-                        <p data-lang="p1Desc">Карьерная страница для сети котокафе. Реализовано на Webflow.</p>
-                    </div>
+                    <div class="preview-body"><h3>Котики и люди</h3><p>Webflow Career Page</p></div>
                 </div>
-
-                <div class="card preview-card">
+                <div class="card preview-card neon-hover">
                     <div class="preview-header team-bg">
-                        <div class="preview-overlay-btn">
-                            <a href="https://matthewbrodek-alt.github.io/new-project/#team" target="_blank" class="n-btn primary" data-lang="openBtn">Открыть</a>
-                        </div>
+                        <div class="preview-overlay-btn"><a href="https://matthewbrodek-alt.github.io/new-project/#team" target="_blank" class="n-btn primary">Open</a></div>
                     </div>
-                    <div class="preview-body">
-                        <h3 data-lang="p2Title">Team Showcase</h3>
-                        <p data-lang="p2Desc">Интерактивный раздел команды с адаптивной версткой на GitHub.</p>
-                    </div>
+                    <div class="preview-body"><h3>Team Showcase</h3><p>GitHub Team Section</p></div>
                 </div>
             </div>
-            
-            <button onclick="showPage('main')" class="n-btn secondary" style="margin-top: 30px;" data-lang="backBtn">← На главную</button>
+            <button onclick="showPage('main')" class="n-btn secondary" style="margin-top:30px;" data-lang="backBtn">← Back</button>
         </div>
     </div>
 </main>
 
-<button id="unmute-btn" onclick="toggleSound()">🔊</button>
-
+<button id="unmute-btn" class="neon-border" onclick="toggleSound()">🔊</button>
 <script src="script.js"></script>
 </body>
 </html>
