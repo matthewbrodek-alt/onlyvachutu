@@ -49,7 +49,9 @@ let currentLang = 'ru';
 
 function toggleLang() {
     currentLang = currentLang === 'ru' ? 'en' : 'ru';
-    document.getElementById('lang-icon').innerText = currentLang === 'ru' ? "🇷🇺" : "🇺🇸";
+    // Теперь кнопка всегда показывает флаг того языка, на который можно ПЕРЕКЛЮЧИТЬСЯ
+    document.getElementById('lang-icon').innerText = currentLang === 'ru' ? "🇺🇸" : "🇷🇺";
+    
     document.querySelectorAll('[data-lang]').forEach(el => {
         const key = el.getAttribute('data-lang');
         if (translations[currentLang][key]) el.innerText = translations[currentLang][key];
