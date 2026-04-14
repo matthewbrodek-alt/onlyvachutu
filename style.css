@@ -1,60 +1,66 @@
 :root {
     --accent: #00ff88;
-    --neon-glow: 0 0 12px rgba(0, 255, 136, 0.6);
-    --neon-strong: 0 0 20px rgba(0, 255, 136, 0.8);
-    --card-bg: rgba(7, 7, 7, 0.75);
-    --border: rgba(0, 255, 136, 0.2);
+    --card-bg: rgba(10, 10, 10, 0.9);
+    --border: rgba(0, 255, 136, 0.3);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body, html { width: 100%; height: 100%; background: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; }
+body { background: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; }
 
-/* Видеофон */
-.video-bg-wrapper { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; pointer-events: none; overflow: hidden; }
-#bg-video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.35); }
-.video-overlay { position: absolute; inset: 0; background: radial-gradient(circle, transparent 20%, #000 120%); z-index: -1; }
+/* ВИДЕО ФОН - ГАРАНТИЯ ОТОБРАЖЕНИЯ */
+.video-container {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: -10; pointer-events: none; background: #000;
+}
+#bg-video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.4); }
 
-/* Навигация */
+/* НАВИГАЦИЯ */
 .top-nav {
-    position: fixed; top: 0; left: 0; width: 100%; height: 75px;
+    position: fixed; top: 0; width: 100%; height: 70px;
     display: flex; justify-content: space-between; align-items: center;
-    padding: 0 4%; z-index: 1000; backdrop-filter: blur(25px); border-bottom: 1px solid var(--border);
+    padding: 0 4%; z-index: 100; border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(10px);
 }
-.neon-text { color: var(--accent) !important; text-shadow: var(--neon-glow); font-weight: 800; }
-.neon-border { border: 1px solid var(--accent) !important; box-shadow: var(--neon-glow); }
+.neon-text { color: var(--accent) !important; text-shadow: 0 0 8px rgba(0,255,136,0.5); font-weight: 800; }
+.neon-border { border: 1px solid var(--accent) !important; box-shadow: 0 0 10px rgba(0,255,136,0.3); }
 
-.logo { cursor: pointer; font-size: 1.6rem; letter-spacing: 2px; }
-.nav-center { position: absolute; left: 50%; transform: translateX(-50%); }
-.projects-link-nav { text-decoration: none; font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; }
+/* СЕТКА ПАНЕЛИ */
+.dashboard { height: 100vh; overflow-y: auto; padding: 100px 4% 50px; position: relative; z-index: 1; }
+.main-grid { display: grid; grid-template-columns: 320px 1fr 320px; gap: 20px; }
 
-/* Сетка Dashboard */
-.dashboard { height: 100vh; overflow-y: auto; padding: 100px 4% 100px; position: relative; z-index: 1; }
-.view-container { display: none; max-width: 1500px; margin: 0 auto; }
-.view-container.active { display: block; }
-
-@media (min-width: 1024px) {
-    .main-grid { display: grid; grid-template-columns: 320px 1fr 320px; gap: 24px; }
+@media (max-width: 1024px) {
+    .main-grid { grid-template-columns: 1fr; }
 }
 
-/* Карточки */
-.card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 24px; padding: 24px; backdrop-filter: blur(40px); margin-bottom: 24px; }
-.status-badge { padding: 4px 12px; border-radius: 20px; font-size: 10px; display: inline-block; margin-bottom: 10px; }
+/* КАРТОЧКИ (Убрана лишняя подсветка фона) */
+.card { 
+    background: var(--card-bg); 
+    border: 1px solid var(--border); 
+    border-radius: 20px; 
+    padding: 20px; 
+    margin-bottom: 20px;
+}
 
-/* Инпуты и Кнопки */
-.n-btn { border-radius: 12px; padding: 12px 24px; cursor: pointer; transition: 0.3s; font-weight: 800; border: none; }
-.primary { background: var(--accent); color: #000; box-shadow: var(--neon-glow); }
-.secondary { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
-.n-input { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 12px; width: 100%; margin-bottom: 10px; outline: none; }
-
-/* Чат */
-.chat-inner { display: flex; flex-direction: column; height: 350px; }
-.chat-feed { flex-grow: 1; overflow-y: auto; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
-.msg-box { padding: 10px 14px; border-radius: 16px; font-size: 13px; max-width: 85%; }
+/* ЧАТ */
+.chat-inner { display: flex; flex-direction: column; height: 300px; }
+.chat-feed { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+.msg-box { padding: 8px 12px; border-radius: 12px; font-size: 14px; max-width: 80%; }
 .sent { align-self: flex-end; background: var(--accent); color: #000; font-weight: 600; }
 .received { align-self: flex-start; background: rgba(255,255,255,0.1); border: 1px solid var(--border); }
 
-/* Портфолио */
-.project-item-card { border-bottom: 1px solid rgba(0,255,136,0.15); padding: 15px 0; }
-.tech-tag { font-size: 10px; padding: 3px 10px; border-radius: 6px; background: rgba(0,255,136,0.1); color: var(--accent); margin-right: 5px; }
+/* СПИСОК ПРОЕКТОВ (ДАННЫЕ ИЗ СКРИНШОТА) */
+.project-item-card { border-bottom: 1px solid rgba(0,255,136,0.2); padding: 15px 0; }
+.tech-tag { 
+    font-size: 10px; padding: 2px 8px; border-radius: 4px; 
+    background: rgba(0,255,136,0.1); color: var(--accent); margin-right: 5px; 
+}
 
-#unmute-btn { position: fixed; bottom: 30px; right: 30px; z-index: 100; width: 50px; height: 50px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+/* КНОПКИ */
+.n-btn { border-radius: 10px; padding: 10px 20px; cursor: pointer; border: none; font-weight: 700; transition: 0.3s; }
+.primary { background: var(--accent); color: #000; }
+.secondary { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+.n-input { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 10px; width: 100%; margin-bottom: 10px; }
+
+#unmute-btn { position: fixed; bottom: 20px; right: 20px; z-index: 1000; width: 45px; height: 45px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+.view-container { display: none; }
+.view-container.active { display: block; }
