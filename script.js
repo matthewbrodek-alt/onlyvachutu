@@ -26,8 +26,9 @@ const translations = {
         faradayDesc: "Выдающийся английский физик и химик, основоположник учения об электромагнитном поле.",
         faradayQuote: '"Ничто не слишком прекрасно, чтобы быть истинным..."',
         skillTech: "Арсенал",
-        catsTitle: "Таверна Котиков",
-        catsBtn: "Призвать",
+        carsTitle: "Это может быть твоим",
+        carsBtn: "Призвать",
+        staffTitle: "НАШИ СОТРУДНИКИ",
         teamProject: "Командный проект",
         careerPortal: "Портал карьеры",
         openSite: "Открыть сайт ➔",
@@ -48,8 +49,9 @@ const translations = {
         faradayDesc: "Famous physicist and chemist who contributed to the study of electromagnetism.",
         faradayQuote: '"Nothing is too wonderful to be true..."',
         skillTech: "Arsenal",
-        catsTitle: "Tavern Cats",
-        catsBtn: "Summon",
+        carsTitle: "This could be yours",
+        carsBtn: "Summon",
+        staffTitle: "OUR EMPLOYEES",
         teamProject: "Team Project",
         careerPortal: "Career Portal",
         openSite: "Open Site ➔",
@@ -62,10 +64,11 @@ const db = firebase.firestore();
 const auth = firebase.auth();
 let currentLang = 'ru';
 
-// Переключение языка
-function toggleLang() {
-    currentLang = currentLang === 'ru' ? 'en' : 'ru';
-    document.getElementById('lang-icon').innerText = currentLang === 'ru' ? "🇺🇸" : "🇷🇺";
+function setLang(lang) {
+    currentLang = lang;
+    document.querySelectorAll('.lang-option').forEach(el => el.classList.remove('active'));
+    document.getElementById(`lang-${lang}`).classList.add('active');
+    
     document.querySelectorAll('[data-lang]').forEach(el => {
         const key = el.getAttribute('data-lang');
         const text = translations[currentLang][key];
@@ -76,20 +79,17 @@ function toggleLang() {
     });
 }
 
-// Навигация
 function showPage(pageId) {
     document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
     document.getElementById(pageId).classList.add('active');
 }
 
-// Эмодзи
 function addEmoji(emoji) {
     const input = document.getElementById('chat-msg');
     input.value += emoji;
     input.focus();
 }
 
-// Отправка сообщения
 async function sendMessage() {
     const input = document.getElementById('chat-msg');
     const text = input.value.trim();
@@ -107,14 +107,10 @@ async function sendMessage() {
     input.value = "";
 }
 
-// Слушатель Enter
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && document.activeElement.id === 'chat-msg') {
-        sendMessage();
-    }
+    if (e.key === 'Enter' && document.activeElement.id === 'chat-msg') { sendMessage(); }
 });
 
-// Firebase Auth & Chat Sync
 auth.onAuthStateChanged(user => {
     const loginForm = document.getElementById('login-form');
     const userInfo = document.getElementById('user-info');
@@ -153,17 +149,16 @@ function syncChat(uid) {
     });
 }
 
-async function fetchCats() {
-    const res = await fetch('https://api.thecatapi.com/v1/images/search');
-    const data = await res.json();
-    document.getElementById('cat-container').innerHTML = `<img src="${data[0].url}" style="width:100%; border-radius:15px;">`;
+async function fetchCars() {
+    const randomId = Math.floor(Math.random() * 1000);
+    const carUrl = `https://loremflickr.com/600/400/car,luxury/all?lock=${randomId}`;
+    document.getElementById('car-container').innerHTML = `<img src="${carUrl}" style="width:100%; border-radius:15px; border: 1px solid var(--accent);">`;
 }
 
-window.onload = () => { fetchCats(); initCarousel(); };
+window.onload = () => { fetchCars(); initCarousel(); };
 
-// === КАРУСЕЛЬ ===
 function initCarousel() {
-    // Список картинок — замени на свои файлы в папке проекта
+    // ВЕРНУЛ ОРИГИНАЛЬНЫЙ МАССИВ ИЗ v5.0
     const IMAGES = [
         { src: 'gallery/photo1.jpg', label: 'ФОТО 1' },
         { src: 'gallery/photo2.jpg', label: 'ФОТО 2' },
@@ -203,8 +198,7 @@ function initCarousel() {
             const x = CX + RX * Math.cos(theta) - 75;
             const y = CY + RY * 0.36 * Math.sin(theta) - 95;
             const s = 0.5 + 0.5 * ((Math.sin(theta) + 1) / 2);
-            el.style.left = x + 'px';
-            el.style.top = y + 'px';
+            el.style.left = x + 'px'; el.style.top = y + 'px';
             el.style.transform = `scale(${s.toFixed(3)}) rotate(${(Math.cos(theta) * -10).toFixed(1)}deg)`;
             el.style.zIndex = Math.round(s * 100);
             el.style.opacity = (0.4 + 0.6 * ((Math.sin(theta) + 1) / 2)).toFixed(3);
