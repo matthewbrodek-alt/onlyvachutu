@@ -15,21 +15,21 @@ body, html {
     overflow: hidden;
 }
 
-/* ФИКСИРОВАННЫЙ СЛОЙ ВИДЕО */
 .video-bg-wrapper {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    z-index: -10; /* Под всем контентом */
+    z-index: -10;
     pointer-events: none; overflow: hidden;
-    background: #000; /* Резервный фон */
+    background: #000;
 }
 #bg-video { 
     width: 100%; height: 100%; 
     object-fit: cover; 
-    filter: brightness(0.4) contrast(1.1); 
+    /* Фильтры убраны, чтобы не тормозить GPU */
 }
 .video-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle, transparent 0%, rgba(0,0,0,0.8) 100%);
+    /* Вместо фильтров яркости используем наложение цвета */
+    background: rgba(0, 0, 0, 0.65); 
     z-index: -5;
 }
 
