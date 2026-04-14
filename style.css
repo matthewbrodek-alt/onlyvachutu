@@ -8,29 +8,26 @@
 
 body, html {
     width: 100%; height: 100%;
-    background: transparent;
+    background: #000; /* Резервный фон */
     color: #fff;
     font-family: 'Plus Jakarta Sans', sans-serif;
     overflow: hidden;
 }
 
-/* ФОНОВОЕ ВИДЕО: БЕЗ ФИЛЬТРОВ ДЛЯ СКОРОСТИ */
+/* ФОНОВОЕ ВИДЕО */
 .video-bg-wrapper {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    z-index: -10;
+    z-index: 1; /* Видео в самом низу */
     pointer-events: none; overflow: hidden;
-    background: #000;
 }
 #bg-video { 
     width: 100%; height: 100%; 
     object-fit: cover; 
-    /* Фильтры убраны, чтобы не тормозить GPU */
 }
 .video-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    /* Вместо фильтров яркости используем наложение цвета */
-    background: rgba(0, 0, 0, 0.65); 
-    z-index: -5;
+    background: rgba(0, 0, 0, 0.7); /* Наложение вместо тяжелых фильтров */
+    z-index: 2;
 }
 
 .nitro-glow {
@@ -47,7 +44,8 @@ body, html {
 
 .dashboard { 
     height: 100vh; overflow-y: auto; padding-top: 100px; 
-    position: relative; z-index: 10;
+    position: relative; z-index: 10; /* Весь контент поверх видео */
+    background: transparent;
 }
 
 .card { 
@@ -55,10 +53,6 @@ body, html {
     border-radius: 30px; padding: 25px; backdrop-filter: blur(35px); 
     margin-bottom: 25px; 
 }
-
-/* ПРОЕКТЫ */
-.projects-preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.project-preview-card iframe { width: 100%; height: 400px; border-radius: 15px; margin-top: 15px; border: none; }
 
 .chat-inner { display: flex; flex-direction: column; height: 380px; }
 .chat-feed { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
