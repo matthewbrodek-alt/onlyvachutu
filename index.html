@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nitro Hub | Personal Edition</title>
+    <title>Nitro Hub | Portfolio Edition</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -24,7 +24,7 @@
 <nav class="top-nav">
     <div class="logo" onclick="showPage('main')">NITRO<span>HUB</span></div>
     <div class="nav-center">
-        <a href="#" class="ads-link" onclick="showPage('ads')" data-lang="adsLink">Реклама</a>
+        <a href="#" class="projects-link-nav" onclick="showPage('projects-page')" data-lang="projectsLink">Мои проекты</a>
     </div>
     <div class="nav-right">
         <button id="lang-btn" class="lang-globe-btn" onclick="toggleLang()">
@@ -35,14 +35,12 @@
 
 <main class="dashboard" id="main-scroll">
     <div id="main-content" class="view-container active">
-        
         <section class="hero-section">
             <h1 data-lang="heroTitle">A NEW STANDARD OF DIGITAL EXPERIENCE</h1>
             <p data-lang="heroSub">Premium interfaces & scalable architectures.</p>
         </section>
 
         <div class="main-grid">
-            
             <div class="col-side">
                 <div class="card profile-card">
                     <div class="status-badge">ONLINE</div>
@@ -73,14 +71,13 @@
                     <h3 data-lang="aboutTitle">Michael Faraday</h3>
                     <div class="faraday-content">
                         <p data-lang="faradayDesc">
-                            Майкл Фарадей — выдающийся английский физик и химик, основоположник учения об электромагнитном поле. 
-                            Его открытия в области электромагнитной индукции легли в основу современной электротехники.
+                            Майкл Фарадей — выдающийся английский физик и химик, основоположник учения об электромагнитном поле. Его открытия в области индукции изменили мир.
                         </p>
                         <div class="quote">"Ничто не слишком прекрасно, чтобы быть истинным, если оно соответствует законам природы."</div>
                     </div>
                 </div>
                 <div class="card projects-card">
-                    <h3 data-lang="projectsTitle">Selected Works</h3>
+                    <h3 data-lang="worksTitle">Selected Works</h3>
                     <div id="portfolio-container" class="portfolio-list"></div>
                 </div>
             </div>
@@ -98,15 +95,42 @@
                     <button onclick="fetchCats()" class="n-btn secondary" data-lang="catsBtn">Summon</button>
                 </div>
             </div>
-
         </div>
     </div>
 
-    <div id="ads-page" class="view-container">
-        <div class="card ads-display">
-            <h1 data-lang="promoText">Здесь могла быть ваша реклама</h1>
-            <p>Contact: @your_telegram</p>
-            <button onclick="showPage('main')" class="n-btn secondary">← Back</button>
+    <div id="projects-page" class="view-container">
+        <div class="projects-showcase">
+            <h1 class="page-title" data-lang="projectsTitlePage">Портфолио разработок</h1>
+            
+            <div class="preview-grid">
+                <div class="card preview-card">
+                    <div class="preview-header" style="background-image: url('https://api.screenshotmachine.com?key=7f2c6e&url=https://matthewbrodek-alt.github.io/nekomarket/&dimension=1024x768')">
+                        <div class="preview-overlay-btn">
+                            <a href="https://matthewbrodek-alt.github.io/nekomarket/" target="_blank" class="n-btn primary">Открыть сайт</a>
+                        </div>
+                    </div>
+                    <div class="preview-body">
+                        <h3>Nekomarket</h3>
+                        <p>Инновационный маркетплейс с современным интерфейсом и продуманным UX.</p>
+                        <div class="tech-tags"><span>HTML/CSS</span> <span>JS</span></div>
+                    </div>
+                </div>
+
+                <div class="card preview-card">
+                    <div class="preview-header" style="background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80')">
+                        <div class="preview-overlay-btn">
+                            <a href="#" class="n-btn primary">Демо проекта</a>
+                        </div>
+                    </div>
+                    <div class="preview-body">
+                        <h3>Eden Real Estate</h3>
+                        <p>Премиальный лендинг для элитной недвижимости с мультиязычной навигацией.</p>
+                        <div class="tech-tags"><span>Responsive</span> <span>Localization</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="showPage('main')" class="n-btn secondary" style="margin-top: 30px;">← На главную</button>
         </div>
     </div>
 </main>
