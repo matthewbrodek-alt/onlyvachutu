@@ -62,24 +62,29 @@ function showPage(pageId) {
     if(target) target.classList.add('active');
 }
 
+// ГАРАНТИРОВАННЫЙ ЗАПУСК
+function initVideo() {
+    const v = document.getElementById('bg-video');
+    if (!v) return;
+    v.play().catch(() => {
+        const playOnce = () => { v.play(); window.removeEventListener('mousedown', playOnce); };
+        window.addEventListener('mousedown', playOnce);
+    });
+}
+
 auth.onAuthStateChanged(user => {
     const loginForm = document.getElementById('login-form');
     const userInfo = document.getElementById('user-info');
     const userNameDisplay = document.getElementById('user-name');
-    const logoutBtn = document.getElementById('logout-btn');
-
     if (user) {
         if (loginForm) loginForm.style.display = 'none';
         if (userInfo) userInfo.style.display = 'flex';
-        if (logoutBtn) logoutBtn.style.display = 'block';
         if (userNameDisplay) userNameDisplay.innerText = user.email.split('@')[0];
         db.collection("users").doc(user.uid).set({ email: user.email }, { merge: true });
         syncChat(user.uid);
     } else {
         if (loginForm) loginForm.style.display = 'block';
         if (userInfo) userInfo.style.display = 'none';
-        if (logoutBtn) logoutBtn.style.display = 'none';
-        if (userNameDisplay) userNameDisplay.innerText = "Guest";
     }
 });
 
@@ -91,8 +96,6 @@ async function handleLogin() {
         catch { await auth.createUserWithEmailAndPassword(email, pass); }
     }
 }
-
-function handleLogout() { auth.signOut(); }
 
 async function sendMessage() {
     const input = document.getElementById('chat-msg');
@@ -134,10 +137,6 @@ async function fetchCats() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const v = document.getElementById('bg-video');
-    // Минимальный код для запуска видео, чтобы не грузить скрипт
-    if (v) v.play().catch(() => {
-        window.addEventListener('click', () => v.play(), { once: true });
-    });
+    initVideo();
     fetchCats();
 });
