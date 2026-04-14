@@ -20,10 +20,11 @@ const translations = {
         chatTitle: "Мессенджер",
         chatPlaceholder: "Напишите сообщение...",
         loginBtn: "Авторизоваться",
+        projectsTitle: "ПРЯМАЯ СВЯЗЬ",
+        projectsDesc: "Вы можете написать мне прямо здесь. Мессенджер синхронизирован с моими личными каналами связи для мгновенного ответа.",
         aboutTitle: "Майкл Фарадей",
-        faradayDesc: "Майкл Фарадей — выдающийся английский физик и химик, основоположник учения об электромагнитном поле.",
+        faradayDesc: "Выдающийся английский физик и химик, основоположник учения об электромагнитном поле.",
         faradayQuote: '"Ничто не слишком прекрасно, чтобы быть истинным..."',
-        projectsTitle: "Избранные работы",
         skillTech: "Арсенал",
         catsTitle: "Таверна Котиков",
         catsBtn: "Призвать",
@@ -41,10 +42,11 @@ const translations = {
         chatTitle: "Messenger",
         chatPlaceholder: "Type a message...",
         loginBtn: "Authorize",
+        projectsTitle: "DIRECT CONTACT",
+        projectsDesc: "Feel free to message me right here. This messenger is synced with my private channels for an instant response.",
         aboutTitle: "Michael Faraday",
-        faradayDesc: "Michael Faraday was an English scientist who contributed to the study of electromagnetism and electrochemistry.",
+        faradayDesc: "Famous physicist and chemist who contributed to the study of electromagnetism.",
         faradayQuote: '"Nothing is too wonderful to be true..."',
-        projectsTitle: "Selected Works",
         skillTech: "Arsenal",
         catsTitle: "Tavern Cats",
         catsBtn: "Summon",
@@ -58,55 +60,72 @@ const translations = {
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
-
 let currentLang = 'ru';
 
+// Переключение языка
 function toggleLang() {
     currentLang = currentLang === 'ru' ? 'en' : 'ru';
-    // Кнопка показывает флаг языка, на который МОЖНО переключиться
     document.getElementById('lang-icon').innerText = currentLang === 'ru' ? "🇺🇸" : "🇷🇺";
-    
     document.querySelectorAll('[data-lang]').forEach(el => {
         const key = el.getAttribute('data-lang');
         const text = translations[currentLang][key];
         if (text) {
-            if (el.tagName === 'INPUT') {
-                el.placeholder = text;
-            } else {
-                el.innerText = text;
-            }
+            if (el.tagName === 'INPUT') el.placeholder = text;
+            else el.innerText = text;
         }
     });
 }
 
+// Навигация
 function showPage(pageId) {
     document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
-    const target = document.getElementById(pageId);
-    if(target) target.classList.add('active');
+    document.getElementById(pageId).classList.add('active');
 }
 
-function initVideo() {
-    const v = document.getElementById('bg-video');
-    if (!v) return;
-    v.play().catch(() => {
-        const playOnce = () => { v.play(); window.removeEventListener('mousedown', playOnce); };
-        window.addEventListener('mousedown', playOnce);
+// Эмодзи
+function addEmoji(emoji) {
+    const input = document.getElementById('chat-msg');
+    input.value += emoji;
+    input.focus();
+}
+
+// Отправка сообщения
+async function sendMessage() {
+    const input = document.getElementById('chat-msg');
+    const text = input.value.trim();
+    if (!text || !auth.currentUser) return;
+
+    await db.collection("users").doc(auth.currentUser.uid).collection("messages").add({
+        message: text, sender: "user", timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
+
+    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: `👤 ${auth.currentUser.email}\n💬 ${text}` })
+    });
+    input.value = "";
 }
 
+// Слушатель Enter
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && document.activeElement.id === 'chat-msg') {
+        sendMessage();
+    }
+});
+
+// Firebase Auth & Chat Sync
 auth.onAuthStateChanged(user => {
     const loginForm = document.getElementById('login-form');
     const userInfo = document.getElementById('user-info');
-    const userNameDisplay = document.getElementById('user-name');
     if (user) {
-        if (loginForm) loginForm.style.display = 'none';
-        if (userInfo) userInfo.style.display = 'flex';
-        if (userNameDisplay) userNameDisplay.innerText = user.email.split('@')[0];
-        db.collection("users").doc(user.uid).set({ email: user.email }, { merge: true });
+        loginForm.style.display = 'none';
+        userInfo.style.display = 'flex';
+        document.getElementById('user-name').innerText = user.email.split('@')[0];
         syncChat(user.uid);
     } else {
-        if (loginForm) loginForm.style.display = 'block';
-        if (userInfo) userInfo.style.display = 'none';
+        loginForm.style.display = 'block';
+        userInfo.style.display = 'none';
     }
 });
 
@@ -119,25 +138,9 @@ async function handleLogin() {
     }
 }
 
-async function sendMessage() {
-    const input = document.getElementById('chat-msg');
-    const text = input.value.trim();
-    if (!text || !auth.currentUser) return;
-    await db.collection("users").doc(auth.currentUser.uid).collection("messages").add({
-        message: text, sender: "user", timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: `👤 ${auth.currentUser.email}\n💬 ${text}` })
-    });
-    input.value = "";
-}
-
 function syncChat(uid) {
     db.collection("users").doc(uid).collection("messages").orderBy("timestamp", "asc").onSnapshot(snap => {
         const win = document.getElementById('chat-window');
-        if (!win) return;
         win.innerHTML = "";
         snap.forEach(doc => {
             const m = doc.data();
@@ -151,14 +154,9 @@ function syncChat(uid) {
 }
 
 async function fetchCats() {
-    try {
-        const res = await fetch('https://api.thecatapi.com/v1/images/search');
-        const data = await res.json();
-        document.getElementById('cat-container').innerHTML = `<img src="${data[0].url}" style="width:100%; border-radius:12px; margin-top:10px;">`;
-    } catch(e) {}
+    const res = await fetch('https://api.thecatapi.com/v1/images/search');
+    const data = await res.json();
+    document.getElementById('cat-container').innerHTML = `<img src="${data[0].url}" style="width:100%; border-radius:15px;">`;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    initVideo();
-    fetchCats();
-});
+window.onload = () => { fetchCats(); };
