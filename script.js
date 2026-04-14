@@ -159,7 +159,7 @@ async function fetchCars() {
     document.getElementById('car-container').innerHTML = `<img src="${carUrl}" style="width:100%; border-radius:15px; border: 1px solid var(--accent);">`;
 }
 
-window.onload = () => { fetchCats(); initCarousel(); };
+window.onload = () => { fetchCars(); initCarousel(); };
 
 // === КАРУСЕЛЬ ===
 function initCarousel() {
