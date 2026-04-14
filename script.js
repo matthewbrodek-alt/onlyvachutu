@@ -153,10 +153,10 @@ function syncChat(uid) {
     });
 }
 
-async function fetchCats() {
-    const res = await fetch('https://api.thecatapi.com/v1/images/search');
-    const data = await res.json();
-    document.getElementById('cat-container').innerHTML = `<img src="${data[0].url}" style="width:100%; border-radius:15px;">`;
+async function fetchCars() {
+    const randomId = Math.floor(Math.random() * 1000);
+    const carUrl = `https://loremflickr.com/600/400/car,luxury/all?lock=${randomId}`;
+    document.getElementById('car-container').innerHTML = `<img src="${carUrl}" style="width:100%; border-radius:15px; border: 1px solid var(--accent);">`;
 }
 
 window.onload = () => { fetchCats(); initCarousel(); };
