@@ -31,39 +31,34 @@ body, html {
 
 .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 30px; padding: 25px; backdrop-filter: blur(35px); margin-bottom: 25px; }
 
-/* Текст в инпутах */
+/* Белый текст в инпутах */
 .n-input {
     width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.07);
     border: 1px solid var(--border); border-radius: 12px; color: #fff !important; outline: none;
 }
 
-/* Эмодзи панель */
 .emoji-bar {
     display: flex; gap: 10px; padding: 10px 0; font-size: 18px; cursor: pointer;
     border-top: 1px solid var(--border); margin-top: 10px;
 }
 .emoji-bar span:hover { transform: scale(1.3); transition: 0.2s; }
 
-/* Кнопка Nitro */
 .send-btn {
     background: var(--accent); border: none; border-radius: 12px;
     width: 45px; height: 45px; color: #000; font-weight: bold; cursor: pointer;
     box-shadow: 0 0 15px rgba(0, 255, 136, 0.4); margin-left: 10px;
 }
 
-/* Индикатор синхронизации */
-.sync-indicator { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
-.pulse-dot {
-    width: 8px; height: 8px; background: var(--accent); border-radius: 50%;
-    box-shadow: 0 0 10px var(--accent); animation: nitro-pulse 2s infinite;
-}
-@keyframes nitro-pulse {
-    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); }
-    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 255, 136, 0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
-}
+.chat-inner { display: flex; flex-direction: column; height: 420px; }
+.chat-feed { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.msg-box { padding: 10px 15px; border-radius: 15px; font-size: 14px; max-width: 85%; }
+.sent { align-self: flex-end; background: var(--accent); color: #000; font-weight: 600; }
+.received { align-self: flex-start; background: rgba(255,255,255,0.08); }
 
-/* Превью проектов */
+.n-btn { padding: 12px 24px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; }
+.primary { background: var(--accent); color: #000; }
+.secondary { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+
 .project-preview-link {
     display: block; width: 100%; height: 400px; margin-top: 15px;
     border-radius: 15px; overflow: hidden; border: 1px solid var(--border); transition: 0.3s;
@@ -75,15 +70,3 @@ body, html {
     opacity: 0; transition: 0.3s; backdrop-filter: blur(5px);
 }
 .project-preview-link:hover .project-screenshot-overlay { opacity: 1; }
-.project-screenshot-overlay span { color: var(--accent); border: 2px solid var(--accent); padding: 10px 20px; border-radius: 30px; }
-
-/* Чат */
-.chat-inner { display: flex; flex-direction: column; height: 420px; }
-.chat-feed { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-.msg-box { padding: 10px 15px; border-radius: 15px; font-size: 14px; max-width: 85%; }
-.sent { align-self: flex-end; background: var(--accent); color: #000; font-weight: 600; }
-.received { align-self: flex-start; background: rgba(255,255,255,0.08); }
-
-.n-btn { padding: 12px 24px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; }
-.primary { background: var(--accent); color: #000; }
-.secondary { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
