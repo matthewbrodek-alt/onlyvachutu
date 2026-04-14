@@ -97,22 +97,27 @@
     </div>
 
     <div id="ads-page" class="view-container">
-        <div class="projects-preview-grid">
-            <div class="card project-preview-card">
-                <h3 class="nitro-glow">Team Project</h3>
-                <iframe src="https://matthewbrodek-alt.github.io/new-project/#team" frameborder="0"></iframe>
-            </div>
-            <div class="card project-preview-card">
-                           <h3 class="nitro-glow">Career Portal</h3>
-                           <a href="https://kotokafe-kotiki-i-lyudi.webflow.io/career" target="_blank" class="project-link">
-                           <div class="project-screenshot" style="background-image: url('career-preview.jpg');">
-                          <div class="view-overlay">Открыть сайт ➔</div>
-                    </div>
-                  </a>
-            </div>
-            <button onclick="showPage('main-content')" class="n-btn secondary" style="margin-top: 20px;">← Back</button>
+    <div class="projects-preview-grid">
+        <div class="card project-preview-card">
+            <h3 class="nitro-glow">Team Project</h3>
+            <iframe src="https://matthewbrodek-alt.github.io/new-project/#team" frameborder="0"></iframe>
         </div>
+        
+        <div class="card project-preview-card">
+            <h3 class="nitro-glow">Career Portal</h3>
+            
+            <a href="https://kotokafe-kotiki-i-lyudi.webflow.io/career" target="_blank" class="project-preview-link">
+                <div class="project-screenshot-container" style="background-image: url('career_preview.jpg');">
+                    <div class="project-screenshot-overlay">
+                        <span>Открыть сайт ➔</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        
+        <button onclick="showPage('main-content')" class="n-btn secondary" style="margin-top: 20px;">← Back</button>
     </div>
+</div>
 </main>
 
 <script src="script.js"></script>
