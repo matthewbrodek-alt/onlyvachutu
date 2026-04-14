@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nitro Hub | Professional Edition</title>
+    <title>Nitro Hub | Production</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -24,11 +24,11 @@
 <nav class="top-nav">
     <div class="logo neon-text" onclick="showPage('main')">NITRO<span>HUB</span></div>
     <div class="nav-center">
-        <a href="#" class="projects-link-nav neon-text" onclick="showPage('projects-page')" data-lang="projectsLink">MY PROJECTS</a>
+        <a href="#" class="projects-link-nav neon-text" onclick="showPage('projects-page')" data-lang="projectsLink">МОИ ПРОЕКТЫ</a>
     </div>
     <div class="nav-right">
         <button id="lang-btn" class="lang-globe-btn neon-border" onclick="toggleLang()">
-            <span id="lang-icon" class="neon-text">🌐 US</span>
+            <span id="lang-icon">🇷🇺</span>
         </button>
     </div>
 </nav>
@@ -45,7 +45,7 @@
                 <div class="card profile-card">
                     <div class="status-badge neon-border neon-text">ONLINE</div>
                     <h2 id="user-name" class="neon-text">Guest</h2>
-                    <p class="sub" data-lang="welcomeSub">Automation Mage</p>
+                    <p class="sub" data-lang="welcomeSub">Маг Автоматизации</p>
                     <button id="logout-btn" class="logout-link neon-text" onclick="handleLogout()" style="display:none">Logout ➔</button>
                 </div>
                 
@@ -70,8 +70,8 @@
                 <div class="card about-card">
                     <h3 data-lang="aboutTitle">Michael Faraday</h3>
                     <div class="faraday-content">
-                        <p data-lang="faradayDesc">Michael Faraday was an English scientist who contributed to electromagnetism.</p>
-                        <div class="quote" data-lang="faradayQuote">"Nothing is too wonderful to be true."</div>
+                        <p data-lang="faradayDesc">Майкл Фарадей — английский физик, внесший вклад в электромагнетизм.</p>
+                        <div class="quote" data-lang="faradayQuote">"Ничто не слишком прекрасно, чтобы быть истинным."</div>
                     </div>
                 </div>
                 <div class="card projects-card">
@@ -101,7 +101,7 @@
 
     <div id="projects-page" class="view-container">
         <div class="projects-showcase">
-            <h1 class="page-title neon-text" data-lang="projectsTitlePage">Development Portfolio</h1>
+            <h1 class="page-title neon-text" data-lang="projectsTitlePage">Портфолио разработок</h1>
             <div class="preview-grid">
                 <div class="card preview-card neon-hover">
                     <div class="preview-header kotokafe-bg">
