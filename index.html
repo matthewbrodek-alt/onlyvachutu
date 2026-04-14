@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nitro Hub | Production</title>
+    <title>Nitro Hub | Pro</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -14,11 +14,10 @@
 </head>
 <body>
 
-<div class="video-bg-wrapper">
+<div class="video-container">
     <video id="bg-video" autoplay loop muted playsinline preload="auto">
         <source src="bg_video.mp4" type="video/mp4">
     </video>
-    <div class="video-overlay"></div>
 </div>
 
 <nav class="top-nav">
@@ -70,8 +69,8 @@
                 <div class="card about-card">
                     <h3 data-lang="aboutTitle">Michael Faraday</h3>
                     <div class="faraday-content">
-                        <p data-lang="faradayDesc">Майкл Фарадей — английский физик, внесший вклад в электромагнетизм.</p>
-                        <div class="quote" data-lang="faradayQuote">"Ничто не слишком прекрасно, чтобы быть истинным."</div>
+                        <p data-lang="faradayDesc">Майкл Фарадей — выдающийся английский физик.</p>
+                        <div class="quote" data-lang="faradayQuote">"Ничто не слишком чудесно, чтобы быть истинным."</div>
                     </div>
                 </div>
                 <div class="card projects-card">
@@ -101,38 +100,29 @@
 
     <div id="projects-page" class="view-container">
         <div class="projects-showcase">
-            <h1 class="page-title neon-text" data-lang="projectsTitlePage">Портфолио разработок</h1>
+            <h1 class="page-title neon-text" data-lang="projectsTitlePage">Dev Portfolio</h1>
             <div class="preview-grid">
-                <div class="card preview-card neon-hover">
-                    <div class="preview-header kotokafe-bg">
-                        <div class="preview-overlay-btn">
-                            <a href="https://kotokafe-kotiki-i-lyudi.webflow.io/career" target="_blank" class="n-btn primary">Open Site</a>
-                        </div>
-                    </div>
+                <div class="card preview-card">
+                    <div class="preview-header kotokafe-bg"></div>
                     <div class="preview-body">
                         <h3>Котики и люди</h3>
-                        <p>Webflow Career Platform</p>
+                        <a href="https://kotokafe-kotiki-i-lyudi.webflow.io/career" target="_blank" class="n-btn primary">Open Site</a>
                     </div>
                 </div>
-                <div class="card preview-card neon-hover">
-                    <div class="preview-header team-bg">
-                        <div class="preview-overlay-btn">
-                            <a href="https://matthewbrodek-alt.github.io/new-project/#team" target="_blank" class="n-btn primary">Open Site</a>
-                        </div>
-                    </div>
+                <div class="card preview-card">
+                    <div class="preview-header team-bg"></div>
                     <div class="preview-body">
                         <h3>Team Showcase</h3>
-                        <p>GitHub Interactive Section</p>
+                        <a href="https://matthewbrodek-alt.github.io/new-project/#team" target="_blank" class="n-btn primary">Open Site</a>
                     </div>
                 </div>
             </div>
-            <button onclick="showPage('main')" class="n-btn secondary" style="margin-top:30px;" data-lang="backBtn">← Back</button>
+            <button onclick="showPage('main')" class="n-btn secondary" style="margin-top:20px;">← Back</button>
         </div>
     </div>
 </main>
 
 <button id="unmute-btn" class="neon-border" onclick="toggleSound()">🔊</button>
-
 <script src="script.js"></script>
 </body>
 </html>
