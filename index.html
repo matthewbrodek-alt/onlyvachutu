@@ -24,7 +24,7 @@
 <nav class="top-nav">
     <div class="logo nitro-glow" onclick="showPage('main-content')" style="cursor: pointer;">NITRO<span>HUB</span></div>
     <div class="nav-center">
-        <a href="#" class="ads-link nitro-glow" onclick="showPage('ads-page')" data-lang="projectsLink">Мои проекты</a>
+        <a href="#" class="ads-link nitro-glow" onclick="showPage('ads-page')" data-lang="projectsTitle">Избранные работы</a>
     </div>
     <div class="nav-right">
         <button id="lang-btn" class="lang-globe-btn" onclick="toggleLang()">
@@ -76,25 +76,17 @@
             </div>
 
             <div class="col-center">
-                <div class="card projects-card">
-                    <h3 class="nitro-glow" data-lang="projectsTitle">ПРЯМАЯ СВЯЗЬ</h3>
-                    <div class="contact-info-box">
-                        <p data-lang="projectsDesc" style="line-height: 1.6; color: rgba(255,255,255,0.7); margin-bottom: 15px;">
-                            Вы можете написать мне прямо здесь. Мессенджер синхронизирован с моими личными каналами связи для мгновенного ответа.
-                        </p>
-                        <div class="sync-indicator">
-                            <span class="pulse-dot"></span>
-                            <span style="font-size: 11px; color: var(--accent); letter-spacing: 2px; font-weight: 800;">SYSTEM SYNCED</span>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="card about-card">
                     <h3 data-lang="aboutTitle">Майкл Фарадей</h3>
                     <div class="faraday-content">
                         <p data-lang="faradayDesc">Выдающийся английский физик и химик, основоположник учения об электромагнитном поле.</p>
                         <div class="quote" data-lang="faradayQuote">"Ничто не слишком прекрасно, чтобы быть истинным..."</div>
                     </div>
+                </div>
+                <div class="card projects-card">
+                    <h3 data-lang="projectsTitle" class="nitro-glow">Избранные работы</h3>
+                    <div id="portfolio-container" class="portfolio-list">
+                        </div>
                 </div>
             </div>
 
