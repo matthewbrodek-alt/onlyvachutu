@@ -26,14 +26,15 @@
     
     <div class="nav-center">
         <a href="#" class="ads-link nitro-glow" onclick="showPage('ads-page')" data-lang="projectsLink">Мои проекты</a>
+    </div>
+    
+    <div class="nav-right">
         <div class="lang-switcher">
             <span id="lang-ru" class="lang-option active" onclick="setLang('ru')">RU</span>
             <span class="lang-divider">|</span>
             <span id="lang-en" class="lang-option" onclick="setLang('en')">EN</span>
         </div>
     </div>
-    
-    <div class="nav-right"></div>
 </nav>
 
 <main class="dashboard" id="main-scroll">
@@ -77,9 +78,7 @@
                 <div class="card projects-card">
                     <h3 class="nitro-glow" data-lang="projectsTitle">ПРЯМАЯ СВЯЗЬ</h3>
                     <div class="contact-info-box">
-                        <p data-lang="projectsDesc" style="line-height: 1.6; color: rgba(255,255,255,0.7); margin-bottom: 15px;">
-                            Вы можете написать мне прямо здесь. Мессенджер синхронизирован с моими личными каналами связи для мгновенного ответа.
-                        </p>
+                        <p data-lang="projectsDesc">Вы можете написать мне прямо здесь. Мессенджер синхронизирован с моими личными каналами связи.</p>
                         <div class="sync-indicator">
                             <span class="pulse-dot"></span>
                             <span style="font-size: 11px; color: var(--accent); letter-spacing: 2px; font-weight: 800;">SYSTEM SYNCED</span>
@@ -125,20 +124,20 @@
    </section>
 
    <div id="ads-page" class="view-container">
-        <div class="ads-grid">
-            <div class="card ad-card">
-                <h3 class="nitro-glow" data-lang="teamProject">Командный проект</h3>
-                <div class="ad-preview-box">
-                    <img src="career_preview.jpg" alt="Project">
-                </div>
-            </div>
-            <div class="card ad-card">
-                <h3 class="nitro-glow" data-lang="careerPortal">Портал карьеры</h3>
-                <div class="ad-preview-box">
-                    <div class="ad-placeholder">Coming Soon</div>
-                </div>
+        <div class="card ad-card">
+            <h3 class="nitro-glow" data-lang="teamProject">Командный проект</h3>
+            <div class="ad-preview-box">
+                <img src="career_preview.jpg" alt="Project">
             </div>
         </div>
+
+        <div class="card ad-card">
+            <h3 class="nitro-glow" data-lang="careerPortal">Портал карьеры</h3>
+            <div class="ad-preview-box">
+                <div class="ad-placeholder">Coming Soon</div>
+            </div>
+        </div>
+
         <button onclick="showPage('main-content')" class="n-btn secondary" style="margin-top: 20px;" data-lang="backBtn">← Назад</button>
     </div>
 </main>
