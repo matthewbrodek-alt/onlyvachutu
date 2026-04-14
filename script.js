@@ -25,14 +25,13 @@ const dict = {
         chatTitle: "Мессенджер",
         loginBtn: "Войти",
         aboutTitle: "Майкл Фарадей",
-        faradayDesc: "Майкл Фарадей — выдающийся физик, открывший электромагнитную индукцию.",
-        faradayQuote: '"Ничто не слишком прекрасно, чтобы быть истинным."',
+        faradayDesc: "Майкл Фарадей — выдающийся английский физик.",
+        faradayQuote: '"Ничто не слишком чудесно, чтобы быть истинным."',
         worksTitle: "Выбранные Работы",
         skillTech: "Арсенал",
         catsTitle: "Коты Таверны",
         catsBtn: "Призвать",
-        projectsTitlePage: "Портфолио Разработки",
-        backBtn: "← Назад"
+        projectsTitlePage: "Портфолио Разработки"
     },
     en: {
         projectsLink: "MY PROJECTS",
@@ -48,11 +47,11 @@ const dict = {
         skillTech: "Arsenal",
         catsTitle: "Tavern Cats",
         catsBtn: "Summon",
-        projectsTitlePage: "Dev Portfolio",
-        backBtn: "← Back"
+        projectsTitlePage: "Dev Portfolio"
     }
 };
 
+// Загрузка проектов из Firestore (структура со скрина)
 async function loadProjects() {
     const container = document.getElementById('portfolio-container');
     const snap = await db.collection("projects").get();
@@ -60,13 +59,14 @@ async function loadProjects() {
         const p = doc.data();
         const tech = p.tech ? p.tech.map(t => `<span class="tech-tag">${t}</span>`).join('') : '';
         return `<div class="project-item-card">
-            <div class="neon-text">${p.title || 'Project'}</div>
-            <div style="font-size:0.8rem; margin: 5px 0;">Metric: ${p.metric || '0.0'}</div>
+            <div class="neon-text">${p.title || 'Project Name'}</div>
+            <div style="font-size:0.8rem; margin: 4px 0; color: #ccc;">Metric: ${p.metric || '0%'}</div>
             <div>${tech}</div>
         </div>`;
     }).join('');
 }
 
+// Переключение языков (ФЛАГИ)
 function toggleLang() {
     currentLang = currentLang === 'ru' ? 'en' : 'ru';
     document.getElementById('lang-icon').innerText = currentLang === 'ru' ? "🇷🇺" : "🇺🇸";
@@ -76,21 +76,24 @@ function toggleLang() {
     });
 }
 
+// Управление страницами
 function showPage(pageId) {
     document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
     document.getElementById(pageId === 'projects-page' ? 'projects-page' : 'main-content').classList.add('active');
 }
 
-// Инициализация видео и данных
+// Запуск видео и инициализация
 document.addEventListener('DOMContentLoaded', () => {
     const v = document.getElementById('bg-video');
-    const playVideo = () => v.play().catch(() => {});
-    document.body.addEventListener('click', playVideo, { once: true });
+    // Обход блокировки автоплея
+    const startVideo = () => { v.play(); document.removeEventListener('click', startVideo); };
+    document.addEventListener('click', startVideo);
+    
     loadProjects();
     fetchCats();
 });
 
-// Firebase Auth
+// Firebase Чат и Телеграм
 auth.onAuthStateChanged(user => {
     document.getElementById('login-form').style.display = user ? 'none' : 'block';
     document.getElementById('user-info').style.display = user ? 'flex' : 'none';
@@ -112,10 +115,12 @@ async function sendMessage() {
     const txt = input.value.trim();
     if (!txt || !auth.currentUser) return;
 
+    // 1. В Firestore
     await db.collection("users").doc(auth.currentUser.uid).collection("messages").add({
         message: txt, sender: "user", timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
 
+    // 2. В Telegram
     fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -131,6 +136,7 @@ function syncChat(uid) {
         snap.forEach(doc => {
             const m = doc.data();
             const div = document.createElement('div');
+            // Если отправитель bot — стиль received, если user — sent
             div.className = `msg-box ${m.sender === 'user' ? 'sent' : 'received'}`;
             div.innerText = m.message;
             win.appendChild(div);
@@ -140,9 +146,11 @@ function syncChat(uid) {
 }
 
 async function fetchCats() {
-    const res = await fetch('https://api.thecatapi.com/v1/images/search?limit=1');
-    const data = await res.json();
-    document.getElementById('cat-container').innerHTML = `<img src="${data[0].url}" style="width:100%; border-radius:15px; border: 1px solid var(--border);">`;
+    try {
+        const res = await fetch('https://api.thecatapi.com/v1/images/search');
+        const data = await res.json();
+        document.getElementById('cat-container').innerHTML = `<img src="${data[0].url}" style="width:100%; border-radius:10px;">`;
+    } catch(e) {}
 }
 
 function toggleSound() {
