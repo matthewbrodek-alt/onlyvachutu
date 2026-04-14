@@ -10,7 +10,6 @@ const firebaseConfig = {
 const TELEGRAM_BOT_TOKEN = "8664813567:AAEkqGdXuyrS43Pjfc1gB-KdVuOOReWrkGw";
 const TELEGRAM_CHAT_ID = "7451263058";
 
-// Словари перевода
 const translations = {
     ru: {
         projectsLink: "Мои проекты",
@@ -20,7 +19,7 @@ const translations = {
         chatTitle: "Messenger",
         loginBtn: "Authorize",
         aboutTitle: "Michael Faraday",
-        faradayDesc: "Майкл Фарадей — выдающийся английский физик и химик, основоположник учения об электромагнитном поле.",
+        faradayDesc: "Майкл Фарадей — выдающийся английский физик и химик...",
         projectsTitle: "Selected Works",
         skillTech: "Arsenal",
         catsTitle: "Tavern Cats",
@@ -34,7 +33,7 @@ const translations = {
         chatTitle: "Messenger",
         loginBtn: "Authorize",
         aboutTitle: "Michael Faraday",
-        faradayDesc: "Michael Faraday was an English scientist who contributed to the study of electromagnetism.",
+        faradayDesc: "Michael Faraday was an English scientist...",
         projectsTitle: "Selected Works",
         skillTech: "Arsenal",
         catsTitle: "Tavern Cats",
@@ -51,20 +50,21 @@ let currentLang = 'ru';
 function toggleLang() {
     currentLang = currentLang === 'ru' ? 'en' : 'ru';
     document.getElementById('lang-icon').innerText = currentLang === 'ru' ? "🇷🇺" : "🇺🇸";
-    
-    // Обновление всех текстов на странице
     document.querySelectorAll('[data-lang]').forEach(el => {
         const key = el.getAttribute('data-lang');
-        if (translations[currentLang][key]) {
-            el.innerText = translations[currentLang][key];
-        }
+        if (translations[currentLang][key]) el.innerText = translations[currentLang][key];
     });
 }
 
+// Улучшенная функция переключения страниц
 function showPage(pageId) {
     document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
     const target = document.getElementById(pageId);
-    if(target) target.classList.add('active');
+    if(target) {
+        target.classList.add('active');
+        // Сброс скролла при переключении
+        document.getElementById('main-scroll').scrollTop = 0;
+    }
 }
 
 auth.onAuthStateChanged(user => {
@@ -88,7 +88,6 @@ auth.onAuthStateChanged(user => {
     } else {
         if (loginForm) loginForm.style.display = 'block';
         if (userInfo) userInfo.style.display = 'none';
-        if (logoutBtn) logoutBtn.style.display = 'none';
         if (userNameDisplay) userNameDisplay.innerText = "Guest";
     }
 });
@@ -113,9 +112,7 @@ async function sendMessage() {
     if (!text || !auth.currentUser) return;
 
     await db.collection("users").doc(auth.currentUser.uid).collection("messages").add({
-        message: text,
-        sender: "user",
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        message: text, sender: "user", timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
 
     const tgMessage = `👤 ${auth.currentUser.email}\n💬 ${text}`;
@@ -156,8 +153,12 @@ async function fetchCats() {
     } catch (e) { console.error(e); }
 }
 
+// Принудительный запуск видео
 document.addEventListener('DOMContentLoaded', () => {
     const video = document.getElementById('bg-video');
-    document.body.addEventListener('click', () => { if (video) video.play(); }, { once: true });
+    const playVideo = () => { if (video) video.play(); };
+    document.body.addEventListener('click', playVideo, { once: true });
+    // Проверка на запуск
+    setTimeout(playVideo, 1000);
     fetchCats();
 });
