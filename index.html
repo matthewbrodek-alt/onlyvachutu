@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nitro Hub | Professional Portfolio</title>
+    <title>Nitro Hub | Professional Edition</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -37,7 +37,7 @@
     <div id="main-content" class="view-container active">
         <section class="hero-section">
             <h1 data-lang="heroTitle">NEW DIGITAL STANDARD</h1>
-            <p data-lang="heroSub">Premium interfaces & architectures.</p>
+            <p data-lang="heroSub">Premium interfaces & scalable architectures.</p>
         </section>
 
         <div class="main-grid">
@@ -84,7 +84,10 @@
                 <div class="card tech-card">
                     <h3 data-lang="skillTech">Arsenal</h3>
                     <div class="tech-tags">
-                        <span class="neon-border">React</span> <span class="neon-border">Firebase</span> <span class="neon-border">Python</span> <span class="neon-border">UI/UX</span>
+                        <span class="neon-border">React</span> 
+                        <span class="neon-border">Firebase</span> 
+                        <span class="neon-border">Python</span> 
+                        <span class="neon-border">UI/UX</span>
                     </div>
                 </div>
                 <div class="card cats-card">
@@ -102,15 +105,25 @@
             <div class="preview-grid">
                 <div class="card preview-card neon-hover">
                     <div class="preview-header kotokafe-bg">
-                        <div class="preview-overlay-btn"><a href="https://kotokafe-kotiki-i-lyudi.webflow.io/career" target="_blank" class="n-btn primary">Open</a></div>
+                        <div class="preview-overlay-btn">
+                            <a href="https://kotokafe-kotiki-i-lyudi.webflow.io/career" target="_blank" class="n-btn primary">Open Site</a>
+                        </div>
                     </div>
-                    <div class="preview-body"><h3>Котики и люди</h3><p>Webflow Career Page</p></div>
+                    <div class="preview-body">
+                        <h3>Котики и люди</h3>
+                        <p>Webflow Career Platform</p>
+                    </div>
                 </div>
                 <div class="card preview-card neon-hover">
                     <div class="preview-header team-bg">
-                        <div class="preview-overlay-btn"><a href="https://matthewbrodek-alt.github.io/new-project/#team" target="_blank" class="n-btn primary">Open</a></div>
+                        <div class="preview-overlay-btn">
+                            <a href="https://matthewbrodek-alt.github.io/new-project/#team" target="_blank" class="n-btn primary">Open Site</a>
+                        </div>
                     </div>
-                    <div class="preview-body"><h3>Team Showcase</h3><p>GitHub Team Section</p></div>
+                    <div class="preview-body">
+                        <h3>Team Showcase</h3>
+                        <p>GitHub Interactive Section</p>
+                    </div>
                 </div>
             </div>
             <button onclick="showPage('main')" class="n-btn secondary" style="margin-top:30px;" data-lang="backBtn">← Back</button>
@@ -119,6 +132,7 @@
 </main>
 
 <button id="unmute-btn" class="neon-border" onclick="toggleSound()">🔊</button>
+
 <script src="script.js"></script>
 </body>
 </html>
