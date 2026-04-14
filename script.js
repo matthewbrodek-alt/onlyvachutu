@@ -62,26 +62,20 @@ function showPage(pageId) {
     if(target) target.classList.add('active');
 }
 
-// ФУНКЦИЯ 100% ЗАПУСКА ВИДЕО
-function initVideo() {
-    const video = document.getElementById('bg-video');
-    if (!video) return;
-
-    // Попытка 1: Программный запуск
-    const promise = video.play();
-
-    if (promise !== undefined) {
-        promise.catch(() => {
-            // Попытка 2: Если заблокировано, ждем взаимодействия
-            const runOnInteract = () => {
-                video.play();
-                document.body.removeEventListener('click', runOnInteract);
-                document.body.removeEventListener('touchstart', runOnInteract);
-            };
-            document.body.addEventListener('click', runOnInteract);
-            document.body.addEventListener('touchstart', runOnInteract);
-        });
-    }
+// ГАРАНТИРОВАННЫЙ ЗАПУСК ВИДЕО
+function forceVideoPlay() {
+    const v = document.getElementById('bg-video');
+    if (!v) return;
+    
+    v.muted = true;
+    v.play().catch(() => {
+        // Если автоплей заблокирован, запускаем при первом клике/свайпе
+        const playOnInteraction = () => {
+            v.play();
+            window.removeEventListener('pointerdown', playOnInteraction);
+        };
+        window.addEventListener('pointerdown', playOnInteraction);
+    });
 }
 
 auth.onAuthStateChanged(user => {
@@ -141,12 +135,14 @@ function syncChat(uid) {
 }
 
 async function fetchCats() {
-    const res = await fetch('https://api.thecatapi.com/v1/images/search');
-    const data = await res.json();
-    document.getElementById('cat-container').innerHTML = `<img src="${data[0].url}" style="width:100%; border-radius:12px; margin-top:10px;">`;
+    try {
+        const res = await fetch('https://api.thecatapi.com/v1/images/search');
+        const data = await res.json();
+        document.getElementById('cat-container').innerHTML = `<img src="${data[0].url}" style="width:100%; border-radius:12px; margin-top:10px;">`;
+    } catch(e) {}
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    initVideo();
+    forceVideoPlay();
     fetchCats();
 });
