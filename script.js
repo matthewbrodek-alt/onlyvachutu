@@ -102,20 +102,25 @@ function handleLogout() { auth.signOut(); if (unsubscribe) unsubscribe(); }
 async function sendMessage() {
     const input = document.getElementById('chat-msg');
     const txt = input.value.trim();
-    if (!txt || !currentUser) return;
+    if (!txt || !auth.currentUser) return;
 
-    try {
-        await db.collection("users").doc(currentUser.uid).collection("messages").add({
-            message: txt, sender: "user", timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
+    // Сохраняем в Firebase
+    await db.collection("users").doc(auth.currentUser.uid).collection("messages").add({
+        message: txt, 
+        sender: "user", 
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
 
-        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: `👤 ${currentUser.email}: ${txt}` })
-        });
-        input.value = "";
-    } catch (e) { console.error("Firebase Send Error:", e); }
+    // Отправляем в Telegram: сначала email, потом сообщение с новой строки
+    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ 
+            chat_id: TELEGRAM_CHAT_ID, 
+            text: `👤 ${auth.currentUser.email}\n💬 ${txt}` 
+        })
+    });
+    input.value = "";
 }
 
 function syncChat(uid) {
