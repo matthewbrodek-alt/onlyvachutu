@@ -27,9 +27,11 @@
         <a href="#" class="ads-link nitro-glow" onclick="showPage('ads-page')" data-lang="projectsLink">Мои проекты</a>
     </div>
     <div class="nav-right">
-        <button id="lang-btn" class="lang-globe-btn" onclick="toggleLang()">
-            <span id="lang-icon">🇺🇸</span>
-        </button>
+        <div class="lang-switcher">
+            <span id="lang-ru" class="lang-option active" onclick="setLang('ru')">RU</span>
+            <span class="lang-divider">|</span>
+            <span id="lang-en" class="lang-option" onclick="setLang('en')">EN</span>
+        </div>
     </div>
 </nav>
 
@@ -57,16 +59,11 @@
                     </div>
                     <div id="user-info" style="display:none;" class="chat-inner">
                         <div id="chat-window" class="chat-feed"></div>
-                        
                         <div class="emoji-bar">
-                            <span onclick="addEmoji('😊')">😊</span>
-                            <span onclick="addEmoji('🔥')">🔥</span>
-                            <span onclick="addEmoji('💻')">💻</span>
-                            <span onclick="addEmoji('✨')">✨</span>
-                            <span onclick="addEmoji('🤝')">🤝</span>
-                            <span onclick="addEmoji('🚀')">🚀</span>
+                            <span onclick="addEmoji('😊')">😊</span><span onclick="addEmoji('🔥')">🔥</span>
+                            <span onclick="addEmoji('💻')">💻</span><span onclick="addEmoji('✨')">✨</span>
+                            <span onclick="addEmoji('🤝')">🤝</span><span onclick="addEmoji('🚀')">🚀</span>
                         </div>
-
                         <div class="chat-input-row">
                             <input type="text" id="chat-msg" data-lang="chatPlaceholder" placeholder="Напишите сообщение..." class="n-input">
                             <button onclick="sendMessage()" class="send-btn">➔</button>
@@ -105,18 +102,17 @@
                         <span>React</span> <span>Firebase</span> <span>Python</span> <span>Node</span>
                     </div>
                 </div>
-                <div class="card cats-card">
-                    <h3 data-lang="catsTitle">Таверна Котиков</h3>
-                    <div id="cat-container" class="cat-box"></div>
-                    <button onclick="fetchCats()" class="n-btn secondary" data-lang="catsBtn" style="margin-top: 15px; width: 100%;">Призвать</button>
+                <div class="card cars-card">
+                    <h3 data-lang="carsTitle">Это может быть твоим</h3>
+                    <div id="car-container" class="cat-box"></div>
+                    <button onclick="fetchCars()" class="n-btn secondary" data-lang="carsBtn" style="margin-top: 15px; width: 100%;">Призвать</button>
                 </div>
             </div>
         </div>
     </div>
 
-   <!-- КАРУСЕЛЬ -->
    <section class="carousel-section" id="carousel-section">
-       <h2 class="carousel-title nitro-glow">ГАЛЕРЕЯ</h2>
+       <h2 class="carousel-title nitro-glow" data-lang="staffTitle">НАШИ СОТРУДНИКИ</h2>
        <div class="carousel-stage">
            <div class="carousel-scene" id="carousel-scene"></div>
        </div>
@@ -133,7 +129,6 @@
                 <h3 class="nitro-glow" data-lang="teamProject">Командный проект</h3>
                 <iframe src="https://matthewbrodek-alt.github.io/new-project/#team" frameborder="0"></iframe>
             </div>
-            
             <div class="card project-preview-card">
                 <h3 class="nitro-glow" data-lang="careerPortal">Портал карьеры</h3>
                 <a href="https://kotokafe-kotiki-i-lyudi.webflow.io/career" target="_blank" class="project-preview-link">
