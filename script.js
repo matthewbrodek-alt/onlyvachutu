@@ -31,7 +31,6 @@ const translations = {
         staffTitle: "НАШИ СОТРУДНИКИ",
         teamProject: "Командный проект",
         careerPortal: "Портал карьеры",
-        openSite: "Открыть сайт ➔",
         backBtn: "← Назад"
     },
     en: {
@@ -54,7 +53,6 @@ const translations = {
         staffTitle: "OUR EMPLOYEES",
         teamProject: "Team Project",
         careerPortal: "Career Portal",
-        openSite: "Open Site ➔",
         backBtn: "← Back"
     }
 };
@@ -107,10 +105,6 @@ async function sendMessage() {
     input.value = "";
 }
 
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && document.activeElement.id === 'chat-msg') { sendMessage(); }
-});
-
 auth.onAuthStateChanged(user => {
     const loginForm = document.getElementById('login-form');
     const userInfo = document.getElementById('user-info');
@@ -158,7 +152,7 @@ async function fetchCars() {
 window.onload = () => { fetchCars(); initCarousel(); };
 
 function initCarousel() {
-    // ВЕРНУЛ ОРИГИНАЛЬНЫЙ МАССИВ ИЗ v5.0
+    // ВОССТАНОВЛЕНЫ ИСХОДНЫЕ ДАННЫЕ v5.0
     const IMAGES = [
         { src: 'gallery/photo1.jpg', label: 'ФОТО 1' },
         { src: 'gallery/photo2.jpg', label: 'ФОТО 2' },
@@ -184,7 +178,7 @@ function initCarousel() {
         img.src = item.src;
         img.onload = () => div.innerHTML = `<img src="${item.src}" alt="${item.label}">`;
         img.onerror = () => {
-            div.innerHTML = `<div class="c-card-placeholder"><span style="font-size:26px">🖼</span><span>${item.label}</span></div>`;
+            div.innerHTML = `<div class="c-card-placeholder">🖼 ${item.label}</div>`;
         };
         scene.appendChild(div);
         els.push(div);
@@ -199,7 +193,7 @@ function initCarousel() {
             const y = CY + RY * 0.36 * Math.sin(theta) - 95;
             const s = 0.5 + 0.5 * ((Math.sin(theta) + 1) / 2);
             el.style.left = x + 'px'; el.style.top = y + 'px';
-            el.style.transform = `scale(${s.toFixed(3)}) rotate(${(Math.cos(theta) * -10).toFixed(1)}deg)`;
+            el.style.transform = `scale(${s.toFixed(3)})`;
             el.style.zIndex = Math.round(s * 100);
             el.style.opacity = (0.4 + 0.6 * ((Math.sin(theta) + 1) / 2)).toFixed(3);
         });
