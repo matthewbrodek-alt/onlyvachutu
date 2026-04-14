@@ -15,29 +15,43 @@ const translations = {
         projectsLink: "Мои проекты",
         heroTitle: "НОВЫЙ СТАНДАРТ ЦИФРОВОГО ОПЫТА",
         heroSub: "Премиальные интерфейсы и архитектура.",
+        statusOnline: "В СЕТИ",
         welcomeSub: "Маг Автоматизации",
-        chatTitle: "Messenger",
-        loginBtn: "Authorize",
-        aboutTitle: "Michael Faraday",
-        faradayDesc: "Майкл Фарадей — английский физик и химик...",
-        projectsTitle: "Selected Works",
-        skillTech: "Arsenal",
-        catsTitle: "Tavern Cats",
-        catsBtn: "Summon"
+        chatTitle: "Мессенджер",
+        chatPlaceholder: "Напишите сообщение...",
+        loginBtn: "Авторизоваться",
+        aboutTitle: "Майкл Фарадей",
+        faradayDesc: "Майкл Фарадей — выдающийся английский физик и химик, основоположник учения об электромагнитном поле.",
+        faradayQuote: '"Ничто не слишком прекрасно, чтобы быть истинным..."',
+        projectsTitle: "Избранные работы",
+        skillTech: "Арсенал",
+        catsTitle: "Таверна Котиков",
+        catsBtn: "Призвать",
+        teamProject: "Командный проект",
+        careerPortal: "Портал карьеры",
+        openSite: "Открыть сайт ➔",
+        backBtn: "← Назад"
     },
     en: {
         projectsLink: "My Projects",
         heroTitle: "NEW DIGITAL STANDARD",
         heroSub: "Premium interfaces and architecture.",
+        statusOnline: "ONLINE",
         welcomeSub: "Automation Mage",
         chatTitle: "Messenger",
+        chatPlaceholder: "Type a message...",
         loginBtn: "Authorize",
         aboutTitle: "Michael Faraday",
-        faradayDesc: "Michael Faraday was an English scientist...",
+        faradayDesc: "Michael Faraday was an English scientist who contributed to the study of electromagnetism and electrochemistry.",
+        faradayQuote: '"Nothing is too wonderful to be true..."',
         projectsTitle: "Selected Works",
         skillTech: "Arsenal",
         catsTitle: "Tavern Cats",
-        catsBtn: "Summon"
+        catsBtn: "Summon",
+        teamProject: "Team Project",
+        careerPortal: "Career Portal",
+        openSite: "Open Site ➔",
+        backBtn: "← Back"
     }
 };
 
@@ -49,12 +63,19 @@ let currentLang = 'ru';
 
 function toggleLang() {
     currentLang = currentLang === 'ru' ? 'en' : 'ru';
-    // Теперь кнопка всегда показывает флаг того языка, на который можно ПЕРЕКЛЮЧИТЬСЯ
+    // Кнопка показывает флаг языка, на который МОЖНО переключиться
     document.getElementById('lang-icon').innerText = currentLang === 'ru' ? "🇺🇸" : "🇷🇺";
     
     document.querySelectorAll('[data-lang]').forEach(el => {
         const key = el.getAttribute('data-lang');
-        if (translations[currentLang][key]) el.innerText = translations[currentLang][key];
+        const text = translations[currentLang][key];
+        if (text) {
+            if (el.tagName === 'INPUT') {
+                el.placeholder = text;
+            } else {
+                el.innerText = text;
+            }
+        }
     });
 }
 
@@ -64,7 +85,6 @@ function showPage(pageId) {
     if(target) target.classList.add('active');
 }
 
-// ГАРАНТИРОВАННЫЙ ЗАПУСК
 function initVideo() {
     const v = document.getElementById('bg-video');
     if (!v) return;
