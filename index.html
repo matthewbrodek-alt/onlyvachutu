@@ -3,29 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nitro Hub | Faraday Edition v5.0</title>
-    
+    <title>Nitro Hub | Faraday Edition v6.0</title>
+
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+<!-- ══════════════ ФОНОВОЕ ВИДЕО ══════════════ -->
 <div class="video-bg-wrapper">
     <video id="bg-video" autoplay loop muted playsinline preload="auto">
         <source src="bg_video.mp4" type="video/mp4">
     </video>
+    <!-- Запасной статичный фон если нет видео -->
     <div class="video-overlay"></div>
 </div>
 
-<nav class="top-nav">
-    <div class="logo nitro-glow" onclick="showPage('main-content')" style="cursor: pointer;">NITRO<span>HUB</span></div>
-    <div class="nav-center">
-        <a href="#" class="ads-link nitro-glow" onclick="showPage('ads-page')" data-lang="projectsLink">Мои проекты</a>
+<!-- ══════════════ НАВИГАЦИЯ ══════════════ -->
+<nav class="top-nav" id="top-nav">
+    <div class="logo nitro-glow" onclick="showPage('home')" style="cursor:pointer;">NITRO<span>HUB</span></div>
+
+    <div class="nav-links">
+        <a href="#" onclick="showPage('projects-page')" data-lang="nav_projects">Мои проекты</a>
+        <a href="#" onclick="showPage('about-page')" data-lang="nav_about">О нас</a>
+        <a href="#" onclick="showPage('services-page')" data-lang="nav_services">Услуги</a>
+        <a href="#" onclick="showPage('contacts-page')" data-lang="nav_contacts">Контакты</a>
     </div>
+
     <div class="nav-right">
         <div class="lang-switcher">
             <span id="lang-ru" class="lang-option active" onclick="setLang('ru')">RU</span>
@@ -35,94 +43,76 @@
     </div>
 </nav>
 
-<main class="dashboard" id="main-scroll">
+<!-- ══════════════ СТРАНИЦЫ ══════════════ -->
+<main class="site-main" id="site-main">
 
-    <!-- ГЛАВНАЯ СТРАНИЦА -->
-    <div id="main-content" class="view-container active">
-        <section class="hero-section">
-            <h1 data-lang="heroTitle">НОВЫЙ СТАНДАРТ ЦИФРОВОГО ОПЫТА</h1>
-            <p data-lang="heroSub">Премиальные интерфейсы и архитектура.</p>
+    <!-- ▸▸ ГЛАВНАЯ ◂◂ -->
+    <div id="home" class="page active">
+
+        <!-- HERO -->
+        <section class="hero">
+            <div class="hero-left">
+                <p class="hero-eyebrow nitro-glow" data-lang="hero_eyebrow">ПРЕМИАЛЬНЫЕ ИНТЕРФЕЙСЫ И АРХИТЕКТУРА</p>
+                <h1 class="hero-title" data-lang="hero_title">НОВЫЙ СТАНДАРТ<br>ЦИФРОВОГО ОПЫТА</h1>
+                <p class="hero-sub" data-lang="hero_sub">Мы создаём премиальные интерфейсы и архитектурные решения, которые задают будущее цифрового мира.</p>
+                <div class="hero-btns">
+                    <button class="btn-primary" onclick="showPage('projects-page')" data-lang="btn_projects">Смотреть проекты →</button>
+                    <button class="btn-outline contact-trigger" onclick="openMessenger()" data-lang="btn_contact">
+                        Связаться с нами <span class="pulse-dot"></span>
+                    </button>
+                </div>
+            </div>
+            <div class="hero-right">
+                <!-- Декоративный куб из CSS -->
+                <div class="hero-cube-wrap">
+                    <div class="hero-cube">
+                        <div class="cube-face front"></div>
+                        <div class="cube-face back"></div>
+                        <div class="cube-face right"></div>
+                        <div class="cube-face left"></div>
+                        <div class="cube-face top"></div>
+                        <div class="cube-face bottom"></div>
+                    </div>
+                    <div class="cube-glow"></div>
+                </div>
+            </div>
         </section>
 
-        <div class="main-grid">
-            <!-- ЛЕВАЯ КОЛОНКА -->
-            <div class="col-side">
-                <div class="card profile-card">
-                    <div class="status-badge nitro-glow" data-lang="statusOnline">В СЕТИ</div>
-                    <h2 id="user-name">Guest</h2>
-                    <p class="sub" data-lang="welcomeSub">Маг Автоматизации</p>
-                </div>
-                
-                <div class="card chat-card">
-                    <h3 class="nitro-glow" data-lang="chatTitle">Мессенджер</h3>
-                    <div id="login-form" class="auth-box">
-                        <input type="email" id="auth-email" placeholder="Email" class="n-input">
-                        <input type="password" id="auth-pass" placeholder="Password" class="n-input">
-                        <button onclick="handleLogin()" class="n-btn primary" data-lang="loginBtn">Авторизоваться</button>
-                    </div>
-                    <div id="user-info" style="display:none;" class="chat-inner">
-                        <div id="chat-window" class="chat-feed"></div>
-                        
-                        <div class="emoji-bar">
-                            <span onclick="addEmoji('😊')">😊</span>
-                            <span onclick="addEmoji('🔥')">🔥</span>
-                            <span onclick="addEmoji('💻')">💻</span>
-                            <span onclick="addEmoji('✨')">✨</span>
-                            <span onclick="addEmoji('🤝')">🤝</span>
-                            <span onclick="addEmoji('🚀')">🚀</span>
-                        </div>
-
-                        <div class="chat-input-row">
-                            <input type="text" id="chat-msg" data-lang="chatPlaceholder" placeholder="Напишите сообщение..." class="n-input">
-                            <button onclick="sendMessage()" class="send-btn">➔</button>
-                        </div>
-                    </div>
+        <!-- ФИЧИ -->
+        <section class="features-bar">
+            <div class="feature-item">
+                <div class="feature-icon">⬡</div>
+                <div>
+                    <strong data-lang="feat1_title">Инновации</strong>
+                    <p data-lang="feat1_desc">Используем передовые технологии для лучших результатов.</p>
                 </div>
             </div>
-
-            <!-- ЦЕНТРАЛЬНАЯ КОЛОНКА -->
-            <div class="col-center">
-                <div class="card projects-card">
-                    <h3 class="nitro-glow" data-lang="projectsTitle">ПРЯМАЯ СВЯЗЬ</h3>
-                    <div class="contact-info-box">
-                        <p data-lang="projectsDesc" style="line-height: 1.6; color: rgba(255,255,255,0.7); margin-bottom: 15px;">
-                            Вы можете написать мне прямо здесь. Мессенджер синхронизирован с моими личными каналами связи для мгновенного ответа.
-                        </p>
-                        <div class="sync-indicator">
-                            <span class="pulse-dot"></span>
-                            <span style="font-size: 11px; color: var(--accent); letter-spacing: 2px; font-weight: 800;">SYSTEM SYNCED</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card about-card">
-                    <h3 data-lang="aboutTitle">Майкл Фарадей</h3>
-                    <div class="faraday-content">
-                        <p data-lang="faradayDesc">Выдающийся английский физик и химик, основоположник учения об электромагнитном поле.</p>
-                        <div class="quote" data-lang="faradayQuote">"Ничто не слишком прекрасно, чтобы быть истинным..."</div>
-                    </div>
+            <div class="feature-item">
+                <div class="feature-icon">◈</div>
+                <div>
+                    <strong data-lang="feat2_title">Надёжность</strong>
+                    <p data-lang="feat2_desc">Гарантируем стабильность и безопасность каждого решения.</p>
                 </div>
             </div>
-
-            <!-- ПРАВАЯ КОЛОНКА -->
-            <div class="col-side">
-                <div class="card tech-card">
-                    <h3 class="nitro-glow" data-lang="skillTech">Арсенал</h3>
-                    <div class="tech-tags">
-                        <span>React</span> <span>Firebase</span> <span>Python</span> <span>Node</span>
-                    </div>
-                </div>
-                <div class="card cars-card">
-                    <h3 data-lang="carsTitle">Это может быть твоим</h3>
-                    <div id="car-container" class="cat-box"></div>
-                    <button onclick="fetchCars()" class="n-btn secondary" data-lang="carsBtn" style="margin-top: 15px; width: 100%;">Призвать</button>
+            <div class="feature-item">
+                <div class="feature-icon">✦</div>
+                <div>
+                    <strong data-lang="feat3_title">Качество</strong>
+                    <p data-lang="feat3_desc">Внимание к деталям и высочайшие стандарты в каждом проекте.</p>
                 </div>
             </div>
-        </div>
+            <div class="feature-item">
+                <div class="feature-icon">⚡</div>
+                <div>
+                    <strong data-lang="feat4_title">Скорость</strong>
+                    <p data-lang="feat4_desc">Быстрая реализация проектов без потери качества.</p>
+                </div>
+            </div>
+        </section>
 
-        <!-- КАРУСЕЛЬ — только на главной, в нижней части -->
-        <section class="carousel-section" id="carousel-section">
-            <h2 class="carousel-title nitro-glow" data-lang="staffTitle">НАШИ СОТРУДНИКИ</h2>
+        <!-- КАРУСЕЛЬ — только на главной -->
+        <section class="carousel-section">
+            <h2 class="section-label nitro-glow" data-lang="carousel_title">НАШИ СОТРУДНИКИ</h2>
             <div class="carousel-stage">
                 <div class="carousel-scene" id="carousel-scene"></div>
             </div>
@@ -133,31 +123,192 @@
             </div>
         </section>
 
-    </div><!-- /main-content -->
+    </div><!-- /home -->
 
-    <!-- СТРАНИЦА "МОИ ПРОЕКТЫ" — без карусели -->
-    <div id="ads-page" class="view-container">
-        <div class="projects-preview-grid">
-            <div class="card project-preview-card">
-                <h3 class="nitro-glow" data-lang="teamProject">Командный проект</h3>
+    <!-- ▸▸ МОИ ПРОЕКТЫ ◂◂ -->
+    <div id="projects-page" class="page inner-page">
+        <div class="inner-header">
+            <button class="back-btn" onclick="showPage('home')">← <span data-lang="back">Назад</span></button>
+            <h2 class="nitro-glow" data-lang="nav_projects">Мои проекты</h2>
+        </div>
+        <div class="projects-grid">
+            <div class="card project-card">
                 <iframe src="https://matthewbrodek-alt.github.io/new-project/#team" frameborder="0"></iframe>
             </div>
-            
-            <div class="card project-preview-card">
-                <h3 class="nitro-glow" data-lang="careerPortal">Портал карьеры</h3>
+            <div class="card project-card">
                 <a href="https://kotokafe-kotiki-i-lyudi.webflow.io/career" target="_blank" class="project-preview-link">
                     <div class="project-screenshot-container" style="background-image: url('career_preview.jpg');">
                         <div class="project-screenshot-overlay">
-                            <span data-lang="openSite">Открыть сайт ➔</span>
+                            <span data-lang="open_site">Открыть сайт ➔</span>
                         </div>
                     </div>
                 </a>
             </div>
         </div>
-        <button onclick="showPage('main-content')" class="n-btn secondary" style="margin-top: 20px;" data-lang="backBtn">← Назад</button>
+    </div>
+
+    <!-- ▸▸ О НАС ◂◂ -->
+    <div id="about-page" class="page inner-page">
+        <div class="inner-header">
+            <button class="back-btn" onclick="showPage('home')">← <span data-lang="back">Назад</span></button>
+            <h2 class="nitro-glow" data-lang="nav_about">О нас</h2>
+        </div>
+        <div class="about-content card">
+            <div class="about-avatar">🐱</div>
+            <div class="about-text">
+                <h3 data-lang="about_name">Михаил «Faraday» Романов</h3>
+                <p class="about-role nitro-glow" data-lang="about_role">Full-Stack Dev · Digital Alchemist · Cat Enthusiast</p>
+                <p data-lang="about_bio1">Привет. Я тот самый человек, который в 3 часа ночи спорит с компилятором, держа на коленях кота. Победитель в этом споре всегда кот — но код в итоге работает.</p>
+                <p data-lang="about_bio2">Более 7 лет я превращаю хаос требований в элегантные цифровые решения: от микросервисных архитектур до анимаций, от которых у дизайнеров перехватывает дыхание. Мой стек — React, Firebase, Python, Node.js и бесконечная любовь к деталям.</p>
+                <p data-lang="about_bio3">Я верю, что каждый интерфейс должен быть живым — как хороший котик: тёплым, отзывчивым и немного непредсказуемым. Если ваш проект скучный, я его починю. Если он уже хорош — я сделаю его незабываемым.</p>
+                <div class="about-quote" data-lang="about_quote">"Ничто не слишком прекрасно, чтобы быть истинным" — Майкл Фарадей.<br>И я в это искренне верю. Особенно когда смотрю на котиков.</div>
+                <div class="tech-tags" style="margin-top:25px;">
+                    <span>React</span><span>Firebase</span><span>Python</span><span>Node.js</span><span>TypeScript</span><span>Docker</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ▸▸ УСЛУГИ ◂◂ -->
+    <div id="services-page" class="page inner-page">
+        <div class="inner-header">
+            <button class="back-btn" onclick="showPage('home')">← <span data-lang="back">Назад</span></button>
+            <h2 class="nitro-glow" data-lang="nav_services">Услуги</h2>
+        </div>
+        <div class="services-grid">
+            <div class="card service-card">
+                <div class="service-icon">⚡</div>
+                <h3 data-lang="svc1_title">Веб-разработка</h3>
+                <p data-lang="svc1_desc">Премиальные сайты и веб-приложения с нуля до деплоя.</p>
+            </div>
+            <div class="card service-card">
+                <div class="service-icon">🔥</div>
+                <h3 data-lang="svc2_title">UI/UX Дизайн</h3>
+                <p data-lang="svc2_desc">Интерфейсы, которые не просто красивы, но и работают идеально.</p>
+            </div>
+            <div class="card service-card">
+                <div class="service-icon">🤖</div>
+                <h3 data-lang="svc3_title">Автоматизация</h3>
+                <p data-lang="svc3_desc">Боты, скрипты и интеграции, которые экономят ваше время.</p>
+            </div>
+            <div class="card service-card">
+                <div class="service-icon">☁️</div>
+                <h3 data-lang="svc4_title">Облачные решения</h3>
+                <p data-lang="svc4_desc">Архитектура, масштабирование, Firebase, AWS — выберем лучшее.</p>
+            </div>
+            <div class="card service-card service-card-wide">
+                <div class="service-icon">🌐</div>
+                <h3 data-lang="svc5_title">Всё что нужно в цифровой реальности</h3>
+                <p data-lang="svc5_desc">Сделаем всё что нужно в пределах цифровой реальности. Нестандартная задача? Именно это нас и вдохновляет. Опишите проблему — мы найдём решение.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ▸▸ КОНТАКТЫ / МЕССЕНДЖЕР ◂◂ -->
+    <div id="contacts-page" class="page inner-page">
+        <div class="inner-header">
+            <button class="back-btn" onclick="showPage('home')">← <span data-lang="back">Назад</span></button>
+            <h2 class="nitro-glow" data-lang="nav_contacts">Контакты</h2>
+        </div>
+        <div class="contacts-layout">
+            <!-- Инфо -->
+            <div class="card contact-info-card">
+                <div class="sync-indicator" style="margin-bottom:20px;">
+                    <span class="pulse-dot"></span>
+                    <span style="font-size:11px; color:var(--accent); letter-spacing:2px; font-weight:800;">SYSTEM SYNCED</span>
+                </div>
+                <p data-lang="contacts_desc" style="color:rgba(255,255,255,0.7); line-height:1.7; margin-bottom:20px;">
+                    Напишите мне прямо здесь — мессенджер синхронизирован с личными каналами для мгновенного ответа.
+                </p>
+                <div class="profile-mini">
+                    <div class="status-badge nitro-glow" data-lang="statusOnline">В СЕТИ</div>
+                    <h3 id="user-name-contacts">Guest</h3>
+                </div>
+            </div>
+
+            <!-- Мессенджер -->
+            <div class="card messenger-card">
+                <h3 class="nitro-glow" data-lang="chatTitle">Мессенджер</h3>
+
+                <div id="login-form" class="auth-box">
+                    <input type="email" id="auth-email" placeholder="Email" class="n-input">
+                    <input type="password" id="auth-pass" placeholder="Password" class="n-input">
+                    <button onclick="handleLogin()" class="btn-primary" style="width:100%;" data-lang="loginBtn">Авторизоваться</button>
+                </div>
+
+                <div id="user-info" style="display:none;" class="chat-inner">
+                    <div id="chat-window" class="chat-feed"></div>
+
+                    <!-- Стикеры -->
+                    <div class="emoji-bar">
+                        <span onclick="addEmoji('😊')">😊</span>
+                        <span onclick="addEmoji('🔥')">🔥</span>
+                        <span onclick="addEmoji('💻')">💻</span>
+                        <span onclick="addEmoji('✨')">✨</span>
+                        <span onclick="addEmoji('🤝')">🤝</span>
+                        <span onclick="addEmoji('🚀')">🚀</span>
+                        <span onclick="addEmoji('🐱')">🐱</span>
+                        <span onclick="addEmoji('💡')">💡</span>
+                        <span onclick="addEmoji('⚡')">⚡</span>
+                        <span onclick="addEmoji('🎯')">🎯</span>
+                        <span onclick="addEmoji('👾')">👾</span>
+                        <span onclick="addEmoji('🌙')">🌙</span>
+                        <span onclick="addEmoji('💎')">💎</span>
+                        <span onclick="addEmoji('🦾')">🦾</span>
+                        <span onclick="addEmoji('🍕')">🍕</span>
+                        <span onclick="addEmoji('❤️')">❤️</span>
+                    </div>
+
+                    <div class="chat-input-row">
+                        <input type="text" id="chat-msg" placeholder="Напишите сообщение..." class="n-input" data-lang="chatPlaceholder">
+                        <button onclick="sendMessage()" class="send-btn">➔</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
 </main>
+
+<!-- ══════════════ МОДАЛЬНЫЙ МЕССЕНДЖЕР (кнопка "Связаться") ══════════════ -->
+<div id="messenger-modal" class="modal-overlay" onclick="closeMessengerIfOutside(event)">
+    <div class="modal-box card">
+        <button class="modal-close" onclick="closeMessenger()">✕</button>
+        <h3 class="nitro-glow" data-lang="chatTitle">Мессенджер</h3>
+
+        <div id="modal-login-form" class="auth-box">
+            <input type="email" id="modal-auth-email" placeholder="Email" class="n-input">
+            <input type="password" id="modal-auth-pass" placeholder="Password" class="n-input">
+            <button onclick="handleLoginModal()" class="btn-primary" style="width:100%;" data-lang="loginBtn">Авторизоваться</button>
+        </div>
+
+        <div id="modal-user-info" style="display:none;" class="chat-inner">
+            <div id="modal-chat-window" class="chat-feed"></div>
+            <div class="emoji-bar">
+                <span onclick="addEmojiModal('😊')">😊</span>
+                <span onclick="addEmojiModal('🔥')">🔥</span>
+                <span onclick="addEmojiModal('💻')">💻</span>
+                <span onclick="addEmojiModal('✨')">✨</span>
+                <span onclick="addEmojiModal('🤝')">🤝</span>
+                <span onclick="addEmojiModal('🚀')">🚀</span>
+                <span onclick="addEmojiModal('🐱')">🐱</span>
+                <span onclick="addEmojiModal('💡')">💡</span>
+                <span onclick="addEmojiModal('⚡')">⚡</span>
+                <span onclick="addEmojiModal('🎯')">🎯</span>
+                <span onclick="addEmojiModal('👾')">👾</span>
+                <span onclick="addEmojiModal('🌙')">🌙</span>
+                <span onclick="addEmojiModal('💎')">💎</span>
+                <span onclick="addEmojiModal('🦾')">🦾</span>
+                <span onclick="addEmojiModal('🍕')">🍕</span>
+                <span onclick="addEmojiModal('❤️')">❤️</span>
+            </div>
+            <div class="chat-input-row">
+                <input type="text" id="modal-chat-msg" placeholder="Напишите сообщение..." class="n-input">
+                <button onclick="sendMessageModal()" class="send-btn">➔</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="script.js"></script>
 </body>
