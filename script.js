@@ -31,6 +31,11 @@ const translations = {
         feat3_desc:     "Внимание к деталям и высочайшие стандарты в каждом проекте.",
         feat4_title:    "Скорость",
         feat4_desc:     "Быстрая реализация проектов без потери качества.",
+        nb_title:       "НАШИ ПОКАЗАТЕЛИ",
+        nb_m1:          "Довольных клиентов",
+        nb_m2:          "Завершённых проектов",
+        nb_m3:          "Лет опыта",
+        nb_m4:          "Поддержка клиентов",
         carousel_title: "НАШИ СОТРУДНИКИ",
         open_site:      "Открыть сайт ➔",
         about_name:     "Михаил «Faraday» Романов",
@@ -38,7 +43,7 @@ const translations = {
         about_bio1:     "Привет. Я тот самый человек, который в 3 часа ночи спорит с компилятором, держа на коленях кота. Победитель в этом споре всегда кот — но код в итоге работает.",
         about_bio2:     "Более 7 лет я превращаю хаос требований в элегантные цифровые решения: от микросервисных архитектур до анимаций, от которых у дизайнеров перехватывает дыхание. Мой стек — React, Firebase, Python, Node.js и бесконечная любовь к деталям.",
         about_bio3:     "Я верю, что каждый интерфейс должен быть живым — как хороший котик: тёплым, отзывчивым и немного непредсказуемым. Если ваш проект скучный, я его починю. Если он уже хорош — я сделаю его незабываемым.",
-        about_quote:    "«Ничто не слишком прекрасно, чтобы быть истинным» — Майкл Фарадей.\nИ я в это искренне верю. Особенно когда смотрю на котиков.",
+        about_quote:    "«Ничто не слишком прекрасно, чтобы быть истинным» — Майкл Фарадей.",
         svc1_title:     "Веб-разработка",
         svc1_desc:      "Премиальные сайты и веб-приложения с нуля до деплоя.",
         svc2_title:     "UI/UX Дизайн",
@@ -48,7 +53,7 @@ const translations = {
         svc4_title:     "Облачные решения",
         svc4_desc:      "Архитектура, масштабирование, Firebase, AWS — выберем лучшее.",
         svc5_title:     "Всё что нужно в цифровой реальности",
-        svc5_desc:      "Сделаем всё что нужно в пределах цифровой реальности. Нестандартная задача? Именно это нас и вдохновляет. Опишите проблему — мы найдём решение.",
+        svc5_desc:      "Нестандартная задача? Именно это нас и вдохновляет. Опишите проблему — мы найдём решение.",
         contacts_desc:  "Напишите мне прямо здесь — мессенджер синхронизирован с личными каналами для мгновенного ответа.",
         statusOnline:   "В СЕТИ",
         chatTitle:      "Мессенджер",
@@ -74,14 +79,19 @@ const translations = {
         feat3_desc:     "Attention to detail and the highest standards in every project.",
         feat4_title:    "Speed",
         feat4_desc:     "Fast project delivery without compromising quality.",
+        nb_title:       "OUR METRICS",
+        nb_m1:          "Happy Clients",
+        nb_m2:          "Projects Completed",
+        nb_m3:          "Years of Experience",
+        nb_m4:          "Client Support",
         carousel_title: "OUR TEAM",
         open_site:      "Open Site ➔",
         about_name:     "Michael «Faraday» Romanov",
         about_role:     "Full-Stack Dev · Digital Alchemist · Cat Enthusiast",
         about_bio1:     "Hi. I'm the person who argues with the compiler at 3am with a cat on their lap. The cat always wins the argument — but the code works in the end.",
-        about_bio2:     "For over 7 years I've been turning chaotic requirements into elegant digital solutions: from microservice architectures to animations that leave designers breathless. My stack — React, Firebase, Python, Node.js and infinite love for details.",
+        about_bio2:     "For over 7 years I've been turning chaotic requirements into elegant digital solutions: from microservice architectures to animations that leave designers breathless.",
         about_bio3:     "I believe every interface should be alive — like a good cat: warm, responsive, and a little unpredictable. If your project is boring, I'll fix it. If it's already good — I'll make it unforgettable.",
-        about_quote:    "\"Nothing is too wonderful to be true\" — Michael Faraday.\nAnd I sincerely believe that. Especially when looking at cats.",
+        about_quote:    "\"Nothing is too wonderful to be true\" — Michael Faraday.",
         svc1_title:     "Web Development",
         svc1_desc:      "Premium websites and web apps from scratch to deployment.",
         svc2_title:     "UI/UX Design",
@@ -91,7 +101,7 @@ const translations = {
         svc4_title:     "Cloud Solutions",
         svc4_desc:      "Architecture, scaling, Firebase, AWS — we'll choose the best.",
         svc5_title:     "Everything in Digital Reality",
-        svc5_desc:      "We'll do everything needed within the digital realm. Non-standard task? That's exactly what inspires us. Describe the problem — we'll find a solution.",
+        svc5_desc:      "Non-standard task? That's exactly what inspires us. Describe the problem — we'll find a solution.",
         contacts_desc:  "Message me right here — the messenger is synced with my private channels for an instant response.",
         statusOnline:   "ONLINE",
         chatTitle:      "Messenger",
@@ -105,14 +115,13 @@ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db   = firebase.firestore();
 const auth = firebase.auth();
 let currentLang = 'ru';
-let chatUnsubscribe = null; // для отписки от snaphot
+let chatUnsubscribe = null;
 
 // ── i18n ──────────────────────────────────────────────────
 function setLang(lang) {
     currentLang = lang;
     document.querySelectorAll('.lang-option').forEach(el => el.classList.remove('active'));
-    document.getElementById(`lang-${lang}`).classList.add('active');
-
+    document.getElementById('lang-' + lang).classList.add('active');
     document.querySelectorAll('[data-lang]').forEach(el => {
         const key  = el.getAttribute('data-lang');
         const text = translations[currentLang][key];
@@ -127,10 +136,26 @@ function showPage(pageId) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const target = document.getElementById(pageId);
     if (target) target.classList.add('active');
-
-    // Прокрутка наверх
     const main = document.getElementById('site-main');
     if (main) main.scrollTop = 0;
+}
+
+// ── Мобильное меню ────────────────────────────────────────
+function toggleMobileNav() {
+    const burger  = document.getElementById('burger');
+    const nav     = document.getElementById('mobile-nav');
+    const overlay = document.getElementById('mobile-nav-overlay');
+    const isOpen  = nav.classList.contains('open');
+    burger.classList.toggle('open', !isOpen);
+    nav.classList.toggle('open', !isOpen);
+    overlay.classList.toggle('open', !isOpen);
+    document.body.style.overflow = isOpen ? '' : 'hidden';
+}
+function closeMobileNav() {
+    document.getElementById('burger').classList.remove('open');
+    document.getElementById('mobile-nav').classList.remove('open');
+    document.getElementById('mobile-nav-overlay').classList.remove('open');
+    document.body.style.overflow = '';
 }
 
 // ── Модальный мессенджер ──────────────────────────────────
@@ -156,13 +181,23 @@ function addEmojiModal(emoji) {
     if (el) { el.value += emoji; el.focus(); }
 }
 
-// ── Отправка (основной чат) ───────────────────────────────
-async function sendMessage() {
-    await _sendMsg('chat-msg');
-}
-async function sendMessageModal() {
-    await _sendMsg('modal-chat-msg');
-}
+// ── Единый keydown ────────────────────────────────────────
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        closeMessenger();
+        closeTeamModal();
+        closeMobileNav();
+    }
+    if (e.key === 'Enter') {
+        const id = document.activeElement && document.activeElement.id;
+        if (id === 'chat-msg')       sendMessage();
+        if (id === 'modal-chat-msg') sendMessageModal();
+    }
+});
+
+// ── Отправка сообщений ────────────────────────────────────
+async function sendMessage()      { await _sendMsg('chat-msg'); }
+async function sendMessageModal() { await _sendMsg('modal-chat-msg'); }
 
 async function _sendMsg(inputId) {
     const input = document.getElementById(inputId);
@@ -180,12 +215,12 @@ async function _sendMsg(inputId) {
             sender:    'user',
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
-        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        fetch('https://api.telegram.org/bot' + TELEGRAM_BOT_TOKEN + '/sendMessage', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 chat_id: TELEGRAM_CHAT_ID,
-                text: `👤 ${auth.currentUser.email}\n💬 ${text}`
+                text: '👤 ' + auth.currentUser.email + '\n💬 ' + text
             })
         }).catch(() => {});
     } catch (err) {
@@ -193,40 +228,22 @@ async function _sendMsg(inputId) {
     }
 }
 
-// ── Enter key ─────────────────────────────────────────────
-document.addEventListener('keydown', e => {
-    if (e.key !== 'Enter') return;
-    if (document.activeElement.id === 'chat-msg')       sendMessage();
-    if (document.activeElement.id === 'modal-chat-msg') sendMessageModal();
-});
-
-// Escape — закрыть модалку
-document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeMessenger();
-});
-
 // ── Auth ──────────────────────────────────────────────────
 auth.onAuthStateChanged(user => {
-    // Основная страница контактов
-    const lf = document.getElementById('login-form');
-    const ui = document.getElementById('user-info');
-    // Модалка
+    const lf  = document.getElementById('login-form');
+    const ui  = document.getElementById('user-info');
     const mlf = document.getElementById('modal-login-form');
     const mui = document.getElementById('modal-user-info');
 
     if (user) {
         const name = user.email.split('@')[0];
-        // Contacts page
-        if (lf) lf.style.display = 'none';
-        if (ui) ui.style.display = 'flex';
-        // Modal
+        if (lf)  lf.style.display  = 'none';
+        if (ui)  ui.style.display  = 'flex';
         if (mlf) mlf.style.display = 'none';
         if (mui) mui.style.display = 'flex';
-        // Profile name
         const uname = document.getElementById('user-name-contacts');
         if (uname) uname.innerText = name;
 
-        // Подписываемся на чат один раз
         if (chatUnsubscribe) chatUnsubscribe();
         chatUnsubscribe = db.collection('users').doc(user.uid).collection('messages')
             .orderBy('timestamp', 'asc')
@@ -235,10 +252,11 @@ auth.onAuthStateChanged(user => {
                 renderMessages(snap, 'modal-chat-window');
             });
     } else {
-        if (lf) lf.style.display = 'flex';
-        if (ui) ui.style.display = 'none';
+        if (lf)  lf.style.display  = 'flex';
+        if (ui)  ui.style.display  = 'none';
         if (mlf) mlf.style.display = 'flex';
         if (mui) mui.style.display = 'none';
+        if (chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
     }
 });
 
@@ -249,7 +267,7 @@ function renderMessages(snap, windowId) {
     snap.forEach(doc => {
         const m   = doc.data();
         const div = document.createElement('div');
-        div.className = `msg-box ${m.sender === 'user' ? 'sent' : 'received'}`;
+        div.className = 'msg-box ' + (m.sender === 'user' ? 'sent' : 'received');
         div.innerText = m.message;
         win.appendChild(div);
     });
@@ -280,38 +298,64 @@ async function _doLogin(email, pass) {
     }
 }
 
-// ── Карусель ──────────────────────────────────────────────
-function initCarousel() {
-    const IMAGES = [
-        { src: 'gallery/photo1.jpg', label: 'ФОТО 1' },
-        { src: 'gallery/photo2.jpg', label: 'ФОТО 2' },
-        { src: 'gallery/photo3.jpg', label: 'ФОТО 3' },
-        { src: 'gallery/photo4.jpg', label: 'ФОТО 4' },
-        { src: 'gallery/photo5.jpg', label: 'ФОТО 5' },
-        { src: 'gallery/photo6.jpg', label: 'ФОТО 6' },
-        { src: 'gallery/photo7.jpg', label: 'ФОТО 7' },
-        { src: 'gallery/photo8.jpg', label: 'ФОТО 8' },
-    ];
+// ── Карусель с командой и попапами ────────────────────────
+const TEAM = [
+    { name: 'Alex Chen',      role: 'Lead Developer',    emoji: '👨‍💻', status: 'В СЕТИ',  tags: ['React','Node.js','TypeScript'] },
+    { name: 'Maria Santos',   role: 'UI/UX Designer',    emoji: '👩‍🎨', status: 'В СЕТИ',  tags: ['Figma','Motion','Branding'] },
+    { name: 'Dmitri Volkov',  role: 'DevOps Engineer',   emoji: '👨‍🔧', status: 'ЗАНЯТ',   tags: ['Docker','AWS','CI/CD'] },
+    { name: 'Sara Kim',       role: 'Product Manager',   emoji: '👩‍💼', status: 'В СЕТИ',  tags: ['Agile','Roadmap','Analytics'] },
+    { name: 'Jordan Lee',     role: 'Full-Stack Dev',    emoji: '🧑‍💻', status: 'В СЕТИ',  tags: ['Vue','Python','Firebase'] },
+    { name: 'Felix Wagner',   role: 'Security Analyst',  emoji: '🕵️',  status: 'ОФЛАЙН', tags: ['Pentesting','OWASP','Audit'] },
+    { name: 'Yuki Tanaka',    role: 'Data Scientist',    emoji: '👩‍🔬', status: 'В СЕТИ',  tags: ['ML','Python','BigQuery'] },
+    { name: 'Nina Okonkwo',   role: 'Creative Director', emoji: '👩‍🎤', status: 'ЗАНЯТ',   tags: ['Brand','3D','Concept'] },
+];
 
+function openTeamModal(index) {
+    const member = TEAM[index];
+    document.getElementById('tm-avatar').innerText = member.emoji;
+    document.getElementById('tm-name').innerText   = member.name;
+    document.getElementById('tm-role').innerText   = member.role;
+    document.getElementById('tm-status').innerText = member.status;
+    const tags = document.getElementById('tm-tags');
+    tags.innerHTML = member.tags.map(t => '<span>' + t + '</span>').join('');
+    document.getElementById('team-modal').classList.add('open');
+}
+function closeTeamModal() {
+    document.getElementById('team-modal').classList.remove('open');
+}
+function closeTeamModalIfOutside(e) {
+    if (e.target === document.getElementById('team-modal')) closeTeamModal();
+}
+
+function initCarousel() {
     const scene = document.getElementById('carousel-scene');
     if (!scene) return;
 
-    const N = IMAGES.length;
+    const N  = TEAM.length;
     const RX = 460, RY = 460, CX = 500, CY = 500;
     const els = [];
 
-    IMAGES.forEach(item => {
+    TEAM.forEach((member, idx) => {
         const div = document.createElement('div');
         div.className = 'c-card';
+        div.title = member.name;
 
         const img = new Image();
-        img.alt = item.label;
-        img.onload = () => { div.innerHTML = ''; div.appendChild(img); };
-        img.onerror = () => {
-            div.innerHTML = `<div class="c-card-placeholder"><span style="font-size:26px">🖼</span><span>${item.label}</span></div>`;
+        img.alt = member.name;
+        img.onload = () => {
+            div.innerHTML = '';
+            div.appendChild(img);
         };
-        img.src = item.src;
+        img.onerror = () => {
+            div.innerHTML =
+                '<div class="c-card-placeholder">' +
+                  '<div class="c-avatar">' + member.emoji + '</div>' +
+                  '<div class="c-name">' + member.name + '</div>' +
+                '</div>';
+        };
+        img.src = 'gallery/photo' + (idx + 1) + '.jpg';
 
+        div.addEventListener('click', () => openTeamModal(idx));
         scene.appendChild(div);
         els.push(div);
     });
@@ -326,7 +370,7 @@ function initCarousel() {
             const s = 0.5 + 0.5 * ((Math.sin(theta) + 1) / 2);
             el.style.left      = x + 'px';
             el.style.top       = y + 'px';
-            el.style.transform = `scale(${s.toFixed(3)}) rotate(${(Math.cos(theta) * -10).toFixed(1)}deg)`;
+            el.style.transform = 'scale(' + s.toFixed(3) + ') rotate(' + (Math.cos(theta) * -10).toFixed(1) + 'deg)';
             el.style.zIndex    = Math.round(s * 100);
             el.style.opacity   = (0.4 + 0.6 * ((Math.sin(theta) + 1) / 2)).toFixed(3);
         });
@@ -341,15 +385,65 @@ function initCarousel() {
     }
     requestAnimationFrame(loop);
 
-    document.getElementById('car-pause').addEventListener('click', () => {
+    document.getElementById('car-pause').addEventListener('click', function() {
         paused = !paused;
-        document.getElementById('car-pause').innerHTML = paused ? '&#9654;' : '&#9646;&#9646;';
+        this.innerHTML = paused ? '&#9654;' : '&#9646;&#9646;';
     });
     document.getElementById('car-prev').addEventListener('click', () => { angle += (2 * Math.PI / N); });
     document.getElementById('car-next').addEventListener('click', () => { angle -= (2 * Math.PI / N); });
 }
 
+// ── NITRO BOOST — scroll-triggered анимация ───────────────
+function initNitroBoost() {
+    const section = document.getElementById('nitro-boost');
+    if (!section) return;
+
+    let activated = false;
+
+    // Функция анимации счётчика
+    function animateCount(el, target, duration) {
+        const start = performance.now();
+        function step(now) {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            // easeOutQuart
+            const eased = 1 - Math.pow(1 - progress, 4);
+            el.innerText = Math.round(eased * target);
+            if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    }
+
+    function activate() {
+        if (activated) return;
+        activated = true;
+        section.classList.add('activated');
+
+        const metrics = section.querySelectorAll('.nb-metric');
+        metrics.forEach((metric, i) => {
+            const val    = parseInt(metric.dataset.val, 10);
+            const fill   = metric.querySelector('.nb-fill');
+            const count  = metric.querySelector('.nb-count');
+            const pct    = Math.min((val / 150) * 100, 100);
+            const delay  = i * 180;
+
+            setTimeout(() => {
+                fill.style.width = pct + '%';
+                animateCount(count, val, 1600);
+            }, delay);
+        });
+    }
+
+    // IntersectionObserver для scroll-триггера
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => { if (entry.isIntersecting) activate(); });
+    }, { threshold: 0.3 });
+
+    observer.observe(section);
+}
+
 // ── Init ──────────────────────────────────────────────────
 window.onload = () => {
     initCarousel();
+    initNitroBoost();
 };
