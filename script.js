@@ -1,4 +1,4 @@
-const firebaseConfig = {
+var firebaseConfig = {
     apiKey:            "AIzaSyA_7n34vc1JM5PER6kvU9mMSzKfpu8s5YE",
     authDomain:        "my-portfolio-auth-ff1ce.firebaseapp.com",
     projectId:         "my-portfolio-auth-ff1ce",
@@ -7,28 +7,26 @@ const firebaseConfig = {
     appId:             "1:391088510675:web:ff1c4d866c37f921886626"
 };
 
-const TELEGRAM_BOT_TOKEN = "8664813567:AAEkqGdXuyrS43Pjfc1gB-KdVuOOReWrkGw";
-const TELEGRAM_CHAT_ID   = "7451263058";
+var TELEGRAM_BOT_TOKEN = "8664813567:AAEkqGdXuyrS43Pjfc1gB-KdVuOOReWrkGw";
+var TELEGRAM_CHAT_ID   = "7451263058";
 
-// ── i18n ───────────────────────────────────────────────────
-const T = {
+var T = {
     ru: {
-        // NAV
         nav_projects:    "Мои проекты",
         nav_about:       "О нас",
         nav_services:    "Услуги",
         nav_contacts:    "Контакты",
         back:            "Назад",
         btn_contact_short: "Связаться",
+        nav_login:       "Войти",
+        nav_logout:      "Выйти",
 
-        // HERO
         hero_eyebrow:    "ПРЕМИАЛЬНЫЕ ИНТЕРФЕЙСЫ И АРХИТЕКТУРА",
         hero_title:      "НОВЫЙ СТАНДАРТ\nЦИФРОВОГО ОПЫТА",
         hero_sub:        "Мы создаём премиальные интерфейсы и архитектурные решения, которые задают будущее цифрового мира.",
         btn_projects:    "Смотреть проекты →",
         btn_contact:     "Связаться с нами",
 
-        // FEATURES
         feat1_title:     "Инновации",
         feat1_desc:      "Используем передовые технологии для лучших результатов.",
         feat2_title:     "Надёжность",
@@ -38,7 +36,6 @@ const T = {
         feat4_title:     "Скорость",
         feat4_desc:      "Быстрая реализация проектов без потери качества.",
 
-        // NITRO BOOST
         nb_title:        "НАШИ ПОКАЗАТЕЛИ",
         nb_m1:           "Довольных клиентов",
         nb_m2:           "Завершённых проектов",
@@ -46,16 +43,13 @@ const T = {
         nb_m4:           "Поддержка клиентов",
         nb_years:        " лет",
 
-        // CAROUSEL
         carousel_title:  "НАШИ СОТРУДНИКИ",
         status_online:   "В СЕТИ",
         status_busy:     "ЗАНЯТ",
         status_offline:  "ОФЛАЙН",
 
-        // PROJECTS
         open_site:       "Открыть сайт ➔",
 
-        // ABOUT
         about_name:      "Михаил «Faraday» Романов",
         about_role:      "Full-Stack Dev · Digital Alchemist · Cat Enthusiast",
         about_bio1:      "Привет. Я тот самый человек, который в 3 часа ночи спорит с компилятором, держа на коленях кота. Победитель в этом споре всегда кот — но код в итоге работает.",
@@ -63,7 +57,6 @@ const T = {
         about_bio3:      "Я верю, что каждый интерфейс должен быть живым — как хороший котик: тёплым, отзывчивым и немного непредсказуемым. Если ваш проект скучный, я его починю. Если он уже хорош — я сделаю его незабываемым.",
         about_quote:     "«Ничто не слишком прекрасно, чтобы быть истинным» — Майкл Фарадей.",
 
-        // SERVICES
         svc1_title:      "Веб-разработка",
         svc1_desc:       "Премиальные сайты и веб-приложения с нуля до деплоя.",
         svc2_title:      "UI/UX Дизайн",
@@ -75,7 +68,6 @@ const T = {
         svc5_title:      "Всё что нужно в цифровой реальности",
         svc5_desc:       "Нестандартная задача? Именно это нас и вдохновляет. Опишите проблему — мы найдём решение.",
 
-        // CONTACTS / CHAT
         contacts_desc:   "Напишите мне прямо здесь — мессенджер синхронизирован с личными каналами для мгновенного ответа.",
         system_synced:   "SYSTEM SYNCED",
         statusOnline:    "В СЕТИ",
@@ -87,22 +79,21 @@ const T = {
         login_required:  "Пожалуйста, войдите в аккаунт",
     },
     en: {
-        // NAV
         nav_projects:    "My Projects",
         nav_about:       "About",
         nav_services:    "Services",
         nav_contacts:    "Contacts",
         back:            "Back",
         btn_contact_short: "Contact",
+        nav_login:       "Sign In",
+        nav_logout:      "Sign Out",
 
-        // HERO
         hero_eyebrow:    "PREMIUM INTERFACES AND ARCHITECTURE",
         hero_title:      "NEW STANDARD OF\nDIGITAL EXPERIENCE",
         hero_sub:        "We build premium interfaces and architectural solutions that shape the future of the digital world.",
         btn_projects:    "View Projects →",
         btn_contact:     "Contact Us",
 
-        // FEATURES
         feat1_title:     "Innovation",
         feat1_desc:      "We use cutting-edge technologies for the best results.",
         feat2_title:     "Reliability",
@@ -112,7 +103,6 @@ const T = {
         feat4_title:     "Speed",
         feat4_desc:      "Fast project delivery without compromising quality.",
 
-        // NITRO BOOST
         nb_title:        "OUR METRICS",
         nb_m1:           "Happy Clients",
         nb_m2:           "Projects Completed",
@@ -120,16 +110,13 @@ const T = {
         nb_m4:           "Client Support",
         nb_years:        " yrs",
 
-        // CAROUSEL
         carousel_title:  "OUR TEAM",
         status_online:   "ONLINE",
         status_busy:     "BUSY",
         status_offline:  "OFFLINE",
 
-        // PROJECTS
         open_site:       "Open Site ➔",
 
-        // ABOUT
         about_name:      "Michael «Faraday» Romanov",
         about_role:      "Full-Stack Dev · Digital Alchemist · Cat Enthusiast",
         about_bio1:      "Hi. I'm the person who argues with the compiler at 3am with a cat on their lap. The cat always wins the argument — but the code works in the end.",
@@ -137,7 +124,6 @@ const T = {
         about_bio3:      "I believe every interface should be alive — like a good cat: warm, responsive, and a little unpredictable. If your project is boring, I'll fix it. If it's already good — I'll make it unforgettable.",
         about_quote:     "\"Nothing is too wonderful to be true\" — Michael Faraday.",
 
-        // SERVICES
         svc1_title:      "Web Development",
         svc1_desc:       "Premium websites and web apps from scratch to deployment.",
         svc2_title:      "UI/UX Design",
@@ -149,7 +135,6 @@ const T = {
         svc5_title:      "Everything in Digital Reality",
         svc5_desc:       "Non-standard task? That's exactly what inspires us. Describe the problem — we'll find a solution.",
 
-        // CONTACTS / CHAT
         contacts_desc:   "Message me right here — the messenger is synced with my private channels for an instant response.",
         system_synced:   "SYSTEM SYNCED",
         statusOnline:    "ONLINE",
@@ -162,24 +147,20 @@ const T = {
     }
 };
 
-// ── Firebase init ──────────────────────────────────────────
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const db   = firebase.firestore();
-const auth = firebase.auth();
-let currentLang = 'ru';
-let chatUnsubscribe = null;
+var db   = firebase.firestore();
+var auth = firebase.auth();
+var currentLang = 'ru';
+var chatUnsubscribe = null;
 
-// ── i18n: применить язык ──────────────────────────────────
 function setLang(lang) {
     currentLang = lang;
 
-    // Активные классы на обоих переключателях
-    ['lang-ru','lang-en','lang-ru-m','lang-en-m'].forEach(id => {
+    ['lang-ru','lang-en','lang-ru-m','lang-en-m'].forEach(function(id) {
         var el = document.getElementById(id);
         if (el) el.classList.toggle('active', id === 'lang-' + lang || id === 'lang-' + lang + '-m');
     });
 
-    // data-lang → innerText
     document.querySelectorAll('[data-lang]').forEach(function(el) {
         var key  = el.getAttribute('data-lang');
         var text = T[currentLang][key];
@@ -188,24 +169,17 @@ function setLang(lang) {
         el.innerText = text;
     });
 
-    // data-lang-ph → placeholder (inputs в contacts/modal)
     document.querySelectorAll('[data-lang-ph]').forEach(function(el) {
         var key = el.getAttribute('data-lang-ph');
         var text = T[currentLang][key];
         if (text) el.placeholder = text;
     });
 
-    // Обновить тултипы карусели (статусы на нужном языке)
     updateCarouselStatuses();
 }
 
-// Обновляет статусы команды при смене языка
-function updateCarouselStatuses() {
-    // Тултип, если сейчас открыт — он обновится при следующем hover
-    // Достаточно обновить TEAM-статусы в DOM через data атрибут (уже реализовано ниже)
-}
+function updateCarouselStatuses() {}
 
-// ── Навигация ─────────────────────────────────────────────
 function showPage(pageId) {
     document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
     var target = document.getElementById(pageId);
@@ -214,7 +188,6 @@ function showPage(pageId) {
     if (main) main.scrollTop = 0;
 }
 
-// ── Мобильное меню ────────────────────────────────────────
 function toggleMobileNav() {
     var burger  = document.getElementById('burger');
     var nav     = document.getElementById('mobile-nav');
@@ -230,7 +203,6 @@ function closeMobileNav() {
     document.getElementById('mobile-nav-overlay').classList.remove('open');
 }
 
-// ── Модальный мессенджер ──────────────────────────────────
 function openMessenger() {
     document.getElementById('messenger-modal').classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -243,7 +215,6 @@ function closeMessengerIfOutside(e) {
     if (e.target === document.getElementById('messenger-modal')) closeMessenger();
 }
 
-// ── Emoji ──────────────────────────────────────────────────
 function addEmoji(emoji) {
     var el = document.getElementById('chat-msg');
     if (el) { el.value += emoji; el.focus(); }
@@ -253,7 +224,6 @@ function addEmojiModal(emoji) {
     if (el) { el.value += emoji; el.focus(); }
 }
 
-// ── Единый обработчик клавиш ─────────────────────────────
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeMessenger();
@@ -264,10 +234,11 @@ document.addEventListener('keydown', function(e) {
         var id = document.activeElement && document.activeElement.id;
         if (id === 'chat-msg')       sendMessage();
         if (id === 'modal-chat-msg') sendMessageModal();
+        if (id === 'auth-email' || id === 'auth-pass') handleLogin();
+        if (id === 'modal-auth-email' || id === 'modal-auth-pass') handleLoginModal();
     }
 });
 
-// ── Отправка сообщений ────────────────────────────────────
 async function sendMessage()      { await _sendMsg('chat-msg'); }
 async function sendMessageModal() { await _sendMsg('modal-chat-msg'); }
 
@@ -292,7 +263,7 @@ async function _sendMsg(inputId) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 chat_id: TELEGRAM_CHAT_ID,
-                text: '👤 ' + auth.currentUser.email + '\n💬 ' + text
+                text: '\uD83D\uDC64 ' + auth.currentUser.email + '\n\uD83D\uDCAC ' + text
             })
         }).catch(function() {});
     } catch (err) {
@@ -300,19 +271,38 @@ async function _sendMsg(inputId) {
     }
 }
 
-// ── Auth ──────────────────────────────────────────────────
-auth.onAuthStateChanged(function(user) {
+function updateAuthUI(user) {
     var lf  = document.getElementById('login-form');
     var ui  = document.getElementById('user-info');
     var mlf = document.getElementById('modal-login-form');
     var mui = document.getElementById('modal-user-info');
 
+    var navLoginBtn   = document.getElementById('nav-login-btn');
+    var navUserBlock  = document.getElementById('nav-user-block');
+    var navUserName   = document.getElementById('nav-user-name');
+    var mobileLoginBtn  = document.getElementById('mobile-login-btn');
+    var mobileUserBlock = document.getElementById('mobile-user-block');
+    var mobileUserName  = document.getElementById('mobile-user-name');
+    var chatUserEmail   = document.getElementById('chat-user-email');
+    var modalChatEmail  = document.getElementById('modal-chat-user-email');
+
     if (user) {
         var name = user.email.split('@')[0];
+
         if (lf)  lf.style.display  = 'none';
         if (ui)  ui.style.display  = 'flex';
         if (mlf) mlf.style.display = 'none';
         if (mui) mui.style.display = 'flex';
+
+        if (navLoginBtn)   navLoginBtn.style.display   = 'none';
+        if (navUserBlock)  navUserBlock.style.display   = 'flex';
+        if (navUserName)   navUserName.innerText        = name;
+        if (mobileLoginBtn)  mobileLoginBtn.style.display  = 'none';
+        if (mobileUserBlock) mobileUserBlock.style.display  = 'flex';
+        if (mobileUserName)  mobileUserName.innerText       = name;
+        if (chatUserEmail)   chatUserEmail.innerText  = user.email;
+        if (modalChatEmail)  modalChatEmail.innerText = user.email;
+
         var uname = document.getElementById('user-name-contacts');
         if (uname) uname.innerText = name;
 
@@ -328,8 +318,21 @@ auth.onAuthStateChanged(function(user) {
         if (ui)  ui.style.display  = 'none';
         if (mlf) mlf.style.display = 'flex';
         if (mui) mui.style.display = 'none';
+
+        if (navLoginBtn)   navLoginBtn.style.display   = 'inline-block';
+        if (navUserBlock)  navUserBlock.style.display   = 'none';
+        if (mobileLoginBtn)  mobileLoginBtn.style.display  = 'inline-block';
+        if (mobileUserBlock) mobileUserBlock.style.display  = 'none';
+
+        var uname2 = document.getElementById('user-name-contacts');
+        if (uname2) uname2.innerText = 'Guest';
+
         if (chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
     }
+}
+
+auth.onAuthStateChanged(function(user) {
+    updateAuthUI(user);
 });
 
 function renderMessages(snap, windowId) {
@@ -370,18 +373,21 @@ async function _doLogin(email, pass) {
     }
 }
 
-// ═══════════════════════════════════════════════════════════
-//  КАРУСЕЛЬ — с hover-тултипом рядом с карточкой
-// ═══════════════════════════════════════════════════════════
+function handleLogout() {
+    auth.signOut().catch(function(err) {
+        console.error('Logout error:', err);
+    });
+}
+
 var TEAM = [
-    { name: 'Alex Chen',     role_ru: 'Lead Developer',    role_en: 'Lead Developer',    emoji: '👨‍💻', status: 'online', tags: ['React','Node.js','TypeScript'] },
-    { name: 'Maria Santos',  role_ru: 'UI/UX Дизайнер',    role_en: 'UI/UX Designer',    emoji: '👩‍🎨', status: 'online', tags: ['Figma','Motion','Branding'] },
-    { name: 'Dmitri Volkov', role_ru: 'DevOps Инженер',    role_en: 'DevOps Engineer',   emoji: '👨‍🔧', status: 'busy',   tags: ['Docker','AWS','CI/CD'] },
-    { name: 'Sara Kim',      role_ru: 'Продакт Менеджер',  role_en: 'Product Manager',   emoji: '👩‍💼', status: 'online', tags: ['Agile','Roadmap','Analytics'] },
-    { name: 'Jordan Lee',    role_ru: 'Full-Stack Разраб.', role_en: 'Full-Stack Dev',   emoji: '🧑‍💻', status: 'online', tags: ['Vue','Python','Firebase'] },
-    { name: 'Felix Wagner',  role_ru: 'Аналитик Безопасн.',role_en: 'Security Analyst',  emoji: '🕵️', status: 'offline',tags: ['Pentesting','OWASP'] },
-    { name: 'Yuki Tanaka',   role_ru: 'Data Scientist',    role_en: 'Data Scientist',    emoji: '👩‍🔬', status: 'online', tags: ['ML','Python','BigQuery'] },
-    { name: 'Nina Okonkwo',  role_ru: 'Арт-директор',      role_en: 'Creative Director', emoji: '👩‍🎤', status: 'busy',   tags: ['Brand','3D','Concept'] },
+    { name: 'Alex Chen',     role_ru: 'Lead Developer',    role_en: 'Lead Developer',    emoji: '\uD83D\uDC68\u200D\uD83D\uDCBB', status: 'online', tags: ['React','Node.js','TypeScript'] },
+    { name: 'Maria Santos',  role_ru: 'UI/UX Дизайнер',    role_en: 'UI/UX Designer',    emoji: '\uD83D\uDC69\u200D\uD83C\uDFA8', status: 'online', tags: ['Figma','Motion','Branding'] },
+    { name: 'Dmitri Volkov', role_ru: 'DevOps Инженер',    role_en: 'DevOps Engineer',   emoji: '\uD83D\uDC68\u200D\uD83D\uDD27', status: 'busy',   tags: ['Docker','AWS','CI/CD'] },
+    { name: 'Sara Kim',      role_ru: 'Продакт Менеджер',  role_en: 'Product Manager',   emoji: '\uD83D\uDC69\u200D\uD83D\uDCBC', status: 'online', tags: ['Agile','Roadmap','Analytics'] },
+    { name: 'Jordan Lee',    role_ru: 'Full-Stack Разраб.', role_en: 'Full-Stack Dev',   emoji: '\uD83E\uDDD1\u200D\uD83D\uDCBB', status: 'online', tags: ['Vue','Python','Firebase'] },
+    { name: 'Felix Wagner',  role_ru: 'Аналитик Безопасн.',role_en: 'Security Analyst',  emoji: '\uD83D\uDD75\uFE0F', status: 'offline',tags: ['Pentesting','OWASP'] },
+    { name: 'Yuki Tanaka',   role_ru: 'Data Scientist',    role_en: 'Data Scientist',    emoji: '\uD83D\uDC69\u200D\uD83D\uDD2C', status: 'online', tags: ['ML','Python','BigQuery'] },
+    { name: 'Nina Okonkwo',  role_ru: 'Арт-директор',      role_en: 'Creative Director', emoji: '\uD83D\uDC69\u200D\uD83C\uDFA4', status: 'busy',   tags: ['Brand','3D','Concept'] },
 ];
 
 var tooltip    = null;
@@ -399,7 +405,6 @@ function showTooltip(memberIndex, cardEl) {
     var member = TEAM[memberIndex];
     tooltip = document.getElementById('c-tooltip');
 
-    // Заполнить данными
     document.getElementById('ctt-avatar').innerText = member.emoji;
     document.getElementById('ctt-name').innerText   = member.name;
     document.getElementById('ctt-role').innerText   = currentLang === 'ru' ? member.role_ru : member.role_en;
@@ -407,7 +412,6 @@ function showTooltip(memberIndex, cardEl) {
     var tagsEl = document.getElementById('ctt-tags');
     tagsEl.innerHTML = member.tags.map(function(t) { return '<span>' + t + '</span>'; }).join('');
 
-    // Позиционирование относительно карточки
     positionTooltip(cardEl);
 
     tooltip.classList.add('visible');
@@ -416,17 +420,15 @@ function showTooltip(memberIndex, cardEl) {
 function positionTooltip(cardEl) {
     if (!tooltip) return;
     var rect = cardEl.getBoundingClientRect();
-    var tw   = 210; // примерная ширина тултипа
-    var th   = 180; // примерная высота
+    var tw   = 210;
+    var th   = 180;
 
     var left = rect.right + 14;
     var top  = rect.top + (rect.height / 2) - (th / 2);
 
-    // Если не вмещается справа — показываем слева
     if (left + tw > window.innerWidth - 8) {
         left = rect.left - tw - 14;
     }
-    // Не выходить за верх/низ
     if (top < 8) top = 8;
     if (top + th > window.innerHeight - 8) top = window.innerHeight - th - 8;
 
@@ -476,10 +478,8 @@ function initCarousel() {
         scene.appendChild(div);
         els.push(div);
 
-        // Hover → тултип
         div.addEventListener('mouseenter', function() { showTooltip(idx, div); });
         div.addEventListener('mouseleave', function() { hideTooltip(); });
-        // Дать тултипу немного держаться при переходе мыши на него
         if (tooltip) {
             tooltip.addEventListener('mouseenter', function() {
                 if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
@@ -525,9 +525,6 @@ function initCarousel() {
     });
 }
 
-// ═══════════════════════════════════════════════════════════
-//  NITRO BOOST — scroll-triggered счётчики
-// ═══════════════════════════════════════════════════════════
 function initNitroBoost() {
     var section = document.getElementById('nitro-boost');
     if (!section) return;
@@ -565,18 +562,13 @@ function initNitroBoost() {
     obs.observe(section);
 }
 
-// ═══════════════════════════════════════════════════════════
-//  ВИДЕО: обходим политику autoplay
-// ═══════════════════════════════════════════════════════════
 function initVideo() {
     var video = document.getElementById('bg-video');
     if (!video) return;
-    // Убедиться что muted = true (обязательно для autoplay)
     video.muted = true;
     var promise = video.play();
     if (promise !== undefined) {
         promise.catch(function() {
-            // Если браузер заблокировал — запускаем по первому взаимодействию
             document.addEventListener('click', function handler() {
                 video.play().catch(function() {});
                 document.removeEventListener('click', handler);
@@ -585,12 +577,9 @@ function initVideo() {
     }
 }
 
-// ═══════════════════════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════════════════════
 window.onload = function() {
     initVideo();
     initCarousel();
     initNitroBoost();
-    setLang('ru'); // применить дефолтный язык
+    setLang('ru');
 };
