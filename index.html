@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nitro Hub | Faraday Edition v7.0</title>
+    <title>Nitro Hub | Faraday Edition v8.0</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
@@ -12,7 +12,7 @@
 </head>
 <body>
 
-<!-- ФОНОВОЕ ВИДЕО -->
+<!-- ═══════ ФОНОВОЕ ВИДЕО (fixed, под всем) ═══════ -->
 <div class="video-bg-wrapper">
     <video id="bg-video" autoplay loop muted playsinline preload="auto">
         <source src="bg_video.mp4" type="video/mp4">
@@ -20,107 +20,140 @@
     <div class="video-overlay"></div>
 </div>
 
-<!-- НАВИГАЦИЯ -->
+<!-- ═══════ НАВИГАЦИЯ ═══════ -->
 <nav class="top-nav" id="top-nav">
-    <div class="logo nitro-glow" onclick="showPage('home')" style="cursor:pointer;">NITRO<span>HUB</span></div>
+    <div class="nav-logo nitro-glow" onclick="showPage('home')" role="button" tabindex="0" aria-label="На главную">NITRO<span>HUB</span></div>
 
-    <div class="nav-links" id="nav-links">
-        <a href="#" onclick="showPage('projects-page');closeMobileNav()" data-lang="nav_projects">Мои проекты</a>
-        <a href="#" onclick="showPage('about-page');closeMobileNav()" data-lang="nav_about">О нас</a>
-        <a href="#" onclick="showPage('services-page');closeMobileNav()" data-lang="nav_services">Услуги</a>
-        <a href="#" onclick="showPage('contacts-page');closeMobileNav()" data-lang="nav_contacts">Контакты</a>
+    <!-- Центр: ссылки (только десктоп) -->
+    <div class="nav-center">
+        <a href="#" onclick="showPage('projects-page')" data-lang="nav_projects">Мои проекты</a>
+        <a href="#" onclick="showPage('about-page')" data-lang="nav_about">О нас</a>
+        <a href="#" onclick="showPage('services-page')" data-lang="nav_services">Услуги</a>
+        <a href="#" onclick="showPage('contacts-page')" data-lang="nav_contacts">Контакты</a>
     </div>
 
+    <!-- Правый блок -->
     <div class="nav-right">
-        <div class="lang-switcher">
-            <span id="lang-ru" class="lang-option active" onclick="setLang('ru')">RU</span>
+        <!-- Переключатель языка с глобусом -->
+        <div class="lang-switcher" id="lang-switcher-wrap">
+            <span class="lang-globe">🌐</span>
+            <button class="lang-option active" id="lang-ru" onclick="setLang('ru')">RU</button>
             <span class="lang-divider">|</span>
-            <span id="lang-en" class="lang-option" onclick="setLang('en')">EN</span>
+            <button class="lang-option" id="lang-en" onclick="setLang('en')">EN</button>
         </div>
-        <button class="burger" id="burger" onclick="toggleMobileNav()" aria-label="Menu">
+        <!-- Кнопка «Связаться» в навбаре -->
+        <button class="nav-contact-btn" onclick="openMessenger()" data-lang="btn_contact_short">Связаться</button>
+        <!-- Бургер (только мобайл) -->
+        <button class="burger" id="burger" onclick="toggleMobileNav()" aria-label="Открыть меню">
             <span></span><span></span><span></span>
         </button>
     </div>
 </nav>
 
-<!-- МОБИЛЬНОЕ МЕНЮ -->
+<!-- Мобильное меню (drawer) -->
 <div class="mobile-nav-overlay" id="mobile-nav-overlay" onclick="closeMobileNav()"></div>
-<div class="mobile-nav" id="mobile-nav">
+<nav class="mobile-nav" id="mobile-nav" aria-label="Мобильное меню">
     <a href="#" onclick="showPage('projects-page');closeMobileNav()" data-lang="nav_projects">Мои проекты</a>
     <a href="#" onclick="showPage('about-page');closeMobileNav()" data-lang="nav_about">О нас</a>
     <a href="#" onclick="showPage('services-page');closeMobileNav()" data-lang="nav_services">Услуги</a>
     <a href="#" onclick="showPage('contacts-page');closeMobileNav()" data-lang="nav_contacts">Контакты</a>
-</div>
+    <div class="mobile-nav-lang">
+        <button class="lang-option active" id="lang-ru-m" onclick="setLang('ru');closeMobileNav()">RU</button>
+        <span class="lang-divider">|</span>
+        <button class="lang-option" id="lang-en-m" onclick="setLang('en');closeMobileNav()">EN</button>
+    </div>
+</nav>
 
-<!-- СТРАНИЦЫ -->
+<!-- ═══════ СТРАНИЦЫ ═══════ -->
 <main class="site-main" id="site-main">
 
-    <!-- ГЛАВНАЯ -->
+    <!-- ▸ ГЛАВНАЯ ◂ -->
     <div id="home" class="page active">
 
         <!-- HERO -->
         <section class="hero">
-            <p class="hero-eyebrow nitro-glow" data-lang="hero_eyebrow">ПРЕМИАЛЬНЫЕ ИНТЕРФЕЙСЫ И АРХИТЕКТУРА</p>
-            <h1 class="hero-title" data-lang="hero_title">НОВЫЙ СТАНДАРТ<br>ЦИФРОВОГО ОПЫТА</h1>
-            <p class="hero-sub" data-lang="hero_sub">Мы создаём премиальные интерфейсы и архитектурные решения, которые задают будущее цифрового мира.</p>
-            <div class="hero-btns">
-                <button class="btn-primary" onclick="showPage('projects-page')" data-lang="btn_projects">Смотреть проекты →</button>
-                <button class="btn-outline" onclick="openMessenger()" data-lang="btn_contact">
-                    Связаться с нами <span class="pulse-dot"></span>
-                </button>
+            <div class="hero-left">
+                <p class="hero-eyebrow nitro-glow" data-lang="hero_eyebrow">ПРЕМИАЛЬНЫЕ ИНТЕРФЕЙСЫ И АРХИТЕКТУРА</p>
+                <h1 class="hero-title" data-lang="hero_title">НОВЫЙ СТАНДАРТ<br>ЦИФРОВОГО ОПЫТА</h1>
+                <p class="hero-sub" data-lang="hero_sub">Мы создаём премиальные интерфейсы и архитектурные решения, которые задают будущее цифрового мира.</p>
+                <div class="hero-btns">
+                    <button class="btn-primary" onclick="showPage('projects-page')" data-lang="btn_projects">Смотреть проекты →</button>
+                    <button class="btn-outline" onclick="openMessenger()">
+                        <span data-lang="btn_contact">Связаться с нами</span>
+                        <span class="pulse-dot"></span>
+                    </button>
+                </div>
             </div>
-            <div class="hero-scroll-hint">
-                <div class="scroll-arrow"></div>
+            <div class="hero-right">
+                <!-- Куб-изображение. Поместите файл hero_cube.png рядом с index.html -->
+                <img src="hero_cube.png" alt="Nitro Cube" class="hero-cube-img" onerror="this.style.display='none';document.querySelector('.hero-cube-fallback').style.display='flex'">
+                <!-- Запасной CSS-элемент если файл не найден -->
+                <div class="hero-cube-fallback" style="display:none;">
+                    <div class="fallback-orb"></div>
+                    <div class="fallback-glow"></div>
+                </div>
             </div>
         </section>
 
-        <!-- ФИЧИ -->
+        <!-- FEATURES BAR -->
         <section class="features-bar">
             <div class="feature-item">
                 <div class="feature-icon">⬡</div>
-                <div><strong data-lang="feat1_title">Инновации</strong><p data-lang="feat1_desc">Используем передовые технологии для лучших результатов.</p></div>
+                <div>
+                    <strong data-lang="feat1_title">Инновации</strong>
+                    <p data-lang="feat1_desc">Используем передовые технологии для лучших результатов.</p>
+                </div>
             </div>
             <div class="feature-item">
                 <div class="feature-icon">◈</div>
-                <div><strong data-lang="feat2_title">Надёжность</strong><p data-lang="feat2_desc">Гарантируем стабильность и безопасность каждого решения.</p></div>
+                <div>
+                    <strong data-lang="feat2_title">Надёжность</strong>
+                    <p data-lang="feat2_desc">Гарантируем стабильность и безопасность каждого решения.</p>
+                </div>
             </div>
             <div class="feature-item">
                 <div class="feature-icon">✦</div>
-                <div><strong data-lang="feat3_title">Качество</strong><p data-lang="feat3_desc">Внимание к деталям и высочайшие стандарты в каждом проекте.</p></div>
+                <div>
+                    <strong data-lang="feat3_title">Качество</strong>
+                    <p data-lang="feat3_desc">Внимание к деталям и высочайшие стандарты в каждом проекте.</p>
+                </div>
             </div>
             <div class="feature-item">
                 <div class="feature-icon">⚡</div>
-                <div><strong data-lang="feat4_title">Скорость</strong><p data-lang="feat4_desc">Быстрая реализация проектов без потери качества.</p></div>
+                <div>
+                    <strong data-lang="feat4_title">Скорость</strong>
+                    <p data-lang="feat4_desc">Быстрая реализация проектов без потери качества.</p>
+                </div>
             </div>
         </section>
 
-        <!-- NITRO BOOST — КИЛЛЕР-ФИЧА ПРИ СКРОЛЕ -->
+        <!-- NITRO BOOST (scroll-triggered) -->
         <section class="nitro-boost" id="nitro-boost">
             <div class="nb-bg-lines" aria-hidden="true">
                 <span></span><span></span><span></span><span></span><span></span>
             </div>
             <div class="nb-inner">
-                <div class="nb-label nitro-glow">⚡ NITRO BOOST</div>
+                <div class="nb-badge nitro-glow">⚡ NITRO BOOST</div>
                 <h2 class="nb-title" data-lang="nb_title">НАШИ ПОКАЗАТЕЛИ</h2>
                 <div class="nb-metrics">
-                    <div class="nb-metric" data-val="98">
+                    <div class="nb-metric" data-val="98" data-suffix="%">
                         <div class="nb-meter"><div class="nb-fill"></div></div>
-                        <div class="nb-num"><span class="nb-count">0</span><span>%</span></div>
+                        <div class="nb-num"><span class="nb-count">0</span><span class="nb-suffix">%</span></div>
                         <div class="nb-mlabel" data-lang="nb_m1">Довольных клиентов</div>
                     </div>
-                    <div class="nb-metric" data-val="150">
+                    <div class="nb-metric" data-val="150" data-suffix="+">
                         <div class="nb-meter"><div class="nb-fill"></div></div>
-                        <div class="nb-num"><span class="nb-count">0</span><span>+</span></div>
+                        <div class="nb-num"><span class="nb-count">0</span><span class="nb-suffix">+</span></div>
                         <div class="nb-mlabel" data-lang="nb_m2">Завершённых проектов</div>
                     </div>
-                    <div class="nb-metric" data-val="7">
+                    <div class="nb-metric" data-val="7" data-suffix="">
                         <div class="nb-meter"><div class="nb-fill"></div></div>
-                        <div class="nb-num"><span class="nb-count">0</span><span> лет</span></div>
-                        <div class="nb-mlabel" data-lang="nb_m3">Опыта в разработке</div>
+                        <div class="nb-num"><span class="nb-count">0</span><span class="nb-suffix" data-lang="nb_years"> лет</span></div>
+                        <div class="nb-mlabel" data-lang="nb_m3">Лет опыта</div>
                     </div>
-                    <div class="nb-metric" data-val="24">
+                    <div class="nb-metric" data-val="24" data-suffix="/7">
                         <div class="nb-meter"><div class="nb-fill"></div></div>
-                        <div class="nb-num"><span class="nb-count">0</span><span>/7</span></div>
+                        <div class="nb-num"><span class="nb-count">0</span><span class="nb-suffix">/7</span></div>
                         <div class="nb-mlabel" data-lang="nb_m4">Поддержка клиентов</div>
                     </div>
                 </div>
@@ -134,15 +167,25 @@
                 <div class="carousel-scene" id="carousel-scene"></div>
             </div>
             <div class="carousel-controls">
-                <button class="carousel-btn" id="car-prev">&#8592;</button>
-                <button class="carousel-btn carousel-btn-pause" id="car-pause">&#9646;&#9646;</button>
-                <button class="carousel-btn" id="car-next">&#8594;</button>
+                <button class="carousel-btn" id="car-prev" aria-label="Назад">&#8592;</button>
+                <button class="carousel-btn carousel-btn-pause" id="car-pause" aria-label="Пауза">&#9646;&#9646;</button>
+                <button class="carousel-btn" id="car-next" aria-label="Вперёд">&#8594;</button>
+            </div>
+            <!-- Глобальный тултип для карусели -->
+            <div class="c-tooltip" id="c-tooltip" aria-live="polite">
+                <div class="ctt-avatar" id="ctt-avatar">👤</div>
+                <div class="ctt-info">
+                    <div class="ctt-name" id="ctt-name">Name</div>
+                    <div class="ctt-role nitro-glow" id="ctt-role">Role</div>
+                    <div class="ctt-status" id="ctt-status">В СЕТИ</div>
+                    <div class="ctt-tags" id="ctt-tags"></div>
+                </div>
             </div>
         </section>
 
     </div><!-- /home -->
 
-    <!-- МОИ ПРОЕКТЫ -->
+    <!-- ▸ МОИ ПРОЕКТЫ ◂ -->
     <div id="projects-page" class="page inner-page">
         <div class="inner-header">
             <button class="back-btn" onclick="showPage('home')">← <span data-lang="back">Назад</span></button>
@@ -150,10 +193,10 @@
         </div>
         <div class="projects-grid">
             <div class="card project-card">
-                <iframe src="https://matthewbrodek-alt.github.io/new-project/#team" frameborder="0"></iframe>
+                <iframe src="https://matthewbrodek-alt.github.io/new-project/#team" frameborder="0" loading="lazy"></iframe>
             </div>
             <div class="card project-card">
-                <a href="https://kotokafe-kotiki-i-lyudi.webflow.io/career" target="_blank" class="project-preview-link">
+                <a href="https://kotokafe-kotiki-i-lyudi.webflow.io/career" target="_blank" rel="noopener" class="project-preview-link">
                     <div class="project-screenshot-container" style="background-image:url('career_preview.jpg');">
                         <div class="project-screenshot-overlay"><span data-lang="open_site">Открыть сайт ➔</span></div>
                     </div>
@@ -162,7 +205,7 @@
         </div>
     </div>
 
-    <!-- О НАС -->
+    <!-- ▸ О НАС ◂ -->
     <div id="about-page" class="page inner-page">
         <div class="inner-header">
             <button class="back-btn" onclick="showPage('home')">← <span data-lang="back">Назад</span></button>
@@ -176,7 +219,7 @@
                 <p data-lang="about_bio1">Привет. Я тот самый человек, который в 3 часа ночи спорит с компилятором, держа на коленях кота. Победитель в этом споре всегда кот — но код в итоге работает.</p>
                 <p data-lang="about_bio2">Более 7 лет я превращаю хаос требований в элегантные цифровые решения: от микросервисных архитектур до анимаций, от которых у дизайнеров перехватывает дыхание. Мой стек — React, Firebase, Python, Node.js и бесконечная любовь к деталям.</p>
                 <p data-lang="about_bio3">Я верю, что каждый интерфейс должен быть живым — как хороший котик: тёплым, отзывчивым и немного непредсказуемым. Если ваш проект скучный, я его починю. Если он уже хорош — я сделаю его незабываемым.</p>
-                <div class="about-quote" data-lang="about_quote">"Ничто не слишком прекрасно, чтобы быть истинным" — Майкл Фарадей.</div>
+                <div class="about-quote" data-lang="about_quote">«Ничто не слишком прекрасно, чтобы быть истинным» — Майкл Фарадей.</div>
                 <div class="tech-tags" style="margin-top:25px;">
                     <span>React</span><span>Firebase</span><span>Python</span><span>Node.js</span><span>TypeScript</span><span>Docker</span>
                 </div>
@@ -184,7 +227,7 @@
         </div>
     </div>
 
-    <!-- УСЛУГИ -->
+    <!-- ▸ УСЛУГИ ◂ -->
     <div id="services-page" class="page inner-page">
         <div class="inner-header">
             <button class="back-btn" onclick="showPage('home')">← <span data-lang="back">Назад</span></button>
@@ -195,11 +238,14 @@
             <div class="card service-card"><div class="service-icon">🔥</div><h3 data-lang="svc2_title">UI/UX Дизайн</h3><p data-lang="svc2_desc">Интерфейсы, которые не просто красивы, но и работают идеально.</p></div>
             <div class="card service-card"><div class="service-icon">🤖</div><h3 data-lang="svc3_title">Автоматизация</h3><p data-lang="svc3_desc">Боты, скрипты и интеграции, которые экономят ваше время.</p></div>
             <div class="card service-card"><div class="service-icon">☁️</div><h3 data-lang="svc4_title">Облачные решения</h3><p data-lang="svc4_desc">Архитектура, масштабирование, Firebase, AWS — выберем лучшее.</p></div>
-            <div class="card service-card service-card-wide"><div class="service-icon">🌐</div><div><h3 data-lang="svc5_title">Всё что нужно в цифровой реальности</h3><p data-lang="svc5_desc">Нестандартная задача? Именно это нас и вдохновляет. Опишите проблему — мы найдём решение.</p></div></div>
+            <div class="card service-card service-card-wide">
+                <div class="service-icon">🌐</div>
+                <div><h3 data-lang="svc5_title">Всё что нужно в цифровой реальности</h3><p data-lang="svc5_desc">Нестандартная задача? Именно это нас и вдохновляет. Опишите проблему — мы найдём решение.</p></div>
+            </div>
         </div>
     </div>
 
-    <!-- КОНТАКТЫ -->
+    <!-- ▸ КОНТАКТЫ ◂ -->
     <div id="contacts-page" class="page inner-page">
         <div class="inner-header">
             <button class="back-btn" onclick="showPage('home')">← <span data-lang="back">Назад</span></button>
@@ -207,11 +253,11 @@
         </div>
         <div class="contacts-layout">
             <div class="card contact-info-card">
-                <div class="sync-indicator" style="margin-bottom:20px;">
+                <div class="sync-indicator">
                     <span class="pulse-dot"></span>
-                    <span style="font-size:11px;color:var(--accent);letter-spacing:2px;font-weight:800;">SYSTEM SYNCED</span>
+                    <span style="font-size:11px;color:var(--accent);letter-spacing:2px;font-weight:800;" data-lang="system_synced">SYSTEM SYNCED</span>
                 </div>
-                <p data-lang="contacts_desc" style="color:rgba(255,255,255,0.7);line-height:1.7;margin-bottom:20px;">Напишите мне прямо здесь — мессенджер синхронизирован с личными каналами для мгновенного ответа.</p>
+                <p data-lang="contacts_desc" style="color:rgba(255,255,255,0.7);line-height:1.7;margin-top:16px;margin-bottom:20px;">Напишите мне прямо здесь — мессенджер синхронизирован с личными каналами для мгновенного ответа.</p>
                 <div class="profile-mini">
                     <div class="status-badge nitro-glow" data-lang="statusOnline">В СЕТИ</div>
                     <h3 id="user-name-contacts">Guest</h3>
@@ -220,8 +266,8 @@
             <div class="card messenger-card">
                 <h3 class="nitro-glow" data-lang="chatTitle">Мессенджер</h3>
                 <div id="login-form" class="auth-box">
-                    <input type="email" id="auth-email" placeholder="Email" class="n-input">
-                    <input type="password" id="auth-pass" placeholder="Password" class="n-input">
+                    <input type="email" id="auth-email" class="n-input" data-lang-ph="email_ph">
+                    <input type="password" id="auth-pass" class="n-input" data-lang-ph="pass_ph">
                     <button onclick="handleLogin()" class="btn-primary" style="width:100%;" data-lang="loginBtn">Авторизоваться</button>
                 </div>
                 <div id="user-info" style="display:none;" class="chat-inner">
@@ -235,7 +281,7 @@
                         <span onclick="addEmoji('👾')">👾</span><span onclick="addEmoji('💎')">💎</span>
                     </div>
                     <div class="chat-input-row">
-                        <input type="text" id="chat-msg" placeholder="Напишите сообщение..." class="n-input" data-lang="chatPlaceholder">
+                        <input type="text" id="chat-msg" class="n-input" data-lang-ph="chatPlaceholder">
                         <button onclick="sendMessage()" class="send-btn">➔</button>
                     </div>
                 </div>
@@ -245,14 +291,14 @@
 
 </main>
 
-<!-- МОДАЛЬНЫЙ МЕССЕНДЖЕР -->
+<!-- ═══════ МОДАЛЬНЫЙ МЕССЕНДЖЕР ═══════ -->
 <div id="messenger-modal" class="modal-overlay" onclick="closeMessengerIfOutside(event)">
     <div class="modal-box card">
-        <button class="modal-close" onclick="closeMessenger()">✕</button>
+        <button class="modal-close" onclick="closeMessenger()" aria-label="Закрыть">✕</button>
         <h3 class="nitro-glow" data-lang="chatTitle">Мессенджер</h3>
         <div id="modal-login-form" class="auth-box">
-            <input type="email" id="modal-auth-email" placeholder="Email" class="n-input">
-            <input type="password" id="modal-auth-pass" placeholder="Password" class="n-input">
+            <input type="email" id="modal-auth-email" class="n-input" data-lang-ph="email_ph">
+            <input type="password" id="modal-auth-pass" class="n-input" data-lang-ph="pass_ph">
             <button onclick="handleLoginModal()" class="btn-primary" style="width:100%;" data-lang="loginBtn">Авторизоваться</button>
         </div>
         <div id="modal-user-info" style="display:none;" class="chat-inner">
@@ -264,22 +310,10 @@
                 <span onclick="addEmojiModal('🐱')">🐱</span><span onclick="addEmojiModal('⚡')">⚡</span>
             </div>
             <div class="chat-input-row">
-                <input type="text" id="modal-chat-msg" placeholder="Напишите сообщение..." class="n-input">
+                <input type="text" id="modal-chat-msg" class="n-input" data-lang-ph="chatPlaceholder">
                 <button onclick="sendMessageModal()" class="send-btn">➔</button>
             </div>
         </div>
-    </div>
-</div>
-
-<!-- ПОПАП КАРУСЕЛИ -->
-<div id="team-modal" class="modal-overlay" onclick="closeTeamModalIfOutside(event)">
-    <div class="modal-box card team-modal-box">
-        <button class="modal-close" onclick="closeTeamModal()">✕</button>
-        <div class="team-modal-avatar" id="tm-avatar">👤</div>
-        <h3 class="team-modal-name" id="tm-name">Name</h3>
-        <p class="team-modal-role nitro-glow" id="tm-role">Role</p>
-        <div class="team-modal-status" id="tm-status">В СЕТИ</div>
-        <div class="team-modal-tags" id="tm-tags"></div>
     </div>
 </div>
 
