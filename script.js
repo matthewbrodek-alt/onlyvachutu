@@ -633,7 +633,10 @@ var faradayProtocolRef = db.collection('system_config').doc('faraday_protocol');
 function initFaradayCore() {
     var statusEl  = document.getElementById('hud-status');
     var versionEl = document.getElementById('protocol-version');
-
+    const lastNote = await getLatestMemory(); // Получаем последнюю запись
+           if (lastNote) {
+             addMessageToUI('FARADAY', `С возвращением, сэр. Последняя запись в протоколах: "${lastNote.content}". Продолжим работу?`, 'ai-msg');
+         }
     faradayProtocolRef.onSnapshot(function(snapshot) {
         if (!snapshot.exists) return;
         var config = snapshot.data();
