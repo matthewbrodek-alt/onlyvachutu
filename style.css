@@ -563,3 +563,64 @@ html, body {
     .carousel-scene { top: -190px; width: 600px; }
     .nav-contact-btn { padding: 8px 14px; font-size: 12px; }
 }
+
+
+/* ══ JARVIS HUD ══ */
+.jarvis-hud {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 260px;
+    background: rgba(0, 20, 10, 0.7);
+    border: 1px solid var(--border-accent);
+    border-radius: 16px;
+    padding: 20px;
+    backdrop-filter: blur(20px);
+    z-index: 9999;
+    font-family: var(--font-body);
+    pointer-events: none; /* Чтобы не мешал кликам */
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.1);
+}
+
+.hud-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.hud-title {
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--accent);
+}
+
+.hud-status {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.hud-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+}
+
+.hud-scanner {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 2px;
+    background: var(--accent);
+    opacity: 0.3;
+    animation: hudScan 3s linear infinite;
+}
+
+@keyframes hudScan {
+    0% { top: 0%; }
+    100% { top: 100%; }
+}
