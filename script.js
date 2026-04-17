@@ -242,11 +242,50 @@ document.addEventListener('keydown', function(e) {
 async function sendMessage()      { await _sendMsg('chat-msg'); }
 async function sendMessageModal() { await _sendMsg('modal-chat-msg'); }
 
+// Интеграция в твой метод sendMessage
+async function _sendMsg(inputId) {
+    const input = document.getElementById(inputId);
+    const text = input.value.trim();
+    if (!text) return;
+
+    // Сначала проверяем, не команда ли это для Джарвиса
+    const jarvisResponse = await processJarvisCommand(text);
+    
+    if (jarvisResponse) {
+        // Добавляем ответ Джарвиса в чат локально
+        addMessageToUI("JARVIS", jarvisResponse, 'received');
+        input.value = '';
+        return;
+    }
+            
+
+
 async function _sendMsg(inputId) {
     var input = document.getElementById(inputId);
     if (!input) return;
     var text = input.value.trim();
     if (!text) return;
+    // Сначала проверяем, не команда ли это для Джарвиса
+    const jarvisResponse = await processJarvisCommand(text);
+    
+    if (jarvisResponse) {
+        // Добавляем ответ Джарвиса в чат локально
+        addMessageToUI("JARVIS", jarvisResponse, 'received');
+        input.value = '';
+        return;
+    }
+       // Если не команда — выполняем обычную отправку (твой старый код)
+                 // ... твой текущий код отправки в Firebase и Telegram ...
+}
+
+function addMessageToUI(sender, msg, type) {
+    const win = document.getElementById('chat-window'); // или modal-chat-window
+    const div = document.createElement('div');
+    div.className = `msg-box ${type}`;
+    div.innerHTML = `<strong>${sender}:</strong> ${msg}`;
+    win.appendChild(div);
+    win.scrollTop = win.scrollHeight;
+}
     if (!auth.currentUser) {
         alert(T[currentLang].login_required);
         return;
@@ -576,6 +615,72 @@ function initVideo() {
         });
     }
 }
+
+// Конфигурация команд Джарвиса
+const JARVIS_COMMANDS = {
+    UPDATE_THEME: 'update_theme',
+    SYNC_PROTOCOLS: 'sync_protocols',
+    BUILD_SECTION: 'build_section'
+};
+
+// Функция обработки ввода
+async function processJarvisCommand(input) {
+    const text = input.toLowerCase();
+    const statusEl = document.getElementById('hud-status');
+    
+    statusEl.innerText = "ANALYZING...";
+    
+    // 1. Команда на смену темы (Протокол Цвета)
+    if (text.includes("смени цвет на")) {
+        const colors = { "синий": "#0077ff", "красный": "#ff4444", "золотой": "#ffcc00", "стандарт": "#00ff88" };
+        let newColor = colors["стандарт"];
+        
+        for (let key in colors) {
+            if (text.includes(key)) newColor = colors[key];
+        }
+        
+        document.documentElement.style.setProperty('--accent', newColor);
+        statusEl.innerText = "PROTOCOL UPDATED";
+        return `Система перенастроена. Новый акцентный цвет: ${newColor}`;
+    }
+
+    // 2. Команда на создание секции (Генерация кода)
+    if (text.includes("создай секцию")) {
+        statusEl.innerText = "GENERATING UI...";
+        // Здесь можно добавить вызов OpenAI/Gemini API
+        return "Протокол генерации запущен. Ожидайте структуру в чате.";
+    }
+
+    // 3. Синхронизация с Firestore
+    if (text.includes("синхронизация")) {
+        statusEl.innerText = "SYNCING...";
+        await syncWithFirebase();
+        statusEl.innerText = "SYSTEM READY";
+        return "Данные из Firestore успешно подтянуты.";
+    }
+
+    statusEl.innerText = "SYSTEM: STANDBY";
+    return null;
+}
+
+const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+recognition.lang = 'ru-RU';
+
+function startVoiceCommand() {
+    recognition.start();
+    document.getElementById('hud-status').innerText = "LISTENING...";
+}
+
+recognition.onresult = async (event) => {
+    const transcript = event.results[0][0].transcript;
+    document.getElementById('chat-msg').value = transcript;
+    await _sendMsg('chat-msg');
+};
+
+recognition.onend = () => {
+    document.getElementById('hud-status').innerText = "SYSTEM: STANDBY";
+};
+
 
 window.onload = function() {
     initVideo();
