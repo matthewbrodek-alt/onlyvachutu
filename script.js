@@ -749,9 +749,33 @@ function initVideo() {
 /* ══════════════════════════════════════════════════
    VOICE COMMAND (Speech Recognition)
 ══════════════════════════════════════════════════ */
+async function learnSomething(topic, info) {
+    try {
+        // Предполагается, что db инициализирована выше через firebase.firestore()
+        await db.collection('faraday_memory').add({
+            topic: topic,
+            content: info,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        console.log("Faraday: Memory core updated.");
+        
+        var statusEl = document.getElementById('hud-status');
+        if (statusEl) {
+            statusEl.innerText = 'MEMORY UPDATED';
+            setTimeout(() => {
+                if (statusEl.innerText === 'MEMORY UPDATED') statusEl.innerText = 'SYSTEM: STANDBY';
+            }, 2000);
+        }
+    } catch (e) {
+        console.error("Error updating memory:", e);
+    }
+}
+
+/* ══════════════════════════════════════════════════
+   VOICE CONTROL (Обновлено)
+══════════════════════════════════════════════════ */
 
 var recognition = null;
-
 if (window.SpeechRecognition || window.webkitSpeechRecognition) {
     recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = 'ru-RU';
@@ -760,6 +784,18 @@ if (window.SpeechRecognition || window.webkitSpeechRecognition) {
 
     recognition.onresult = async function(event) {
         var transcript = event.results[0][0].transcript;
+        var lowTranscript = transcript.toLowerCase();
+        
+        // Логика саморазвития: команда "Запомни"
+        if (lowTranscript.startsWith('запомни')) {
+            var memoryData = transcript.replace(/запомни/i, '').trim();
+            if (memoryData) {
+                await learnSomething('voice_note', memoryData);
+            }
+            return;
+        }
+
+        // Стандартная отправка сообщения
         var input = document.getElementById('chat-msg');
         if (input) {
             input.value = transcript;
@@ -769,7 +805,9 @@ if (window.SpeechRecognition || window.webkitSpeechRecognition) {
 
     recognition.onend = function() {
         var statusEl = document.getElementById('hud-status');
-        if (statusEl) statusEl.innerText = 'SYSTEM: STANDBY';
+        if (statusEl && statusEl.innerText !== 'MEMORY UPDATED') {
+            statusEl.innerText = 'SYSTEM: STANDBY';
+        }
     };
 
     recognition.onerror = function(event) {
@@ -788,7 +826,6 @@ function startVoiceCommand() {
     var statusEl = document.getElementById('hud-status');
     if (statusEl) statusEl.innerText = 'LISTENING...';
 }
-
 /* ══════════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════════ */
