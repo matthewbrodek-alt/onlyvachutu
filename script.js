@@ -152,10 +152,10 @@ var db   = firebase.firestore();
 var auth = firebase.auth();
 var currentLang = 'ru';
 var chatUnsubscribe = null;
+window.faradaySystemPaused = false; // Глобальный флаг для паузы
 
 /* ══════════════════════════════════════════════════
    FARADAY PROTOCOL — Firebase Firestore Integration
-   (Firebase v8 compat — no external imports needed)
 ══════════════════════════════════════════════════ */
 
 var faradayProtocolRef = db.collection('system_config').doc('faraday_protocol');
@@ -172,25 +172,29 @@ function initFaradayCore() {
 
         if (config.ui_theme) {
             var root = document.documentElement;
-            if (config.ui_theme.accent) {
-                root.style.setProperty('--accent', config.ui_theme.accent);
-            }
-            if (config.ui_theme.blur) {
-                root.style.setProperty('--nav-blur', config.ui_theme.blur);
-            }
-            if (config.ui_theme.font) {
-                document.body.style.fontFamily = config.ui_theme.font + ', sans-serif';
-            }
+            if (config.ui_theme.accent) root.style.setProperty('--accent', config.ui_theme.accent);
+            if (config.ui_theme.blur)   root.style.setProperty('--nav-blur', config.ui_theme.blur);
+            if (config.ui_theme.font)   document.body.style.fontFamily = config.ui_theme.font + ', sans-serif';
         }
 
         if (versionEl && config.version) {
             versionEl.innerText = 'Ver: ' + config.version;
         }
 
+        // Логика паузы медиа-элементов
+        var isPaused = config.safety_protocols !== 'active';
+        window.faradaySystemPaused = isPaused;
+        
+        var bgVideo = document.getElementById('bg-video');
+
         if (statusEl) {
-            statusEl.innerText = config.safety_protocols === 'active'
-                ? 'SYSTEM: ACTIVE'
-                : 'SYSTEM: PAUSED';
+            statusEl.innerText = isPaused ? 'SYSTEM: PAUSED' : 'SYSTEM: ACTIVE';
+        }
+
+        if (isPaused) {
+            if (bgVideo) bgVideo.pause();
+        } else {
+            if (bgVideo) bgVideo.play().catch(function(){});
         }
 
     }, function(err) {
@@ -296,11 +300,7 @@ function setLang(lang) {
         var text = T[currentLang][key];
         if (text) el.placeholder = text;
     });
-
-    updateCarouselStatuses();
 }
-
-function updateCarouselStatuses() {}
 
 /* ══════════════════════════════════════════════════
    NAVIGATION
@@ -366,7 +366,7 @@ document.addEventListener('keydown', function(e) {
 });
 
 /* ══════════════════════════════════════════════════
-   MESSENGER — single clean _sendMsg
+   MESSENGER
 ══════════════════════════════════════════════════ */
 
 async function sendMessage()      { await _sendMsg('chat-msg'); }
@@ -664,7 +664,10 @@ function initCarousel() {
 
     function loop(ts) {
         if (!last) last = ts;
-        if (!paused) angle -= (ts - last) / 1000 * 0.4;
+        // ВАЖНО: Карусель останавливается как от кнопки, так и от протокола Джарвиса
+        if (!paused && !window.faradaySystemPaused) {
+            angle -= (ts - last) / 1000 * 0.4;
+        }
         last = ts;
         render();
         requestAnimationFrame(loop);
@@ -745,7 +748,6 @@ function initVideo() {
 
 /* ══════════════════════════════════════════════════
    VOICE COMMAND (Speech Recognition)
-   Guarded — only initialised in supported browsers
 ══════════════════════════════════════════════════ */
 
 var recognition = null;
