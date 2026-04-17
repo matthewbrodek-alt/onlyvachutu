@@ -747,11 +747,12 @@ function initVideo() {
 }
 
 /* ══════════════════════════════════════════════════
-   VOICE COMMAND (Speech Recognition)
+   FARADAY MEMORY CORE (Логика памяти)
 ══════════════════════════════════════════════════ */
+
+// Сохранение новой информации
 async function learnSomething(topic, info) {
     try {
-        // Предполагается, что db инициализирована выше через firebase.firestore()
         await db.collection('faraday_memory').add({
             topic: topic,
             content: info,
@@ -767,12 +768,34 @@ async function learnSomething(topic, info) {
             }, 2000);
         }
     } catch (e) {
-        console.error("Error updating memory:", e);
+        console.error("Memory Error:", e);
+    }
+}
+
+// Извлечение последних воспоминаний
+async function recallMemory() {
+    try {
+        const snapshot = await db.collection('faraday_memory')
+            .orderBy('timestamp', 'desc')
+            .limit(3)
+            .get();
+        
+        if (!snapshot.empty) {
+            console.log("Faraday: Recalling recent data...");
+            snapshot.forEach(doc => {
+                console.log(`- [${doc.data().topic}]: ${doc.data().content}`);
+            });
+            return true;
+        }
+        return false;
+    } catch (e) {
+        console.error("Recall Error:", e);
+        return false;
     }
 }
 
 /* ══════════════════════════════════════════════════
-   VOICE CONTROL (Обновлено)
+   VOICE CONTROL (Связь с Firestore)
 ══════════════════════════════════════════════════ */
 
 var recognition = null;
@@ -786,7 +809,7 @@ if (window.SpeechRecognition || window.webkitSpeechRecognition) {
         var transcript = event.results[0][0].transcript;
         var lowTranscript = transcript.toLowerCase();
         
-        // Логика саморазвития: команда "Запомни"
+        // Команда "Запомни" — связка с хранилищем
         if (lowTranscript.startsWith('запомни')) {
             var memoryData = transcript.replace(/запомни/i, '').trim();
             if (memoryData) {
@@ -795,7 +818,7 @@ if (window.SpeechRecognition || window.webkitSpeechRecognition) {
             return;
         }
 
-        // Стандартная отправка сообщения
+        // Обычная обработка сообщений
         var input = document.getElementById('chat-msg');
         if (input) {
             input.value = transcript;
@@ -818,17 +841,30 @@ if (window.SpeechRecognition || window.webkitSpeechRecognition) {
 }
 
 function startVoiceCommand() {
-    if (!recognition) {
-        console.warn('SpeechRecognition not supported in this browser.');
-        return;
-    }
+    if (!recognition) return;
     recognition.start();
     var statusEl = document.getElementById('hud-status');
     if (statusEl) statusEl.innerText = 'LISTENING...';
 }
+
 /* ══════════════════════════════════════════════════
-   INIT
+   DATABASE & INITIALIZATION
 ══════════════════════════════════════════════════ */
+
+async function _sendMsg(inputId) {
+    var el = document.getElementById(inputId);
+    if (!el || !el.value.trim()) return;
+    var text = el.value.trim();
+    try {
+        await db.collection('messages').add({
+            text: text,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        el.value = "";
+    } catch (e) {
+        console.error("Msg Error:", e);
+    }
+}
 
 window.onload = function() {
     initVideo();
@@ -836,4 +872,6 @@ window.onload = function() {
     initNitroBoost();
     initFaradayCore();
     setLang('ru');
+    // Запуск ядра памяти и интерфейса
+    initFaradayCore();
 };
