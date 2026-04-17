@@ -660,10 +660,6 @@ function initFaradayCore() {
     }, function(err) {
         console.warn('Faraday protocol: нет доступа:', err.code);
     });
-       var lastNote = await getLatestMemory(); // Получаем последнюю запись
-           if (lastNote) {
-             addMessageToUI('FARADAY', `С возвращением, сэр. Последняя запись в протоколах: "${lastNote.content}". Продолжим работу?`, 'ai-msg');
-         }
 }
 
 /* ══════════════════════════════════════════════════
