@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Nitro Hub | Faraday Edition v8.0</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3CradialGradient id='g' cx='30%25' cy='30%25' r='70%25'%3E%3Cstop offset='0%25' stop-color='%2300ff88'/%3E%3Cstop offset='100%25' stop-color='%23005533'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='%23050a06'/%3E%3Ctext x='32' y='46' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='36' fill='url(%23g)'%3ENH%3C/text%3E%3Ccircle cx='52' cy='12' r='5' fill='%2300ff88'%3E%3Canimate attributeName='opacity' values='1;0.3;1' dur='2s' repeatCount='indefinite'/%3E%3C/circle%3E%3C/svg%3E">
-    
+
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    
+
     <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+<!-- ═══ ВИДЕО ФОН ═══ -->
 <div class="video-bg-wrapper">
     <video id="bg-video" autoplay loop muted playsinline preload="auto">
         <source src="bg_video.mp4" type="video/mp4">
@@ -22,6 +23,7 @@
     <div class="video-overlay"></div>
 </div>
 
+<!-- ═══ НАВИГАЦИЯ ═══ -->
 <nav class="top-nav" id="top-nav">
     <div class="nav-logo nitro-glow" onclick="showPage('home')" role="button" tabindex="0" aria-label="На главную">NITRO<span>HUB</span></div>
 
@@ -46,19 +48,26 @@
             <span class="lang-divider">|</span>
             <button class="lang-option" id="lang-en" onclick="setLang('en')">EN</button>
         </div>
+        <!-- Кнопка личного мессенджера -->
         <button class="nav-contact-btn" onclick="openMessenger()" data-lang="btn_contact_short">Связаться</button>
+        <!-- Кнопка Faraday AI -->
+        <button class="nav-faraday-btn" onclick="openFaradayChat()" aria-label="Открыть Faraday AI">
+            <span class="pulse-dot"></span>FARADAY AI
+        </button>
         <button class="burger" id="burger" onclick="toggleMobileNav()" aria-label="Открыть меню">
             <span></span><span></span><span></span>
         </button>
     </div>
 </nav>
 
+<!-- ═══ МОБИЛЬНОЕ МЕНЮ ═══ -->
 <div class="mobile-nav-overlay" id="mobile-nav-overlay" onclick="closeMobileNav()"></div>
 <nav class="mobile-nav" id="mobile-nav" aria-label="Мобильное меню">
     <a href="#" onclick="showPage('projects-page');closeMobileNav()" data-lang="nav_projects">Мои проекты</a>
     <a href="#" onclick="showPage('about-page');closeMobileNav()" data-lang="nav_about">О нас</a>
     <a href="#" onclick="showPage('services-page');closeMobileNav()" data-lang="nav_services">Услуги</a>
     <a href="#" onclick="showPage('contacts-page');closeMobileNav()" data-lang="nav_contacts">Контакты</a>
+    <a href="#" onclick="openFaradayChat();closeMobileNav()">⚡ Faraday AI</a>
     <div class="mobile-nav-auth" id="mobile-nav-auth">
         <button class="lang-option" id="mobile-login-btn" onclick="showPage('contacts-page');closeMobileNav()" data-lang="nav_login">Войти</button>
         <div id="mobile-user-block" style="display:none;">
@@ -73,8 +82,10 @@
     </div>
 </nav>
 
+<!-- ═══ ОСНОВНОЙ КОНТЕНТ ═══ -->
 <main class="site-main" id="site-main">
 
+    <!-- ─── ГЛАВНАЯ ─── -->
     <div id="home" class="page active">
         <section class="hero">
             <div class="hero-left">
@@ -130,22 +141,22 @@
                 <div class="nb-badge nitro-glow">⚡ NITRO BOOST</div>
                 <h2 class="nb-title" data-lang="nb_title">НАШИ ПОКАЗАТЕЛИ</h2>
                 <div class="nb-metrics">
-                    <div class="nb-metric" data-val="98" data-suffix="%">
+                    <div class="nb-metric" data-val="98">
                         <div class="nb-meter"><div class="nb-fill"></div></div>
                         <div class="nb-num"><span class="nb-count">0</span><span class="nb-suffix">%</span></div>
                         <div class="nb-mlabel" data-lang="nb_m1">Довольных клиентов</div>
                     </div>
-                    <div class="nb-metric" data-val="150" data-suffix="+">
+                    <div class="nb-metric" data-val="150">
                         <div class="nb-meter"><div class="nb-fill"></div></div>
                         <div class="nb-num"><span class="nb-count">0</span><span class="nb-suffix">+</span></div>
                         <div class="nb-mlabel" data-lang="nb_m2">Завершённых проектов</div>
                     </div>
-                    <div class="nb-metric" data-val="7" data-suffix="">
+                    <div class="nb-metric" data-val="7">
                         <div class="nb-meter"><div class="nb-fill"></div></div>
                         <div class="nb-num"><span class="nb-count">0</span><span class="nb-suffix" data-lang="nb_years"> лет</span></div>
                         <div class="nb-mlabel" data-lang="nb_m3">Лет опыта</div>
                     </div>
-                    <div class="nb-metric" data-val="24" data-suffix="/7">
+                    <div class="nb-metric" data-val="24">
                         <div class="nb-meter"><div class="nb-fill"></div></div>
                         <div class="nb-num"><span class="nb-count">0</span><span class="nb-suffix">/7</span></div>
                         <div class="nb-mlabel" data-lang="nb_m4">Поддержка клиентов</div>
@@ -176,6 +187,7 @@
         </section>
     </div>
 
+    <!-- ─── ПРОЕКТЫ ─── -->
     <div id="projects-page" class="page inner-page">
         <div class="inner-header">
             <button class="back-btn" onclick="showPage('home')">← <span data-lang="back">Назад</span></button>
@@ -195,6 +207,7 @@
         </div>
     </div>
 
+    <!-- ─── О НАС ─── -->
     <div id="about-page" class="page inner-page">
         <div class="inner-header">
             <button class="back-btn" onclick="showPage('home')">← <span data-lang="back">Назад</span></button>
@@ -216,6 +229,7 @@
         </div>
     </div>
 
+    <!-- ─── УСЛУГИ ─── -->
     <div id="services-page" class="page inner-page">
         <div class="inner-header">
             <button class="back-btn" onclick="showPage('home')">← <span data-lang="back">Назад</span></button>
@@ -233,6 +247,7 @@
         </div>
     </div>
 
+    <!-- ─── КОНТАКТЫ (личный мессенджер без ИИ) ─── -->
     <div id="contacts-page" class="page inner-page">
         <div class="inner-header">
             <button class="back-btn" onclick="showPage('home')">← <span data-lang="back">Назад</span></button>
@@ -249,12 +264,24 @@
                     <div class="status-badge nitro-glow" data-lang="statusOnline">В СЕТИ</div>
                     <h3 id="user-name-contacts">Guest</h3>
                 </div>
+                <!-- Кнопка перехода к Faraday AI -->
+                <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border);">
+                    <p style="font-size:12px;color:rgba(255,255,255,0.45);margin-bottom:12px;">Нужен ИИ-ассистент?</p>
+                    <button class="faraday-open-btn" onclick="openFaradayChat()">
+                        <span class="pulse-dot"></span> Открыть Faraday AI
+                    </button>
+                </div>
             </div>
+
+            <!-- Личный мессенджер — только Firebase, без ИИ команд -->
             <div class="card messenger-card">
-                <h3 class="nitro-glow" data-lang="chatTitle">Мессенджер</h3>
+                <div class="messenger-type-badge">
+                    <span>💬</span>
+                    <span data-lang="chatTitle">Личный мессенджер</span>
+                </div>
                 <div id="login-form" class="auth-box">
-                    <input type="email" id="auth-email" class="n-input" data-lang-ph="email_ph">
-                    <input type="password" id="auth-pass" class="n-input" data-lang-ph="pass_ph">
+                    <input type="email" id="auth-email" class="n-input" data-lang-ph="email_ph" placeholder="Email">
+                    <input type="password" id="auth-pass" class="n-input" data-lang-ph="pass_ph" placeholder="Пароль">
                     <button onclick="handleLogin()" class="btn-primary" style="width:100%;" data-lang="loginBtn">Авторизоваться</button>
                 </div>
                 <div id="user-info" style="display:none;" class="chat-inner">
@@ -264,16 +291,23 @@
                     </div>
                     <div id="chat-window" class="chat-feed"></div>
                     <div class="emoji-bar">
-                        <span onclick="addEmoji('😊')">😊</span><span onclick="addEmoji('🔥')">🔥</span>
-                        <span onclick="addEmoji('💻')">💻</span><span onclick="addEmoji('✨')">✨</span>
-                        <span onclick="addEmoji('🤝')">🤝</span><span onclick="addEmoji('🚀')">🚀</span>
-                        <span onclick="addEmoji('🐱')">🐱</span><span onclick="addEmoji('💡')">💡</span>
-                        <span onclick="addEmoji('⚡')">⚡</span><span onclick="addEmoji('🎯')">🎯</span>
-                        <span onclick="addEmoji('👾')">👾</span><span onclick="addEmoji('💎')">💎</span>
+                        <span onclick="addEmoji('chat-msg','😊')">😊</span>
+                        <span onclick="addEmoji('chat-msg','🔥')">🔥</span>
+                        <span onclick="addEmoji('chat-msg','💻')">💻</span>
+                        <span onclick="addEmoji('chat-msg','✨')">✨</span>
+                        <span onclick="addEmoji('chat-msg','🤝')">🤝</span>
+                        <span onclick="addEmoji('chat-msg','🚀')">🚀</span>
+                        <span onclick="addEmoji('chat-msg','🐱')">🐱</span>
+                        <span onclick="addEmoji('chat-msg','💡')">💡</span>
+                        <span onclick="addEmoji('chat-msg','⚡')">⚡</span>
+                        <span onclick="addEmoji('chat-msg','🎯')">🎯</span>
+                        <span onclick="addEmoji('chat-msg','👾')">👾</span>
+                        <span onclick="addEmoji('chat-msg','💎')">💎</span>
                     </div>
                     <div class="chat-input-row">
-                        <input type="text" id="chat-msg" class="n-input" data-lang-ph="chatPlaceholder">
-                        <button onclick="sendMessage()" class="send-btn">➔</button>
+                        <input type="text" id="chat-msg" class="n-input" data-lang-ph="chatPlaceholder" placeholder="Написать сообщение..."
+                               onkeydown="if(event.key==='Enter')sendPersonalMessage('chat-msg','chat-window')">
+                        <button onclick="sendPersonalMessage('chat-msg','chat-window')" class="send-btn" aria-label="Отправить">➔</button>
                     </div>
                 </div>
             </div>
@@ -282,13 +316,17 @@
 
 </main>
 
+<!-- ═══ МОДАЛЬНЫЙ ЛИЧНЫЙ МЕССЕНДЖЕР ═══ -->
 <div id="messenger-modal" class="modal-overlay" onclick="closeMessengerIfOutside(event)">
     <div class="modal-box card">
         <button class="modal-close" onclick="closeMessenger()" aria-label="Закрыть">✕</button>
-        <h3 class="nitro-glow" data-lang="chatTitle">Мессенджер</h3>
+        <div class="messenger-type-badge">
+            <span>💬</span>
+            <span data-lang="chatTitle">Личный мессенджер</span>
+        </div>
         <div id="modal-login-form" class="auth-box">
-            <input type="email" id="modal-auth-email" class="n-input" data-lang-ph="email_ph">
-            <input type="password" id="modal-auth-pass" class="n-input" data-lang-ph="pass_ph">
+            <input type="email" id="modal-auth-email" class="n-input" data-lang-ph="email_ph" placeholder="Email">
+            <input type="password" id="modal-auth-pass" class="n-input" data-lang-ph="pass_ph" placeholder="Пароль">
             <button onclick="handleLoginModal()" class="btn-primary" style="width:100%;" data-lang="loginBtn">Авторизоваться</button>
         </div>
         <div id="modal-user-info" style="display:none;" class="chat-inner">
@@ -298,20 +336,83 @@
             </div>
             <div id="modal-chat-window" class="chat-feed"></div>
             <div class="emoji-bar">
-                <span onclick="addEmojiModal('😊')">😊</span><span onclick="addEmojiModal('🔥')">🔥</span>
-                <span onclick="addEmojiModal('💻')">💻</span><span onclick="addEmojiModal('✨')">✨</span>
-                <span onclick="addEmojiModal('🤝')">🤝</span><span onclick="addEmojiModal('🚀')">🚀</span>
-                <span onclick="addEmojiModal('🐱')">🐱</span><span onclick="addEmojiModal('⚡')">⚡</span>
+                <span onclick="addEmoji('modal-chat-msg','😊')">😊</span>
+                <span onclick="addEmoji('modal-chat-msg','🔥')">🔥</span>
+                <span onclick="addEmoji('modal-chat-msg','💻')">💻</span>
+                <span onclick="addEmoji('modal-chat-msg','✨')">✨</span>
+                <span onclick="addEmoji('modal-chat-msg','🤝')">🤝</span>
+                <span onclick="addEmoji('modal-chat-msg','🚀')">🚀</span>
+                <span onclick="addEmoji('modal-chat-msg','🐱')">🐱</span>
+                <span onclick="addEmoji('modal-chat-msg','⚡')">⚡</span>
             </div>
             <div class="chat-input-row">
-                <input type="text" id="modal-chat-msg" class="n-input" data-lang-ph="chatPlaceholder">
-                <button onclick="sendMessageModal()" class="send-btn">➔</button>
+                <input type="text" id="modal-chat-msg" class="n-input" data-lang-ph="chatPlaceholder" placeholder="Написать сообщение..."
+                       onkeydown="if(event.key==='Enter')sendPersonalMessage('modal-chat-msg','modal-chat-window')">
+                <button onclick="sendPersonalMessage('modal-chat-msg','modal-chat-window')" class="send-btn" aria-label="Отправить">➔</button>
             </div>
         </div>
     </div>
 </div>
 
-<div id="jarvis-hud" class="jarvis-hud">
+<!-- ═══ FARADAY AI ЧАТ — ОТДЕЛЬНОЕ ОКНО ═══ -->
+<div id="faraday-modal" class="modal-overlay faraday-modal-overlay" onclick="closeFaradayChatIfOutside(event)">
+    <div class="modal-box card faraday-chat-box">
+        <button class="modal-close" onclick="closeFaradayChat()" aria-label="Закрыть">✕</button>
+
+        <div class="faraday-chat-header">
+            <div class="faraday-title-group">
+                <div class="faraday-ai-dot"><span class="pulse-dot"></span></div>
+                <div>
+                    <h3 class="nitro-glow">FARADAY AI</h3>
+                    <span class="faraday-subtitle">Протокол v8.0 · Персональный ассистент</span>
+                </div>
+            </div>
+            <div id="faraday-hud-status-badge" class="faraday-status-pill">АКТИВЕН</div>
+        </div>
+
+        <!-- Лента чата с ИИ -->
+        <div id="faraday-feed" class="chat-feed faraday-feed">
+            <div class="msg-box ai-msg">
+                <strong>FARADAY:</strong> Протокол активирован. Я ваш цифровой ассистент.
+                Попробуйте: <em>«смени цвет на синий»</em>, <em>«пауза»</em>, <em>«активируй»</em>, <em>«синхронизация»</em>.
+            </div>
+        </div>
+
+        <!-- Быстрые команды -->
+        <div class="faraday-quick-cmds">
+            <button class="quick-cmd" onclick="faradayQuick('смени цвет на синий')">🔵 Синий</button>
+            <button class="quick-cmd" onclick="faradayQuick('смени цвет на золотой')">🟡 Золотой</button>
+            <button class="quick-cmd" onclick="faradayQuick('смени цвет на стандарт')">🟢 Стандарт</button>
+            <button class="quick-cmd" onclick="faradayQuick('пауза')">⏸ Пауза</button>
+            <button class="quick-cmd" onclick="faradayQuick('активируй')">▶ Пуск</button>
+            <button class="quick-cmd" onclick="faradayQuick('синхронизация')">🔄 Синхронизация</button>
+        </div>
+
+        <!-- Эмодзи для AI чата -->
+        <div class="emoji-bar">
+            <span onclick="addEmoji('faraday-input','⚡')">⚡</span>
+            <span onclick="addEmoji('faraday-input','🤖')">🤖</span>
+            <span onclick="addEmoji('faraday-input','💡')">💡</span>
+            <span onclick="addEmoji('faraday-input','🔧')">🔧</span>
+            <span onclick="addEmoji('faraday-input','🎯')">🎯</span>
+            <span onclick="addEmoji('faraday-input','🛸')">🛸</span>
+        </div>
+
+        <!-- Поле ввода для Faraday -->
+        <div class="chat-input-row faraday-input-row">
+            <button class="voice-btn" onclick="startVoiceCommand()" title="Голосовая команда" aria-label="Голос">🎤</button>
+            <input type="text" id="faraday-input" class="n-input"
+                   placeholder="Введите команду или вопрос..."
+                   onkeydown="if(event.key==='Enter')sendFaradayMessage()">
+            <button onclick="sendFaradayMessage()" class="send-btn faraday-send" aria-label="Отправить">➔</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ FARADAY HUD (статус-виджет, клик открывает AI чат) ═══ -->
+<div id="jarvis-hud" class="jarvis-hud" onclick="openFaradayChat()"
+     role="button" tabindex="0" aria-label="Открыть Faraday AI"
+     onkeydown="if(event.key==='Enter')openFaradayChat()">
     <div class="hud-scanner"></div>
     <div class="hud-content">
         <div class="hud-header">
@@ -321,8 +422,9 @@
         <div id="hud-status" class="hud-status">SYSTEM: STANDBY</div>
         <div class="hud-stats">
             <div class="stat-item">AI: Online</div>
-            <div class="stat-item" id="protocol-version">Ver: 6.0</div>
+            <div class="stat-item" id="protocol-version">Ver: 8.0</div>
         </div>
+        <div class="hud-open-hint">Нажмите для чата ↗</div>
     </div>
 </div>
 
