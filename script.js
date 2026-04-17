@@ -4,7 +4,8 @@ var firebaseConfig = {
     projectId:         "my-portfolio-auth-ff1ce",
     storageBucket:     "my-portfolio-auth-ff1ce.firebasestorage.app",
     messagingSenderId: "391088510675",
-    appId:             "1:391088510675:web:ff1c4d866c37f921886626" };
+    appId:             "1:391088510675:web:ff1c4d866c37f921886626"
+};
 
 var TELEGRAM_BOT_TOKEN = "8664813567:AAEkqGdXuyrS43Pjfc1gB-KdVuOOReWrkGw";
 var TELEGRAM_CHAT_ID   = "7451263058";
@@ -192,16 +193,8 @@ function initFaradayCore() {
                 : 'SYSTEM: PAUSED';
         }
 
-        var featureVideo = document.getElementById('feature-video');
-        if (featureVideo) {
-            if (config.safety_protocols === 'active') {
-                featureVideo.play().catch(function() {});
-            } else {
-                featureVideo.pause();
-            }
-        }
     }, function(err) {
-        console.error('Faraday: Ошибка чтения протокола:', err);
+        console.warn('Faraday: нет доступа к протоколу:', err.code);
     });
 }
 
@@ -245,7 +238,6 @@ async function handleJarvisCommand(input) {
             await faradayProtocolRef.update({ 'ui_theme.accent': newColor });
             return 'Цвет системы изменён: ' + newColor;
         } catch (e) {
-            console.error('Faraday: update color error:', e);
             document.documentElement.style.setProperty('--accent', newColor);
             return 'Цвет применён локально: ' + newColor;
         }
@@ -254,14 +246,14 @@ async function handleJarvisCommand(input) {
     if (text.includes('пауза') || text.includes('стоп') || text.includes('остановись')) {
         try {
             await faradayProtocolRef.update({ safety_protocols: 'paused' });
-        } catch (e) { console.error('Faraday: pause error:', e); }
+        } catch (e) { /* нет прав на запись */ }
         return 'Протокол Faraday: медиа-системы остановлены.';
     }
 
     if (text.includes('активируй') || text.includes('пуск') || text.includes('запуск')) {
         try {
             await faradayProtocolRef.update({ safety_protocols: 'active' });
-        } catch (e) { console.error('Faraday: activate error:', e); }
+        } catch (e) { /* нет прав на запись */ }
         return 'Протокол Faraday: системы запущены.';
     }
 
