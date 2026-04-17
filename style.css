@@ -15,6 +15,7 @@
     --nav-h:         70px;
     --radius:        20px;
     --page-px:       6%;
+    --nav-blur:      24px;
 }
 
 html, body {
@@ -71,8 +72,8 @@ html, body {
     display: flex; align-items: center;
     padding: 0 var(--page-px);
     z-index: 1000;
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(var(--nav-blur));
+    -webkit-backdrop-filter: blur(var(--nav-blur));
     border-bottom: 1px solid var(--border);
     background: rgba(5,10,6,0.72);
 }
@@ -203,6 +204,57 @@ html, body {
 
 .hero-left {
     flex: 1; max-width: 700px; z-index: 2;
+}
+
+/* ══ HERO RIGHT — видео-блок ══ */
+.hero-right {
+    flex: 0 0 auto;
+    width: 480px;
+    max-width: 100%;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.video-feature-wrap {
+    position: relative;
+    width: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(0,255,136,0.18);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+}
+
+.video-glow {
+    position: absolute;
+    inset: -2px;
+    border-radius: 22px;
+    background: radial-gradient(ellipse at center, rgba(0,255,136,0.18) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+#feature-video {
+    width: 100%;
+    display: block;
+    filter: brightness(0.88);
+    position: relative;
+    z-index: 0;
+}
+
+.scan-line {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 2px,
+        rgba(0,255,136,0.04) 2px,
+        rgba(0,255,136,0.04) 4px
+    );
+    pointer-events: none;
+    z-index: 2;
 }
 
 /* Куб — скрыт на десктопе, виден на мобайле */
@@ -454,6 +506,7 @@ html, body {
 .msg-box { padding: 10px 16px; border-radius: 16px; font-size: 14px; max-width: 82%; word-break: break-word; }
 .sent { align-self: flex-end; background: var(--accent); color: #000; font-weight: 600; border-radius: 16px 16px 3px 16px; }
 .received { align-self: flex-start; background: rgba(255,255,255,0.08); border-radius: 16px 16px 16px 3px; }
+.ai-msg { align-self: flex-start; background: rgba(0,255,136,0.10); border: 1px solid rgba(0,255,136,0.25); color: var(--accent); border-radius: 16px 16px 16px 3px; font-weight: 600; font-size: 13px; }
 .emoji-bar { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 0; font-size: 18px; border-top: 1px solid var(--border); margin-top: 4px; flex-shrink: 0; }
 .emoji-bar span { cursor: pointer; transition: transform 0.15s; display: inline-block; }
 .emoji-bar span:hover { transform: scale(1.3); }
@@ -496,7 +549,94 @@ html, body {
 .modal-close:hover { border-color: var(--accent); color: var(--accent); }
 .modal-box h3 { font-size: 12px; letter-spacing: 3px; font-weight: 800; margin-bottom: 20px; }
 
+.nitro-glow { color: var(--accent); text-shadow: 0 0 20px rgba(0,255,136,0.5); }
+
 @keyframes fadeUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+
+
+/* ══ JARVIS HUD ══ */
+.jarvis-hud {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 260px;
+    background: rgba(0, 20, 10, 0.7);
+    border: 1px solid var(--border-accent);
+    border-radius: 16px;
+    padding: 20px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 9999;
+    font-family: var(--font-b);
+    pointer-events: none;
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.1);
+    overflow: hidden;
+}
+
+.hud-content {
+    position: relative;
+    z-index: 1;
+}
+
+.hud-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.hud-title {
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--accent);
+}
+
+.hud-status {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 14px;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.hud-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+.stat-item {
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.hud-scanner {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.5;
+    z-index: 2;
+    animation: hudScan 3s linear infinite;
+}
+
+@keyframes hudScan {
+    0%   { transform: translateY(0); }
+    100% { transform: translateY(260px); }
+}
+
+
+@media (max-width: 1200px) {
+    .hero-right { display: none; }
+}
 
 @media (max-width: 1100px) {
     .features-bar { grid-template-columns: repeat(2,1fr); }
@@ -544,6 +684,8 @@ html, body {
 
     .carousel-stage { height: 320px; }
     .carousel-scene { top: -200px; width: 700px; }
+
+    .jarvis-hud { bottom: 16px; right: 16px; width: 220px; padding: 14px; }
 }
 
 @media (max-width: 540px) {
@@ -562,65 +704,5 @@ html, body {
     .carousel-stage { height: 280px; }
     .carousel-scene { top: -190px; width: 600px; }
     .nav-contact-btn { padding: 8px 14px; font-size: 12px; }
-}
-
-
-/* ══ JARVIS HUD ══ */
-.jarvis-hud {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    width: 260px;
-    background: rgba(0, 20, 10, 0.7);
-    border: 1px solid var(--border-accent);
-    border-radius: 16px;
-    padding: 20px;
-    backdrop-filter: blur(20px);
-    z-index: 9999;
-    font-family: var(--font-body);
-    pointer-events: none; /* Чтобы не мешал кликам */
-    box-shadow: 0 0 30px rgba(0, 255, 136, 0.1);
-}
-
-.hud-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
-}
-
-.hud-title {
-    font-size: 10px;
-    font-weight: 900;
-    letter-spacing: 2px;
-    color: var(--accent);
-}
-
-.hud-status {
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 15px;
-    color: #fff;
-    text-transform: uppercase;
-}
-
-.hud-stats {
-    display: flex;
-    justify-content: space-between;
-    font-size: 9px;
-    color: var(--text-muted);
-    letter-spacing: 1px;
-}
-
-.hud-scanner {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 2px;
-    background: var(--accent);
-    opacity: 0.3;
-    animation: hudScan 3s linear infinite;
-}
-
-@keyframes hudScan {
-    0% { top: 0%; }
-    100% { top: 100%; }
+    .jarvis-hud { display: none; }
 }
