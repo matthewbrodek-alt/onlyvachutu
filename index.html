@@ -88,6 +88,17 @@
                     </button>
                 </div>
             </div>
+
+            <div class="hero-right">
+                <div class="video-feature-wrap">
+                    <div class="video-glow"></div>
+                    <video id="feature-video" autoplay muted loop playsinline>
+                        <source src="bg_video.mp4" type="video/mp4">
+                    </video>
+                    <div class="scan-line"></div>
+                </div>
+            </div>
+
             <div class="hero-mobile-cube" aria-hidden="true">
                 <img src="hero_cube.png" alt="" class="hero-cube-img">
             </div>
@@ -313,18 +324,18 @@
         </div>
     </div>
 </div>
-    
-    <div id="jarvis-hud" class="jarvis-hud">
+
+<div id="jarvis-hud" class="jarvis-hud">
     <div class="hud-scanner"></div>
     <div class="hud-content">
         <div class="hud-header">
             <span class="pulse-dot"></span>
-            <span class="hud-title">FARADAY PROTOCOL ACTIVE</span>
+            <span class="hud-title">FARADAY PROTOCOL</span>
         </div>
         <div id="hud-status" class="hud-status">SYSTEM: STANDBY</div>
         <div class="hud-stats">
             <div class="stat-item">AI: Online</div>
-            <div class="stat-item">Sync: Firebase</div>
+            <div class="stat-item" id="protocol-version">Ver: 6.0</div>
         </div>
     </div>
 </div>
