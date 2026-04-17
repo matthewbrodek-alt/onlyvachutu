@@ -153,6 +153,137 @@ var auth = firebase.auth();
 var currentLang = 'ru';
 var chatUnsubscribe = null;
 
+/* ══════════════════════════════════════════════════
+   FARADAY PROTOCOL — Firebase Firestore Integration
+   (Firebase v8 compat — no external imports needed)
+══════════════════════════════════════════════════ */
+
+var faradayProtocolRef = db.collection('system_config').doc('faraday_protocol');
+
+function initFaradayCore() {
+    var statusEl  = document.getElementById('hud-status');
+    var versionEl = document.getElementById('protocol-version');
+
+    faradayProtocolRef.onSnapshot(function(snapshot) {
+        if (!snapshot.exists) return;
+
+        var config = snapshot.data();
+        console.log('Faraday: Протокол v' + config.version + ' активен.');
+
+        if (config.ui_theme) {
+            var root = document.documentElement;
+            if (config.ui_theme.accent) {
+                root.style.setProperty('--accent', config.ui_theme.accent);
+            }
+            if (config.ui_theme.blur) {
+                root.style.setProperty('--nav-blur', config.ui_theme.blur);
+            }
+            if (config.ui_theme.font) {
+                document.body.style.fontFamily = config.ui_theme.font + ', sans-serif';
+            }
+        }
+
+        if (versionEl && config.version) {
+            versionEl.innerText = 'Ver: ' + config.version;
+        }
+
+        if (statusEl) {
+            statusEl.innerText = config.safety_protocols === 'active'
+                ? 'SYSTEM: ACTIVE'
+                : 'SYSTEM: PAUSED';
+        }
+
+        var featureVideo = document.getElementById('feature-video');
+        if (featureVideo) {
+            if (config.safety_protocols === 'active') {
+                featureVideo.play().catch(function() {});
+            } else {
+                featureVideo.pause();
+            }
+        }
+    }, function(err) {
+        console.error('Faraday: Ошибка чтения протокола:', err);
+    });
+}
+
+function syncWithFirebase() {
+    var statusEl = document.getElementById('hud-status');
+    if (statusEl) statusEl.innerText = 'SYNCING...';
+
+    return faradayProtocolRef.get().then(function(snapshot) {
+        if (!snapshot.exists) return;
+        var config = snapshot.data();
+        var root = document.documentElement;
+        if (config.ui_theme) {
+            if (config.ui_theme.accent) root.style.setProperty('--accent', config.ui_theme.accent);
+            if (config.ui_theme.blur)   root.style.setProperty('--nav-blur', config.ui_theme.blur);
+        }
+        if (statusEl) statusEl.innerText = 'SYSTEM: READY';
+    }).catch(function(err) {
+        console.error('Faraday: syncWithFirebase error:', err);
+        if (statusEl) statusEl.innerText = 'SYNC ERROR';
+    });
+}
+
+async function handleJarvisCommand(input) {
+    var text     = input.toLowerCase();
+    var statusEl = document.getElementById('hud-status');
+    if (statusEl) statusEl.innerText = 'ANALYZING...';
+
+    var colorMap = {
+        'синий':   '#0077ff',
+        'красный': '#ff4444',
+        'золотой': '#ffcc00',
+        'стандарт':'#00ff88'
+    };
+
+    if (text.includes('смени цвет')) {
+        var newColor = colorMap['стандарт'];
+        for (var key in colorMap) {
+            if (text.includes(key)) { newColor = colorMap[key]; break; }
+        }
+        try {
+            await faradayProtocolRef.update({ 'ui_theme.accent': newColor });
+            return 'Цвет системы изменён: ' + newColor;
+        } catch (e) {
+            console.error('Faraday: update color error:', e);
+            document.documentElement.style.setProperty('--accent', newColor);
+            return 'Цвет применён локально: ' + newColor;
+        }
+    }
+
+    if (text.includes('пауза') || text.includes('стоп') || text.includes('остановись')) {
+        try {
+            await faradayProtocolRef.update({ safety_protocols: 'paused' });
+        } catch (e) { console.error('Faraday: pause error:', e); }
+        return 'Протокол Faraday: медиа-системы остановлены.';
+    }
+
+    if (text.includes('активируй') || text.includes('пуск') || text.includes('запуск')) {
+        try {
+            await faradayProtocolRef.update({ safety_protocols: 'active' });
+        } catch (e) { console.error('Faraday: activate error:', e); }
+        return 'Протокол Faraday: системы запущены.';
+    }
+
+    if (text.includes('синхронизация') || text.includes('обнови протоколы')) {
+        await syncWithFirebase();
+        return 'Конфигурация обновлена из Firestore.';
+    }
+
+    if (text.includes('создай секцию')) {
+        if (statusEl) statusEl.innerText = 'GENERATING...';
+        return 'Протокол генерации запущен. Ожидайте структуру в чате.';
+    }
+
+    if (statusEl) statusEl.innerText = 'SYSTEM: STANDBY';
+    return null;
+}
+
+/* ══════════════════════════════════════════════════
+   LANGUAGE
+══════════════════════════════════════════════════ */
+
 function setLang(lang) {
     currentLang = lang;
 
@@ -179,6 +310,10 @@ function setLang(lang) {
 }
 
 function updateCarouselStatuses() {}
+
+/* ══════════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════════ */
 
 function showPage(pageId) {
     document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
@@ -239,58 +374,34 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
+/* ══════════════════════════════════════════════════
+   MESSENGER — single clean _sendMsg
+══════════════════════════════════════════════════ */
+
 async function sendMessage()      { await _sendMsg('chat-msg'); }
 async function sendMessageModal() { await _sendMsg('modal-chat-msg'); }
-
-// Интеграция в твой метод sendMessage
-async function _sendMsg(inputId) {
-    const input = document.getElementById(inputId);
-    const text = input.value.trim();
-    if (!text) return;
-
-    // Сначала проверяем, не команда ли это для Джарвиса
-    const jarvisResponse = await processJarvisCommand(text);
-    
-    if (jarvisResponse) {
-        // Добавляем ответ Джарвиса в чат локально
-        addMessageToUI("JARVIS", jarvisResponse, 'received');
-        input.value = '';
-        return;
-    }
-            
-
 
 async function _sendMsg(inputId) {
     var input = document.getElementById(inputId);
     if (!input) return;
     var text = input.value.trim();
     if (!text) return;
-    // Сначала проверяем, не команда ли это для Джарвиса
-    const jarvisResponse = await processJarvisCommand(text);
-    
+
+    var windowId = (inputId === 'chat-msg') ? 'chat-window' : 'modal-chat-window';
+
+    var jarvisResponse = await handleJarvisCommand(text);
     if (jarvisResponse) {
-        // Добавляем ответ Джарвиса в чат локально
-        addMessageToUI("JARVIS", jarvisResponse, 'received');
+        addMessageToUI('FARADAY', jarvisResponse, 'ai-msg', windowId);
         input.value = '';
         return;
     }
-       // Если не команда — выполняем обычную отправку (твой старый код)
-                 // ... твой текущий код отправки в Firebase и Telegram ...
-}
 
-function addMessageToUI(sender, msg, type) {
-    const win = document.getElementById('chat-window'); // или modal-chat-window
-    const div = document.createElement('div');
-    div.className = `msg-box ${type}`;
-    div.innerHTML = `<strong>${sender}:</strong> ${msg}`;
-    win.appendChild(div);
-    win.scrollTop = win.scrollHeight;
-}
     if (!auth.currentUser) {
         alert(T[currentLang].login_required);
         return;
     }
     input.value = '';
+
     try {
         await db.collection('users').doc(auth.currentUser.uid).collection('messages').add({
             message:   text,
@@ -310,15 +421,29 @@ function addMessageToUI(sender, msg, type) {
     }
 }
 
+function addMessageToUI(sender, msg, type, windowId) {
+    var win = document.getElementById(windowId || 'chat-window');
+    if (!win) return;
+    var div = document.createElement('div');
+    div.className = 'msg-box ' + type;
+    div.innerHTML = '<strong>' + sender + ':</strong> ' + msg;
+    win.appendChild(div);
+    win.scrollTop = win.scrollHeight;
+}
+
+/* ══════════════════════════════════════════════════
+   AUTH
+══════════════════════════════════════════════════ */
+
 function updateAuthUI(user) {
     var lf  = document.getElementById('login-form');
     var ui  = document.getElementById('user-info');
     var mlf = document.getElementById('modal-login-form');
     var mui = document.getElementById('modal-user-info');
 
-    var navLoginBtn   = document.getElementById('nav-login-btn');
-    var navUserBlock  = document.getElementById('nav-user-block');
-    var navUserName   = document.getElementById('nav-user-name');
+    var navLoginBtn     = document.getElementById('nav-login-btn');
+    var navUserBlock    = document.getElementById('nav-user-block');
+    var navUserName     = document.getElementById('nav-user-name');
     var mobileLoginBtn  = document.getElementById('mobile-login-btn');
     var mobileUserBlock = document.getElementById('mobile-user-block');
     var mobileUserName  = document.getElementById('mobile-user-name');
@@ -418,6 +543,10 @@ function handleLogout() {
     });
 }
 
+/* ══════════════════════════════════════════════════
+   TEAM CAROUSEL
+══════════════════════════════════════════════════ */
+
 var TEAM = [
     { name: 'Alex Chen',     role_ru: 'Lead Developer',    role_en: 'Lead Developer',    emoji: '\uD83D\uDC68\u200D\uD83D\uDCBB', status: 'online', tags: ['React','Node.js','TypeScript'] },
     { name: 'Maria Santos',  role_ru: 'UI/UX Дизайнер',    role_en: 'UI/UX Designer',    emoji: '\uD83D\uDC69\u200D\uD83C\uDFA8', status: 'online', tags: ['Figma','Motion','Branding'] },
@@ -429,8 +558,8 @@ var TEAM = [
     { name: 'Nina Okonkwo',  role_ru: 'Арт-директор',      role_en: 'Creative Director', emoji: '\uD83D\uDC69\u200D\uD83C\uDFA4', status: 'busy',   tags: ['Brand','3D','Concept'] },
 ];
 
-var tooltip    = null;
-var hideTimer  = null;
+var tooltip   = null;
+var hideTimer = null;
 
 function getStatusText(status) {
     if (status === 'online')  return T[currentLang].status_online;
@@ -452,7 +581,6 @@ function showTooltip(memberIndex, cardEl) {
     tagsEl.innerHTML = member.tags.map(function(t) { return '<span>' + t + '</span>'; }).join('');
 
     positionTooltip(cardEl);
-
     tooltip.classList.add('visible');
 }
 
@@ -564,6 +692,10 @@ function initCarousel() {
     });
 }
 
+/* ══════════════════════════════════════════════════
+   NITRO BOOST COUNTER
+══════════════════════════════════════════════════ */
+
 function initNitroBoost() {
     var section = document.getElementById('nitro-boost');
     if (!section) return;
@@ -601,6 +733,10 @@ function initNitroBoost() {
     obs.observe(section);
 }
 
+/* ══════════════════════════════════════════════════
+   VIDEO AUTOPLAY
+══════════════════════════════════════════════════ */
+
 function initVideo() {
     var video = document.getElementById('bg-video');
     if (!video) return;
@@ -616,75 +752,58 @@ function initVideo() {
     }
 }
 
-// Конфигурация команд Джарвиса
-const JARVIS_COMMANDS = {
-    UPDATE_THEME: 'update_theme',
-    SYNC_PROTOCOLS: 'sync_protocols',
-    BUILD_SECTION: 'build_section'
-};
+/* ══════════════════════════════════════════════════
+   VOICE COMMAND (Speech Recognition)
+   Guarded — only initialised in supported browsers
+══════════════════════════════════════════════════ */
 
-// Функция обработки ввода
-async function processJarvisCommand(input) {
-    const text = input.toLowerCase();
-    const statusEl = document.getElementById('hud-status');
-    
-    statusEl.innerText = "ANALYZING...";
-    
-    // 1. Команда на смену темы (Протокол Цвета)
-    if (text.includes("смени цвет на")) {
-        const colors = { "синий": "#0077ff", "красный": "#ff4444", "золотой": "#ffcc00", "стандарт": "#00ff88" };
-        let newColor = colors["стандарт"];
-        
-        for (let key in colors) {
-            if (text.includes(key)) newColor = colors[key];
+var recognition = null;
+
+if (window.SpeechRecognition || window.webkitSpeechRecognition) {
+    recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'ru-RU';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onresult = async function(event) {
+        var transcript = event.results[0][0].transcript;
+        var input = document.getElementById('chat-msg');
+        if (input) {
+            input.value = transcript;
+            await _sendMsg('chat-msg');
         }
-        
-        document.documentElement.style.setProperty('--accent', newColor);
-        statusEl.innerText = "PROTOCOL UPDATED";
-        return `Система перенастроена. Новый акцентный цвет: ${newColor}`;
-    }
+    };
 
-    // 2. Команда на создание секции (Генерация кода)
-    if (text.includes("создай секцию")) {
-        statusEl.innerText = "GENERATING UI...";
-        // Здесь можно добавить вызов OpenAI/Gemini API
-        return "Протокол генерации запущен. Ожидайте структуру в чате.";
-    }
+    recognition.onend = function() {
+        var statusEl = document.getElementById('hud-status');
+        if (statusEl) statusEl.innerText = 'SYSTEM: STANDBY';
+    };
 
-    // 3. Синхронизация с Firestore
-    if (text.includes("синхронизация")) {
-        statusEl.innerText = "SYNCING...";
-        await syncWithFirebase();
-        statusEl.innerText = "SYSTEM READY";
-        return "Данные из Firestore успешно подтянуты.";
-    }
-
-    statusEl.innerText = "SYSTEM: STANDBY";
-    return null;
+    recognition.onerror = function(event) {
+        console.warn('Speech recognition error:', event.error);
+        var statusEl = document.getElementById('hud-status');
+        if (statusEl) statusEl.innerText = 'VOICE ERROR';
+    };
 }
-
-const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-recognition.lang = 'ru-RU';
 
 function startVoiceCommand() {
+    if (!recognition) {
+        console.warn('SpeechRecognition not supported in this browser.');
+        return;
+    }
     recognition.start();
-    document.getElementById('hud-status').innerText = "LISTENING...";
+    var statusEl = document.getElementById('hud-status');
+    if (statusEl) statusEl.innerText = 'LISTENING...';
 }
 
-recognition.onresult = async (event) => {
-    const transcript = event.results[0][0].transcript;
-    document.getElementById('chat-msg').value = transcript;
-    await _sendMsg('chat-msg');
-};
-
-recognition.onend = () => {
-    document.getElementById('hud-status').innerText = "SYSTEM: STANDBY";
-};
-
+/* ══════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════ */
 
 window.onload = function() {
     initVideo();
     initCarousel();
     initNitroBoost();
+    initFaradayCore();
     setLang('ru');
 };
