@@ -4,8 +4,7 @@ var firebaseConfig = {
     projectId:         "my-portfolio-auth-ff1ce",
     storageBucket:     "my-portfolio-auth-ff1ce.firebasestorage.app",
     messagingSenderId: "391088510675",
-    appId:             "1:391088510675:web:ff1c4d866c37f921886626"
-};
+    appId:             "1:391088510675:web:ff1c4d866c37f921886626" };
 
 var TELEGRAM_BOT_TOKEN = "8664813567:AAEkqGdXuyrS43Pjfc1gB-KdVuOOReWrkGw";
 var TELEGRAM_CHAT_ID   = "7451263058";
