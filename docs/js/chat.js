@@ -16,7 +16,6 @@ function addEmoji(inputId, emoji) {
 }
 
 /* Отправить личное сообщение → Firebase + Telegram */
-/* Отправить сообщение через наш Bridge (Python) */
 function sendPersonalMessage(inputId, windowId) {
     var input = document.getElementById(inputId || 'chat-msg');
     var feedEl = document.getElementById(windowId || 'chat-window');
@@ -28,6 +27,8 @@ function sendPersonalMessage(inputId, windowId) {
         alert('Сначала войдите в систему');
         return;
     }
+
+    const userEmail = window.auth.currentUser.email || 'guest@nitro.hub';
     input.value = '';
     appendMessage(feedEl, text, 'sent');
 
@@ -36,19 +37,23 @@ function sendPersonalMessage(inputId, windowId) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            message: text,
-            email: window.auth.currentUser.email
+            message: text,   // В bridge.py мы добавили поддержку поля 'message'
+            email: userEmail // Используем безопасную переменную
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) throw new Error('Ошибка сервера: ' + response.status);
+        return response.json();
+    })
     .then(data => {
         console.log('[Bridge] Ответ сервера:', data);
     })
     .catch(err => {
         console.error('[Bridge] Ошибка связи с Python:', err);
-        alert('Сервер Faraday (Python) не отвечает. Запустите bridge.py');
+        // Не показываем alert на каждую ошибку, чтобы не бесить пользователя, 
+        // просто пишем в консоль.
     });
- }
+}
 /* Рендер личных сообщений из Firestore (в оба окна) */
 function renderPersonalMessages(snap) {
     ['chat-window', 'modal-chat-window'].forEach(function(id) {

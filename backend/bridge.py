@@ -77,25 +77,33 @@ def notify():
 
 @app.route('/api/memory', methods=['POST'])
 def save_memory():
-    if not db:
-        return jsonify({'error': 'Firebase not configured'}), 503
-
     data = request.get_json(silent=True) or {}
-    
-    # Теперь он берет 'content' ИЛИ 'message' (если content нет)
-    topic   = data.get('topic', 'chat_log')
     content = data.get('content') or data.get('message', '').strip()
-    email   = data.get('email', 'anonymous')
+    email = data.get('email', 'anonymous')
 
     if not content:
-        return jsonify({'error': 'content or message is required'}), 400
+        return jsonify({'error': 'No content'}), 400
 
-    db.collection('faraday_memory').add({
-        'topic':     topic,
-        'content':   content,
-        'user_email': email,
-        'timestamp': firestore.SERVER_TIMESTAMP,
-    })
+    # Сначала отправляем в Telegram (это сработает быстро)
+    try:
+        _send_telegram(f"📨 Сообщение: {content}\n👤 От: {email}")
+        print("[Faraday] Telegram уведомление отправлено")
+    except Exception as e:
+        print(f"[Faraday] Ошибка Telegram: {e}")
+
+    # Пытаемся сохранить в Firebase (если упадет - не страшно)
+    try:
+        if db:
+            db.collection('faraday_memory').add({
+                'content': content,
+                'email': email,
+                'timestamp': firestore.SERVER_TIMESTAMP
+            })
+            print("[Faraday] Запись в Firestore добавлена")
+    except Exception as e:
+        print(f"[Faraday] Ошибка базы данных: {e}")
+        # Мы не возвращаем 500 ошибку, чтобы Telegram всё равно считался успешным
+
     return jsonify({'ok': True})
 
 
