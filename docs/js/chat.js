@@ -54,6 +54,29 @@ function sendPersonalMessage(inputId, windowId) {
         // просто пишем в консоль.
     });
 }
+
+// Слушаем ответы от Faraday в реальном времени
+function listenForFaradayResponses() {
+    if (!window.auth.currentUser) return;
+
+    window.db.collection('faraday_responses') // Создаем отдельную коллекцию для ответов
+        .where('recipientId', '==', window.auth.currentUser.uid)
+        .orderBy('timestamp', 'desc')
+        .limit(1)
+        .onSnapshot((snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added") {
+                    const data = change.doc.data();
+                    const feed = document.getElementById('faraday-feed');
+                    if (feed) {
+                        appendFaradayAIMsg(feed, data.text); // Выводим ответ на экран
+                    }
+                }
+            });
+        });
+}
+
+// Вызови эту функцию сразу после авторизации пользователя
 /* Рендер личных сообщений из Firestore (в оба окна) */
 function renderPersonalMessages(snap) {
     ['chat-window', 'modal-chat-window'].forEach(function(id) {
