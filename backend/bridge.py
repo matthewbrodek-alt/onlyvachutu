@@ -30,7 +30,7 @@ PORT               = int(os.getenv('PORT', 5000))
 
 # ── Инициализация Flask ──────────────────────────
 app = Flask(__name__)
-CORS(app, origins=['http://localhost:3000', 'matthewbrodek-alt.github.io'])
+CORS(app, resources={r"/*": {"origins": "*"}, r"/api/*": {"origins": "https://matthewbrodek-alt.github.io"}})
 
 # ── Инициализация Firebase Admin ────────────────
 KEY_FILE = os.path.join(os.path.dirname(__file__), 'serviceAccountKey.json')
@@ -77,23 +77,23 @@ def notify():
 
 @app.route('/api/memory', methods=['POST'])
 def save_memory():
-    """
-    Сохранить запись в faraday_memory (Firestore).
-    Body: { "topic": "...", "content": "..." }
-    """
     if not db:
         return jsonify({'error': 'Firebase not configured'}), 503
 
-    data    = request.get_json(silent=True) or {}
-    topic   = data.get('topic',   'note')
-    content = data.get('content', '').strip()
+    data = request.get_json(silent=True) or {}
+    
+    # Теперь он берет 'content' ИЛИ 'message' (если content нет)
+    topic   = data.get('topic', 'chat_log')
+    content = data.get('content') or data.get('message', '').strip()
+    email   = data.get('email', 'anonymous')
 
     if not content:
-        return jsonify({'error': 'content is required'}), 400
+        return jsonify({'error': 'content or message is required'}), 400
 
     db.collection('faraday_memory').add({
         'topic':     topic,
         'content':   content,
+        'user_email': email,
         'timestamp': firestore.SERVER_TIMESTAMP,
     })
     return jsonify({'ok': True})
