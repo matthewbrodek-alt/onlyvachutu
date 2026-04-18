@@ -30,7 +30,7 @@ PORT               = int(os.getenv('PORT', 5000))
 
 # ── Инициализация Flask ──────────────────────────
 app = Flask(__name__)
-CORS(app, origins=['http://localhost:3000', 'https://your-domain.com'])
+CORS(app, origins=['http://localhost:3000', 'matthewbrodek-alt.github.io'])
 
 # ── Инициализация Firebase Admin ────────────────
 KEY_FILE = os.path.join(os.path.dirname(__file__), 'serviceAccountKey.json')
@@ -159,4 +159,4 @@ def _send_telegram(text: str) -> bool:
 # ── Запуск ──────────────────────────────────────
 if __name__ == '__main__':
     print(f'[Faraday] Bridge запущен на порту {PORT}')
-    app.run(host='0.0.0.0', port=PORT, debug=False)
+    app.run(host='0.0.0.0', port=PORT, debug=True)
