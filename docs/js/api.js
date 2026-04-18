@@ -8,46 +8,38 @@
 ════════════════════════════════════════════════ */
 
 /* ── Telegram ── */
-var TELEGRAM_BOT_TOKEN = '8664813567:AAEkqGdXuyrS43Pjfc1gB-KdVuOOReWrkGw';
-var TELEGRAM_CHAT_ID   = '7451263058';
+/* api.js — Безопасная версия */
+
+// Удаляем токены отсюда совсем!
+var TELEGRAM_BOT_TOKEN = ''; 
+var TELEGRAM_CHAT_ID = '';
 
 /**
- * sendTelegramMessage(text)
- * Отправляет текст напрямую в Telegram.
- * Используется из chat.js для уведомлений.
+ * Теперь эта функция не стучится в Telegram напрямую, 
+ * а просит наш Python-мост сделать это.
  */
 function sendTelegramMessage(text) {
-    return fetch(
-        'https://api.telegram.org/bot' + TELEGRAM_BOT_TOKEN + '/sendMessage',
-        {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: text })
-        }
-    ).catch(function(err) {
-        console.warn('Telegram send error:', err);
+    return callBackend('/api/notify', { 
+        message: text,
+        email: window.auth && window.auth.currentUser ? window.auth.currentUser.email : 'anonymous'
     });
 }
 
 /**
- * callBackend(endpoint, payload)
  * Универсальный запрос к Python bridge.
- * Используй когда bridge.py будет запущен.
- *
- * Пример:
- *   callBackend('/api/notify', { message: 'Hello' })
  */
 function callBackend(endpoint, payload) {
-    var base = window.BACKEND_URL || 'http://localhost:5000';
+    var base = 'http://localhost:5000'; // Твой запущенный bridge.py
     return fetch(base + endpoint, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify(payload || {})
     })
     .then(function(r) { return r.json(); })
-    .catch(function(err) { console.warn('Backend error:', err); });
+    .catch(function(err) { 
+        console.warn('Bridge не запущен или недоступен:', err); 
+    });
 }
-
 /*
   Расширения (добавь когда понадобится):
 

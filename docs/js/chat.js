@@ -16,40 +16,39 @@ function addEmoji(inputId, emoji) {
 }
 
 /* Отправить личное сообщение → Firebase + Telegram */
+/* Отправить сообщение через наш Bridge (Python) */
 function sendPersonalMessage(inputId, windowId) {
-    var input  = document.getElementById(inputId  || 'chat-msg');
+    var input = document.getElementById(inputId || 'chat-msg');
     var feedEl = document.getElementById(windowId || 'chat-window');
     if (!input) return;
     var text = input.value.trim();
     if (!text) return;
 
     if (!window.auth || !window.auth.currentUser) {
-        alert(T[currentLang] && T[currentLang].login_required || 'Please log in first');
+        alert('Сначала войдите в систему');
         return;
     }
     input.value = '';
-
-    // Оптимистичный рендер (сразу в UI)
     appendMessage(feedEl, text, 'sent');
 
-    // Сохраняем в Firestore
-    window.db.collection('users')
-        .doc(window.auth.currentUser.uid)
-        .collection('messages')
-        .add({ message: text, sender: 'user', timestamp: firebase.firestore.FieldValue.serverTimestamp() })
-        .catch(function(err) { console.error('Personal msg error:', err); });
-
-    // Telegram
-    fetch('https://api.telegram.org/bot' + TELEGRAM_BOT_TOKEN + '/sendMessage', {
-        method:  'POST',
+    // ОТПРАВКА НА PYTHON BRIDGE
+    fetch('http://127.0.0.1:5000/api/memory', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({
-            chat_id: TELEGRAM_CHAT_ID,
-            text:    '👤 ' + window.auth.currentUser.email + '\n💬 ' + text
+        body: JSON.stringify({
+            message: text,
+            email: window.auth.currentUser.email
         })
-    }).catch(function(){});
-}
-
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('[Bridge] Ответ сервера:', data);
+    })
+    .catch(err => {
+        console.error('[Bridge] Ошибка связи с Python:', err);
+        alert('Сервер Faraday (Python) не отвечает. Запустите bridge.py');
+    });
+ }
 /* Рендер личных сообщений из Firestore (в оба окна) */
 function renderPersonalMessages(snap) {
     ['chat-window', 'modal-chat-window'].forEach(function(id) {
