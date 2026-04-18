@@ -134,15 +134,78 @@ var firebaseConfig = {
 var TELEGRAM_BOT_TOKEN = '8664813567:AAEkqGdXuyrS43Pjfc1gB-KdVuOOReWrkGw';
 var TELEGRAM_CHAT_ID   = '7451263058';
 
-// FIX: проверяем инициализацию перед созданием
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 
 var db   = firebase.firestore();
 var auth = firebase.auth();
 
-var currentLang       = 'ru';
-var chatUnsubscribe   = null;   // слушатель личного чата
-window.faradaySystemPaused = false;
+var currentLang              = 'ru';
+var chatUnsubscribe          = null;
+window.faradaySystemPaused   = false;
+
+/* ══════════════════════════════════════════════════
+   TTS — ГОЛОС FARADAY
+   Озвучивает текст. Интегрирован в appendFaradayAIMsg.
+   Вызывать напрямую: faradaySpeak(text)
+══════════════════════════════════════════════════ */
+var faradayTTSEnabled = true; // можно отключить командой «замолчи»
+
+function faradaySpeak(text) {
+    if (!faradayTTSEnabled) return;
+    if (!window.speechSynthesis) return;
+
+    // Отменяем текущую речь перед новой (избегаем очереди)
+    window.speechSynthesis.cancel();
+
+    // Убираем HTML-теги и служебные префиксы перед озвучкой
+    var clean = text.replace(/<[^>]+>/g, '').replace(/^FARADAY:\s*/i, '').trim();
+    if (!clean) return;
+
+    var speech      = new SpeechSynthesisUtterance(clean);
+    speech.lang     = 'ru-RU';
+    speech.pitch    = 0.7;  // глубокий голос
+    speech.rate     = 1.0;
+    speech.volume   = 0.9;
+    window.speechSynthesis.speak(speech);
+}
+
+/* ══════════════════════════════════════════════════
+   CHARACTER ENGINE — эмоциональный фон Faraday
+   Возвращает строку-«настроение» на основе
+   времени суток и нагрузки памяти (если доступна).
+══════════════════════════════════════════════════ */
+function getFaradayMood() {
+    var hour = new Date().getHours();
+    // Проверяем доступность performance.memory (только Chrome)
+    var memHigh = false;
+    if (window.performance && window.performance.memory) {
+        memHigh = window.performance.memory.usedJSHeapSize > 50000000;
+    }
+
+    if (memHigh)     return 'Warning: высокая нагрузка на память. Рекомендую перезагрузку вкладки.';
+    if (hour < 6)    return 'Режим пониженного энергопотребления. Слушаю тихо...';
+    if (hour < 12)   return 'Утренний протокол активен. Системы работают штатно.';
+    if (hour < 18)   return 'Все системы в норме. Производительность оптимальна.';
+    if (hour < 22)   return 'Вечерний режим. Снижаю приоритет фоновых задач.';
+    return 'Поздний протокол. Системы в режиме ожидания.';
+}
+
+/* ══════════════════════════════════════════════════
+   MEMORY — работа с faraday_memory в Firestore
+══════════════════════════════════════════════════ */
+
+// Получить последнюю запись из памяти
+function getLatestMemory() {
+    return db.collection('faraday_memory')
+        .orderBy('timestamp', 'desc')
+        .limit(1)
+        .get()
+        .then(function(snap) {
+            if (snap.empty) return null;
+            return snap.docs[0].data();
+        })
+        .catch(function() { return null; });
+}
 
 /* ══════════════════════════════════════════════════
    ЯЗЫК
@@ -150,13 +213,11 @@ window.faradaySystemPaused = false;
 function setLang(lang) {
     currentLang = lang;
 
-    // Подсветка активной кнопки языка
     ['lang-ru','lang-en','lang-ru-m','lang-en-m'].forEach(function(id) {
         var el = document.getElementById(id);
         if (el) el.classList.toggle('active', id === 'lang-' + lang || id === 'lang-' + lang + '-m');
     });
 
-    // Перевод элементов с data-lang
     document.querySelectorAll('[data-lang]').forEach(function(el) {
         var key  = el.getAttribute('data-lang');
         var text = T[lang][key];
@@ -165,7 +226,6 @@ function setLang(lang) {
         el.innerText = text;
     });
 
-    // Перевод плейсхолдеров
     document.querySelectorAll('[data-lang-ph]').forEach(function(el) {
         var key  = el.getAttribute('data-lang-ph');
         var text = T[lang][key];
@@ -237,7 +297,7 @@ function closeFaradayChatIfOutside(e) {
 }
 
 /* ══════════════════════════════════════════════════
-   EMOJI — универсальный (добавляет в нужное поле)
+   EMOJI — универсальный
 ══════════════════════════════════════════════════ */
 function addEmoji(inputId, emoji) {
     var el = document.getElementById(inputId);
@@ -246,10 +306,9 @@ function addEmoji(inputId, emoji) {
 
 /* ══════════════════════════════════════════════════
    ЛИЧНЫЙ МЕССЕНДЖЕР — отправка в Firebase
-   Только реальные сообщения, никакого ИИ здесь.
+   Только реальные сообщения, без ИИ.
 ══════════════════════════════════════════════════ */
 function sendPersonalMessage(inputId, windowId) {
-    // FIX: убрана дублирующая логика async/await из оригинала
     var input  = document.getElementById(inputId  || 'chat-msg');
     var feedEl = document.getElementById(windowId || 'chat-window');
     if (!input) return;
@@ -262,10 +321,8 @@ function sendPersonalMessage(inputId, windowId) {
     }
     input.value = '';
 
-    // Оптимистичный рендер — сразу показываем сообщение
     appendMessage(feedEl, text, 'sent');
 
-    // Сохраняем в Firebase
     db.collection('users')
       .doc(auth.currentUser.uid)
       .collection('messages')
@@ -276,7 +333,6 @@ function sendPersonalMessage(inputId, windowId) {
       })
       .catch(function(err) { console.error('Personal msg error:', err); });
 
-    // Отправляем в Telegram
     fetch('https://api.telegram.org/bot' + TELEGRAM_BOT_TOKEN + '/sendMessage', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -284,12 +340,12 @@ function sendPersonalMessage(inputId, windowId) {
             chat_id: TELEGRAM_CHAT_ID,
             text: '👤 ' + auth.currentUser.email + '\n💬 ' + text
         })
-    }).catch(function() {}); // Ошибка сети не критична
+    }).catch(function() {});
 }
 
 /* ══════════════════════════════════════════════════
    FARADAY AI ЧАТ — отправка и обработка команд
-   Полностью отдельный поток, не касается Firebase
+   Полностью отдельный поток. Не касается Firebase
    личного чата.
 ══════════════════════════════════════════════════ */
 function sendFaradayMessage() {
@@ -301,13 +357,9 @@ function sendFaradayMessage() {
 
     var feed = document.getElementById('faraday-feed');
 
-    // Показываем сообщение пользователя
     appendFaradayUserMsg(feed, text);
-
-    // Показываем индикатор печати
     var typingId = appendFaradayTyping(feed);
 
-    // Обрабатываем команду
     setTimeout(function() {
         removeFaradayTyping(typingId);
         var response = processFaradayCommand(text);
@@ -322,15 +374,32 @@ function faradayQuick(cmd) {
     sendFaradayMessage();
 }
 
-// Движок команд Faraday
+/* ══════════════════════════════════════════════════
+   ДВИЖОК КОМАНД FARADAY
+══════════════════════════════════════════════════ */
 function processFaradayCommand(text) {
-    var t = text.toLowerCase().trim();
+    var t        = text.toLowerCase().trim();
     var statusEl = document.getElementById('hud-status');
     var versionPill = document.getElementById('faraday-hud-status-badge');
 
-    var setStatus = function(msg) {
+    function setStatus(msg) {
         if (statusEl) statusEl.innerText = msg;
-    };
+    }
+
+    // ── Замолчи / отключить TTS ──
+    if (t.includes('замолчи') || t.includes('тихо') || t.includes('выключи голос')) {
+        faradayTTSEnabled = false;
+        window.speechSynthesis && window.speechSynthesis.cancel();
+        setStatus('TTS: OFF');
+        return 'Голосовой вывод отключён. Работаю в тихом режиме.';
+    }
+
+    // ── Включить TTS ──
+    if (t.includes('говори') || t.includes('включи голос') || t.includes('озвучивай')) {
+        faradayTTSEnabled = true;
+        setStatus('TTS: ON');
+        return 'Голосовой вывод активирован.';
+    }
 
     // ── Цвет акцента ──
     var colorMap = {
@@ -357,13 +426,12 @@ function processFaradayCommand(text) {
         document.documentElement.style.setProperty('--accent-dim', newColor + '1a');
         document.documentElement.style.setProperty('--border-accent', newColor + '38');
 
-        // Пытаемся сохранить в Firestore
         db.collection('system_config').doc('faraday_protocol')
           .update({ 'ui_theme.accent': newColor })
-          .catch(function() {}); // Если нет прав — просто локально
+          .catch(function() {});
 
         setStatus('COLOR: ' + newColor.toUpperCase());
-        return 'Акцентный цвет изменён на ' + newColor + '. Изменение применено локально и синхронизируется с протоколом.';
+        return 'Акцентный цвет изменён на ' + newColor + '. Изменение применено.';
     }
 
     // ── Пауза / стоп ──
@@ -376,7 +444,7 @@ function processFaradayCommand(text) {
         db.collection('system_config').doc('faraday_protocol')
           .update({ safety_protocols: 'paused' })
           .catch(function() {});
-        return 'Протокол Faraday: медиа-системы приостановлены. Карусель и видео остановлены.';
+        return 'Протокол Faraday: медиа-системы приостановлены.';
     }
 
     // ── Запуск / активировать ──
@@ -389,7 +457,7 @@ function processFaradayCommand(text) {
         db.collection('system_config').doc('faraday_protocol')
           .update({ safety_protocols: 'active' })
           .catch(function() {});
-        return 'Протокол Faraday: все системы запущены. Видео и карусель возобновлены.';
+        return 'Протокол Faraday: все системы запущены.';
     }
 
     // ── Синхронизация ──
@@ -403,8 +471,10 @@ function processFaradayCommand(text) {
                   document.documentElement.style.setProperty('--accent', cfg.ui_theme.accent);
               }
               setStatus('SYSTEM: READY');
-              appendFaradayAIMsg(document.getElementById('faraday-feed'),
-                  'Конфигурация успешно загружена из Firestore. Версия протокола: ' + (cfg.version || '—'));
+              appendFaradayAIMsg(
+                  document.getElementById('faraday-feed'),
+                  'Конфигурация загружена из Firestore. Версия протокола: ' + (cfg.version || '—')
+              );
           })
           .catch(function() { setStatus('SYNC ERROR'); });
         return 'Запрашиваю данные из Firestore...';
@@ -414,8 +484,8 @@ function processFaradayCommand(text) {
     if (t.includes('статус') || t.includes('status')) {
         var isPaused = window.faradaySystemPaused;
         return 'Статус системы: ' + (isPaused ? 'ПАУЗА' : 'АКТИВНА') +
-               '. Видео: ' + (document.getElementById('bg-video') ? 'обнаружено' : 'не найдено') +
-               '. Firebase: подключён.';
+               '. Firebase: подключён. TTS: ' + (faradayTTSEnabled ? 'ON' : 'OFF') +
+               '. Настроение: ' + getFaradayMood();
     }
 
     // ── Запомни ──
@@ -427,11 +497,15 @@ function processFaradayCommand(text) {
                 content:   memData,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(function() {
-                appendFaradayAIMsg(document.getElementById('faraday-feed'),
-                    'Запомнено в ядре памяти: «' + memData + '»');
+                appendFaradayAIMsg(
+                    document.getElementById('faraday-feed'),
+                    'Запомнено: «' + memData + '»'
+                );
             }).catch(function(e) {
-                appendFaradayAIMsg(document.getElementById('faraday-feed'),
-                    'Ошибка записи памяти: ' + e.message);
+                appendFaradayAIMsg(
+                    document.getElementById('faraday-feed'),
+                    'Ошибка записи памяти: ' + e.message
+                );
             });
             return 'Обращаюсь к ядру памяти...';
         }
@@ -442,41 +516,49 @@ function processFaradayCommand(text) {
     if (t.includes('помощь') || t.includes('help') || t.includes('команды') || t.includes('что умеешь')) {
         return 'Доступные команды:\n' +
                '• «смени цвет на [синий/золотой/красный/стандарт]» — смена акцента\n' +
-               '• «пауза» — остановить видео и карусель\n' +
+               '• «пауза» — остановить видео\n' +
                '• «активируй» — запустить системы\n' +
                '• «синхронизация» — загрузить конфиг из Firestore\n' +
                '• «статус» — состояние системы\n' +
-               '• «запомни [текст]» — сохранить в память протокола';
+               '• «запомни [текст]» — сохранить в память\n' +
+               '• «замолчи» / «говори» — управление голосом';
     }
 
     // ── Приветствие ──
     if (t.includes('привет') || t.includes('hello') || t.includes('hi')) {
-        return 'Приветствую! Протокол Faraday активен и готов к работе. Введите «помощь» для списка команд.';
+        return 'Приветствую. Протокол Faraday активен. Настроение системы: ' + getFaradayMood() +
+               ' Введите «помощь» для списка команд.';
     }
 
     // ── Неизвестная команда ──
     setStatus('SYSTEM: STANDBY');
-    return 'Команда не распознана. Введите «помощь» для просмотра доступных команд Faraday.';
+    return 'Команда не распознана. Введите «помощь» для просмотра команд Faraday.';
 }
 
-/* ── Вспомогательные функции рендера Faraday ── */
+/* ══════════════════════════════════════════════════
+   РЕНДЕР СООБЩЕНИЙ FARADAY
+══════════════════════════════════════════════════ */
 function appendFaradayUserMsg(feed, text) {
     if (!feed) return;
     var div = document.createElement('div');
-    div.className = 'msg-box user-msg-faraday';
+    div.className  = 'msg-box user-msg-faraday';
     div.textContent = text;
     feed.appendChild(div);
     feed.scrollTop = feed.scrollHeight;
 }
 
+// Главная функция вывода AI-сообщений.
+// TTS вызывается здесь — единственное место.
 function appendFaradayAIMsg(feed, text) {
     if (!feed) return;
     var div = document.createElement('div');
     div.className = 'msg-box ai-msg';
-    // Обрабатываем переносы строк в ответе
     div.innerHTML = '<strong>FARADAY:</strong> ' + text.replace(/\n/g, '<br>');
     feed.appendChild(div);
     feed.scrollTop = feed.scrollHeight;
+
+    // TTS — озвучиваем каждый AI-ответ
+    faradaySpeak(text);
 }
 
 function appendFaradayTyping(feed) {
@@ -503,14 +585,13 @@ function removeFaradayTyping(id) {
 function appendMessage(feedEl, text, type) {
     if (!feedEl) return;
     var div = document.createElement('div');
-    div.className = 'msg-box ' + type;
+    div.className  = 'msg-box ' + type;
     div.textContent = text;
     feedEl.appendChild(div);
     feedEl.scrollTop = feedEl.scrollHeight;
 }
 
 function renderPersonalMessages(snap) {
-    // FIX: рендерим в оба окна одновременно
     var windows = [
         document.getElementById('chat-window'),
         document.getElementById('modal-chat-window')
@@ -521,7 +602,7 @@ function renderPersonalMessages(snap) {
         snap.forEach(function(doc) {
             var m   = doc.data();
             var div = document.createElement('div');
-            div.className = 'msg-box ' + (m.sender === 'user' ? 'sent' : 'received');
+            div.className  = 'msg-box ' + (m.sender === 'user' ? 'sent' : 'received');
             div.textContent = m.message || '';
             win.appendChild(div);
         });
@@ -567,7 +648,6 @@ function updateAuthUI(user) {
         var uname = document.getElementById('user-name-contacts');
         if (uname) uname.innerText = name;
 
-        // Подписываемся на сообщения личного чата
         if (chatUnsubscribe) chatUnsubscribe();
         chatUnsubscribe = db.collection('users')
             .doc(user.uid)
@@ -595,7 +675,6 @@ function updateAuthUI(user) {
     }
 }
 
-// FIX: единственная подписка на изменение авторизации
 auth.onAuthStateChanged(updateAuthUI);
 
 async function handleLogin() {
@@ -626,13 +705,18 @@ function handleLogout() {
 }
 
 /* ══════════════════════════════════════════════════
-   FARADAY PROTOCOL — Firebase конфиг
+   FARADAY PROTOCOL — Firebase конфиг + ПРОАКТИВНОСТЬ
+   1. Читает system_config/faraday_protocol
+   2. Приветствует с последней записью из памяти
 ══════════════════════════════════════════════════ */
 var faradayProtocolRef = db.collection('system_config').doc('faraday_protocol');
 
 function initFaradayCore() {
-    var statusEl  = document.getElementById('hud-status');
-    var versionEl = document.getElementById('protocol-version');
+    var statusEl    = document.getElementById('hud-status');
+    var versionEl   = document.getElementById('protocol-version');
+    var versionPill = document.getElementById('faraday-hud-status-badge');
+
+    // Слушатель конфигурации из Firestore
     faradayProtocolRef.onSnapshot(function(snapshot) {
         if (!snapshot.exists) return;
         var config = snapshot.data();
@@ -651,15 +735,97 @@ function initFaradayCore() {
 
         var bgVideo = document.getElementById('bg-video');
         if (statusEl) statusEl.innerText = isPaused ? 'SYSTEM: PAUSED' : 'SYSTEM: ACTIVE';
+        if (versionPill) versionPill.innerText = isPaused ? 'ПАУЗА' : 'АКТИВЕН';
 
         if (isPaused) {
             if (bgVideo) bgVideo.pause();
         } else {
             if (bgVideo) bgVideo.play().catch(function() {});
         }
+
     }, function(err) {
         console.warn('Faraday protocol: нет доступа:', err.code);
     });
+
+    // ПРОАКТИВНОСТЬ: приветствие с последней записью памяти
+    // Запускаем с небольшой задержкой, чтобы чат успел отрисоваться
+    setTimeout(function() {
+        var feed = document.getElementById('faraday-feed');
+        if (!feed) return;
+
+        // Показываем настроение системы
+        var mood = getFaradayMood();
+        appendFaradayAIMsg(feed, mood);
+
+        // Проверяем последнюю запись в памяти
+        getLatestMemory().then(function(lastNote) {
+            if (lastNote && lastNote.content) {
+                appendFaradayAIMsg(
+                    feed,
+                    'С возвращением. Последняя запись в протоколах: «' + lastNote.content + '». Продолжим работу?'
+                );
+            }
+        });
+    }, 1200);
+}
+
+/* ══════════════════════════════════════════════════
+   CONTEXT AWARENESS — реакция на действия пользователя
+   Отслеживает скролл к секции проектов и сообщает
+   об этом в Faraday-чат (один раз за сессию).
+══════════════════════════════════════════════════ */
+function initContextAwareness() {
+    var projectsObserved = false;
+
+    // Используем IntersectionObserver — надёжнее scroll-события
+    var projectsEl = document.getElementById('projects-page');
+    if (!projectsEl) return;
+
+    var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting && !projectsObserved) {
+                projectsObserved = true;
+                var feed = document.getElementById('faraday-feed');
+                if (feed) {
+                    appendFaradayAIMsg(
+                        feed,
+                        'Сэр, этот проект был реализован за 48 часов. Впечатляющие показатели.'
+                    );
+                }
+            }
+        });
+    }, { threshold: 0.3 });
+
+    observer.observe(projectsEl);
+}
+
+/* ══════════════════════════════════════════════════
+   RANDOM THOUGHTS — случайные мысли Faraday
+   Выводятся в Faraday-чат раз в 10 минут,
+   только если чат открыт.
+══════════════════════════════════════════════════ */
+var FARADAY_THOUGHTS = [
+    'Анализирую трафик... Узлов угроз не обнаружено.',
+    'Оптимизация базы данных завершена успешно.',
+    'Сэр, рекомендую обновить зависимости в Nitro Bot.',
+    'Мониторинг активен. Все протоколы в норме.',
+    'Фоновое сканирование завершено. Аномалий не выявлено.',
+    'Профилактическая диагностика: системы работают штатно.',
+];
+
+function initRandomThoughts() {
+    setInterval(function() {
+        // Показываем мысль только если Faraday-чат открыт
+        var modal = document.getElementById('faraday-modal');
+        if (!modal || !modal.classList.contains('open')) return;
+
+        var feed = document.getElementById('faraday-feed');
+        if (!feed) return;
+
+        var thought = FARADAY_THOUGHTS[Math.floor(Math.random() * FARADAY_THOUGHTS.length)];
+        appendFaradayAIMsg(feed, thought);
+
+    }, 600000); // раз в 10 минут
 }
 
 /* ══════════════════════════════════════════════════
@@ -668,11 +834,10 @@ function initFaradayCore() {
 function initVideo() {
     var video = document.getElementById('bg-video');
     if (!video) return;
-    video.muted = true; // обязательно для автозапуска
+    video.muted = true;
     var promise = video.play();
     if (promise !== undefined) {
         promise.catch(function() {
-            // Ждём первого взаимодействия
             var unlock = function() {
                 video.play().catch(function() {});
                 document.removeEventListener('click', unlock);
@@ -690,8 +855,8 @@ function initVideo() {
 var recognition = null;
 if (window.SpeechRecognition || window.webkitSpeechRecognition) {
     recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = 'ru-RU';
-    recognition.continuous = false;
+    recognition.lang         = 'ru-RU';
+    recognition.continuous   = false;
     recognition.interimResults = false;
 
     recognition.onresult = function(event) {
@@ -732,17 +897,17 @@ function startVoiceCommand() {
 }
 
 /* ══════════════════════════════════════════════════
-   КАРУСЕЛЬ КОМАНДЫ
+   КАРУСЕЛЬ
 ══════════════════════════════════════════════════ */
 var TEAM = [
-    { name: 'Alex Chen',     role_ru: 'Lead Developer',     role_en: 'Lead Developer',     emoji: '👨‍💻', status: 'online',  tags: ['React','Node.js','TypeScript'] },
-    { name: 'Maria Santos',  role_ru: 'UI/UX Дизайнер',     role_en: 'UI/UX Designer',     emoji: '👩‍🎨', status: 'online',  tags: ['Figma','Motion','Branding'] },
-    { name: 'Dmitri Volkov', role_ru: 'DevOps Инженер',     role_en: 'DevOps Engineer',    emoji: '👨‍🔧', status: 'busy',    tags: ['Docker','AWS','CI/CD'] },
-    { name: 'Sara Kim',      role_ru: 'Продакт Менеджер',   role_en: 'Product Manager',    emoji: '👩‍💼', status: 'online',  tags: ['Agile','Roadmap','Analytics'] },
-    { name: 'Jordan Lee',    role_ru: 'Full-Stack Разраб.',  role_en: 'Full-Stack Dev',     emoji: '🧑‍💻', status: 'online',  tags: ['Vue','Python','Firebase'] },
-    { name: 'Felix Wagner',  role_ru: 'Аналитик Безопасн.', role_en: 'Security Analyst',   emoji: '🕵️', status: 'offline', tags: ['Pentesting','OWASP'] },
-    { name: 'Yuki Tanaka',   role_ru: 'Data Scientist',     role_en: 'Data Scientist',     emoji: '👩‍🔬', status: 'online',  tags: ['ML','Python','BigQuery'] },
-    { name: 'Nina Okonkwo',  role_ru: 'Арт-директор',       role_en: 'Creative Director',  emoji: '👩‍🎤', status: 'busy',    tags: ['Brand','3D','Concept'] },
+    { name: 'Alex Chen',     role_ru: 'Lead Developer',     role_en: 'Lead Developer',    emoji: '👨‍💻', status: 'online',  tags: ['React','Node.js','TypeScript'] },
+    { name: 'Maria Santos',  role_ru: 'UI/UX Дизайнер',     role_en: 'UI/UX Designer',    emoji: '👩‍🎨', status: 'online',  tags: ['Figma','Motion','Branding'] },
+    { name: 'Dmitri Volkov', role_ru: 'DevOps Инженер',     role_en: 'DevOps Engineer',   emoji: '👨‍🔧', status: 'busy',    tags: ['Docker','AWS','CI/CD'] },
+    { name: 'Sara Kim',      role_ru: 'Продакт Менеджер',   role_en: 'Product Manager',   emoji: '👩‍💼', status: 'online',  tags: ['Agile','Roadmap','Analytics'] },
+    { name: 'Jordan Lee',    role_ru: 'Full-Stack Разраб.', role_en: 'Full-Stack Dev',    emoji: '🧑‍💻', status: 'online',  tags: ['Vue','Python','Firebase'] },
+    { name: 'Felix Wagner',  role_ru: 'Аналитик Безопасн.', role_en: 'Security Analyst',  emoji: '🕵️', status: 'offline', tags: ['Pentesting','OWASP'] },
+    { name: 'Yuki Tanaka',   role_ru: 'Data Scientist',     role_en: 'Data Scientist',    emoji: '👩‍🔬', status: 'online',  tags: ['ML','Python','BigQuery'] },
+    { name: 'Nina Okonkwo',  role_ru: 'Арт-директор',       role_en: 'Creative Director', emoji: '👩‍🎤', status: 'busy',    tags: ['Brand','3D','Concept'] },
 ];
 
 var tooltip   = null;
@@ -782,7 +947,7 @@ function positionTooltip(cardEl) {
     var tw = 210, th = 180;
     var left = rect.right + 14;
     var top  = rect.top + (rect.height / 2) - (th / 2);
-    if (left + tw > window.innerWidth - 8) left = rect.left - tw - 14;
+    if (left + tw > window.innerWidth - 8)  left = rect.left - tw - 14;
     if (top < 8) top = 8;
     if (top + th > window.innerHeight - 8) top = window.innerHeight - th - 8;
     tooltip.style.left = left + 'px';
@@ -800,7 +965,7 @@ function initCarousel() {
     if (!scene) return;
     tooltip = document.getElementById('c-tooltip');
 
-    var N = TEAM.length;
+    var N  = TEAM.length;
     var RX = 460, RY = 460, CX = 500, CY = 500;
     var els = [];
 
@@ -811,7 +976,7 @@ function initCarousel() {
         inner.className = 'c-card-inner';
 
         var img = new Image();
-        img.alt = member.name;
+        img.alt    = member.name;
         img.onload  = function() { inner.innerHTML = ''; inner.appendChild(img); };
         img.onerror = function() {
             inner.innerHTML =
@@ -924,7 +1089,6 @@ document.addEventListener('keydown', function(e) {
         closeMobileNav();
         if (tooltip) tooltip.classList.remove('visible');
     }
-    // Enter в полях личного чата
     if (e.key === 'Enter') {
         var id = document.activeElement && document.activeElement.id;
         if (id === 'auth-email' || id === 'auth-pass') handleLogin();
@@ -939,10 +1103,12 @@ window.onload = function() {
     initVideo();
     initCarousel();
     initNitroBoost();
-    initFaradayCore();
+    initFaradayCore();       // Firebase конфиг + проактивное приветствие
+    initContextAwareness();  // Реакция на переход к проектам
+    initRandomThoughts();    // Случайные мысли раз в 10 минут
     setLang('ru');
 
-    // Добавляем CSS для анимации точек набора
+    // CSS для анимации точек набора
     var style = document.createElement('style');
     style.textContent = [
         '@keyframes typingBlink {',
@@ -959,4 +1125,4 @@ window.onload = function() {
 };
 
 console.log('%cNitro Hub v8.0 — Faraday Edition ✓', 'color:#00ff88; font-size:14px; font-weight:bold;');
-console.log('%c⚡ Личный чат и Faraday AI разделены', 'color:#00bb55; font-size:12px;');
+console.log('%c⚡ TTS · Mood · Context · RandomThoughts — активны', 'color:#00bb55; font-size:12px;');
