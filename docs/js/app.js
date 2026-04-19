@@ -119,17 +119,41 @@ function toggleMobileNav() {
     var nav     = document.getElementById('mobile-nav');
     var overlay = document.getElementById('mobile-nav-overlay');
     if (!nav) return;
+
     var open = nav.classList.contains('open');
-    if (burger)  { burger.classList.toggle('open', !open); burger.setAttribute('aria-expanded', !open); }
-    if (nav)     { nav.classList.toggle('open', !open); nav.setAttribute('aria-hidden', open); }
+
+    // Если меню открыто, значит сейчас мы его ЗАКРЫВАЕМ. 
+    // Переносим фокус на бургер, чтобы он не застрял внутри скрытого меню.
+    if (open && burger) {
+        burger.focus();
+    }
+
+    if (burger) { 
+        burger.classList.toggle('open', !open); 
+        burger.setAttribute('aria-expanded', !open); 
+    }
+    if (nav) { 
+        nav.classList.toggle('open', !open); 
+        nav.setAttribute('aria-hidden', open); 
+    }
     if (overlay) overlay.classList.toggle('open', !open);
 }
+
 function closeMobileNav() {
     var burger  = document.getElementById('burger');
     var nav     = document.getElementById('mobile-nav');
     var overlay = document.getElementById('mobile-nav-overlay');
-    if (burger)  { burger.classList.remove('open'); burger.setAttribute('aria-expanded', 'false'); }
-    if (nav)     { nav.classList.remove('open'); nav.setAttribute('aria-hidden', 'true'); }
+
+    // Всегда возвращаем фокус на кнопку открытия перед закрытием
+    if (burger) { 
+        burger.focus();
+        burger.classList.remove('open'); 
+        burger.setAttribute('aria-expanded', 'false'); 
+    }
+    if (nav) { 
+        nav.classList.remove('open'); 
+        nav.setAttribute('aria-hidden', 'true'); 
+    }
     if (overlay) overlay.classList.remove('open');
 }
 
