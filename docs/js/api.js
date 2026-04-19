@@ -2,40 +2,56 @@
    api.js — Внешние запросы к Python-мосту.
    Токены хранятся только в backend/.env
    Прямых обращений к Telegram API отсюда нет.
+
+   Ключевое: callBackend автоматически добавляет
+   uid текущего пользователя в каждый запрос,
+   чтобы bridge.py мог маршрутизировать ответ.
 ════════════════════════════════════════════════ */
 
-var BRIDGE_URL = 'http://127.0.0.1:5000'; // адрес bridge.py
+var BRIDGE_URL = 'http://127.0.0.1:5000';
 
 /**
  * Универсальный запрос к Python bridge.
+ * Автоматически добавляет uid и email авторизованного пользователя.
  */
 async function callBackend(endpoint, payload) {
-    // Получаем текущего пользователя
-    const user = firebase.auth().currentUser;
-    
-    // Добавляем UID в полезную нагрузку, если пользователь авторизован
+    var body = Object.assign({}, payload || {});
+
+    // Добавляем uid для обратного роутинга в bridge.py
+    var user = window.auth && window.auth.currentUser;
     if (user) {
-        payload.uid = user.uid;
-        payload.email = payload.email || user.email; // если email не передан, берем из auth
+        if (!body.uid)   body.uid   = user.uid;
+        if (!body.email) body.email = user.email;
     }
 
     try {
-        const response = await fetch(`${BRIDGE_URL}${endpoint}`, {
-            method: 'POST',
+        var response = await fetch(BRIDGE_URL + endpoint, {
+            method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body:    JSON.stringify(body)
         });
-        
-        if (!response.ok) throw new Error(`Server error: ${response.status}`);
+        if (!response.ok) throw new Error('HTTP ' + response.status);
         return await response.json();
-    } catch (error) {
-        console.error('[Bridge] Fetch error:', error);
+    } catch (err) {
+        console.warn('[Bridge] Недоступен (' + endpoint + '):', err.message);
         return null;
     }
 }
+
 /**
- * Отправить уведомление в Telegram через bridge.
- * Используется из chat.js при отправке личных сообщений.
+ * Сохранить сообщение через bridge.
+ * Bridge: Telegram-уведомление + запись в faraday_memory + роутинг uid.
+ */
+function bridgeSaveMemory(content, email) {
+    return callBackend('/api/memory', {
+        content: content,
+        email:   email || 'anonymous'
+        // uid добавится автоматически в callBackend
+    });
+}
+
+/**
+ * Отправить системное уведомление в Telegram (ошибки, события).
  */
 function sendTelegramMessage(text, email) {
     return callBackend('/api/notify', {
@@ -45,19 +61,7 @@ function sendTelegramMessage(text, email) {
 }
 
 /**
- * Сохранить запись в faraday_memory через bridge.
- * Bridge параллельно отправит Telegram-уведомление.
- */
-function bridgeSaveMemory(content, email) {
-    return callBackend('/api/memory', {
-        content: content,
-        email:   email || 'anonymous'
-    });
-}
-
-/**
- * Получить последние записи из faraday_memory.
- * GET-запрос через обёртку fetch.
+ * Получить последние записи из faraday_memory (GET).
  */
 function bridgeGetMemory() {
     return fetch(BRIDGE_URL + '/api/memory')
@@ -67,7 +71,7 @@ function bridgeGetMemory() {
 
 /**
  * Проверить доступность bridge.py.
- * Используется в self-diagnostic.
+ * Используется в self-diagnostic (chat.js).
  */
 function checkBridgeHealth() {
     return fetch(BRIDGE_URL + '/health')
@@ -76,11 +80,12 @@ function checkBridgeHealth() {
 }
 
 /**
- * Отправить отчёт об ошибке через bridge (безопасно, без токенов в JS).
+ * Отправить отчёт об ошибке через bridge → Telegram.
+ * Без токенов в JS.
  */
 function reportErrorToBridge(msg, url, line) {
     return callBackend('/api/notify', {
-        message: '[ERROR] ' + msg + ' | ' + url + ':' + line,
+        message: '[ERROR] ' + msg + ' | ' + (url || '') + ':' + (line || '?'),
         email:   'system@faraday'
     });
 }

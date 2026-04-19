@@ -1,36 +1,35 @@
 /* ════════════════════════════════════════════════
    app.js — Инициализация, навигация, язык,
-             карусель, Nitro Boost, Faraday HUD,
-             Context Awareness, Random Thoughts.
+             карусель, Nitro Boost, Faraday HUD
 ════════════════════════════════════════════════ */
 
 /* ── ПЕРЕВОДЫ ── */
 var T = {
     ru: {
-        nav_projects:'Мои проекты',     nav_about:'О нас',
-        nav_services:'Услуги',           nav_contacts:'Контакты',
-        back:'Назад',                    btn_contact_short:'Связаться',
-        nav_login:'Войти',               nav_logout:'Выйти',
-        hero_eyebrow:'ПРЕМИАЛЬНЫЕ ИНТЕРФЕЙСЫ И АРХИТЕКТУРА',
-        hero_title:'НОВЫЙ СТАНДАРТ ЦИФРОВОГО ОПЫТА',
-        hero_sub:'Мы создаём премиальные интерфейсы и архитектурные решения, которые задают будущее цифрового мира.',
-        btn_projects:'Смотреть проекты →', btn_contact:'Связаться с нами',
+        nav_projects:    'Мои проекты',    nav_about:       'О нас',
+        nav_services:    'Услуги',          nav_contacts:    'Контакты',
+        back:            'Назад',           btn_contact_short:'Связаться',
+        nav_login:       'Войти',           nav_logout:      'Выйти',
+        hero_eyebrow:    'ПРЕМИАЛЬНЫЕ ИНТЕРФЕЙСЫ И АРХИТЕКТУРА',
+        hero_title:      'НОВЫЙ СТАНДАРТ ЦИФРОВОГО ОПЫТА',
+        hero_sub:        'Мы создаём премиальные интерфейсы и архитектурные решения, которые задают будущее цифрового мира.',
+        btn_projects:    'Смотреть проекты →', btn_contact: 'Связаться с нами',
         feat1_title:'Инновации',   feat1_desc:'Используем передовые технологии для лучших результатов.',
         feat2_title:'Надёжность',  feat2_desc:'Гарантируем стабильность и безопасность каждого решения.',
         feat3_title:'Качество',    feat3_desc:'Внимание к деталям и высочайшие стандарты в каждом проекте.',
         feat4_title:'Скорость',    feat4_desc:'Быстрая реализация проектов без потери качества.',
-        nb_title:'НАШИ ПОКАЗАТЕЛИ',
+        nb_title:   'НАШИ ПОКАЗАТЕЛИ',
         nb_m1:'Довольных клиентов', nb_m2:'Завершённых проектов',
         nb_m3:'Лет опыта',          nb_m4:'Поддержка клиентов',
         nb_years:' лет',
-        carousel_title:'НАШИ СОТРУДНИКИ',
+        carousel_title: 'НАШИ СОТРУДНИКИ',
         status_online:'В СЕТИ', status_busy:'ЗАНЯТ', status_offline:'ОФЛАЙН',
         open_site:'Открыть сайт ➔',
         about_name:'Михаил «Faraday» Романов',
         about_role:'Full-Stack Dev · Digital Alchemist · Cat Enthusiast',
-        about_bio1:'Привет. Я тот самый человек, который в 3 часа ночи спорит с компилятором, держа на коленях кота.',
-        about_bio2:'Более 7 лет я превращаю хаос требований в элегантные цифровые решения.',
-        about_bio3:'Я верю, что каждый интерфейс должен быть живым — как хороший котик.',
+        about_bio1:'Привет. Я тот самый человек, который в 3 часа ночи спорит с компилятором, держа на коленях кота. Победитель в этом споре всегда кот — но код в итоге работает.',
+        about_bio2:'Более 7 лет я превращаю хаос требований в элегантные цифровые решения: от микросервисных архитектур до анимаций, от которых у дизайнеров перехватывает дыхание.',
+        about_bio3:'Я верю, что каждый интерфейс должен быть живым — как хороший котик: тёплым, отзывчивым и немного непредсказуемым.',
         about_quote:'«Ничто не слишком прекрасно, чтобы быть истинным» — Майкл Фарадей.',
         svc1_title:'Веб-разработка',      svc1_desc:'Премиальные сайты и веб-приложения с нуля до деплоя.',
         svc2_title:'UI/UX Дизайн',        svc2_desc:'Интерфейсы, которые не просто красивы, но и работают идеально.',
@@ -38,7 +37,7 @@ var T = {
         svc4_title:'Облачные решения',     svc4_desc:'Архитектура, масштабирование, Firebase, AWS — выберем лучшее.',
         svc5_title:'Всё что нужно в цифровой реальности',
         svc5_desc:'Нестандартная задача? Именно это нас и вдохновляет. Опишите проблему — мы найдём решение.',
-        contacts_desc:'Напишите мне прямо здесь — мессенджер синхронизирован с личными каналами.',
+        contacts_desc:'Напишите мне прямо здесь — мессенджер синхронизирован с личными каналами для мгновенного ответа.',
         system_synced:'SYSTEM SYNCED', statusOnline:'В СЕТИ',
         chatTitle:'Личный мессенджер', chatPlaceholder:'Написать сообщение...',
         email_ph:'Email', pass_ph:'Пароль', loginBtn:'Авторизоваться',
@@ -63,8 +62,8 @@ var T = {
         open_site:'Open Site ➔',
         about_name:'Michael «Faraday» Romanov',
         about_role:'Full-Stack Dev · Digital Alchemist · Cat Enthusiast',
-        about_bio1:'Hi. I\'m the person who argues with the compiler at 3am with a cat on their lap.',
-        about_bio2:'For over 7 years I\'ve been turning chaotic requirements into elegant digital solutions.',
+        about_bio1:'Hi. I\'m the person who argues with the compiler at 3am with a cat on their lap. The cat always wins — but the code works in the end.',
+        about_bio2:'For over 7 years I\'ve been turning chaotic requirements into elegant digital solutions: from microservice architectures to animations that leave designers breathless.',
         about_bio3:'I believe every interface should be alive — like a good cat: warm, responsive, and a little unpredictable.',
         about_quote:'"Nothing is too wonderful to be true" — Michael Faraday.',
         svc1_title:'Web Development',   svc1_desc:'Premium websites and web apps from scratch to deployment.',
@@ -73,7 +72,7 @@ var T = {
         svc4_title:'Cloud Solutions',   svc4_desc:'Architecture, scaling, Firebase, AWS — we\'ll choose the best.',
         svc5_title:'Everything in Digital Reality',
         svc5_desc:'Non-standard task? That\'s exactly what inspires us. Describe the problem — we\'ll find a solution.',
-        contacts_desc:'Message me right here — the messenger is synced with my private channels.',
+        contacts_desc:'Message me right here — the messenger is synced with my private channels for an instant response.',
         system_synced:'SYSTEM SYNCED', statusOnline:'ONLINE',
         chatTitle:'Personal Messenger', chatPlaceholder:'Type a message...',
         email_ph:'Email', pass_ph:'Password', loginBtn:'Authorize',
@@ -91,20 +90,20 @@ function setLang(lang) {
         if (el) el.classList.toggle('active', id === 'lang-' + lang || id === 'lang-' + lang + '-m');
     });
     document.querySelectorAll('[data-lang]').forEach(function(el) {
-        var key  = el.getAttribute('data-lang');
+        var key = el.getAttribute('data-lang');
         var text = T[lang][key];
         if (!text) return;
         if (el.tagName === 'INPUT') { el.placeholder = text; return; }
         el.innerText = text;
     });
     document.querySelectorAll('[data-lang-ph]').forEach(function(el) {
-        var key  = el.getAttribute('data-lang-ph');
+        var key = el.getAttribute('data-lang-ph');
         var text = T[lang][key];
         if (text) el.placeholder = text;
     });
 }
 
-/* ── НАВИГАЦИЯ ── */
+/* ── НАВИГАЦИЯ — страницы ── */
 function showPage(pageId) {
     document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
     var target = document.getElementById(pageId);
@@ -119,45 +118,22 @@ function toggleMobileNav() {
     var nav     = document.getElementById('mobile-nav');
     var overlay = document.getElementById('mobile-nav-overlay');
     if (!nav) return;
-
     var open = nav.classList.contains('open');
-
-    // Если меню открыто, значит сейчас мы его ЗАКРЫВАЕМ. 
-    // Переносим фокус на бургер, чтобы он не застрял внутри скрытого меню.
-    if (open && burger) {
-        burger.focus();
-    }
-
-    if (burger) { 
-        burger.classList.toggle('open', !open); 
-        burger.setAttribute('aria-expanded', !open); 
-    }
-    if (nav) { 
-        nav.classList.toggle('open', !open); 
-        nav.setAttribute('aria-hidden', open); 
-    }
+    if (burger)  burger.classList.toggle('open', !open);
+    if (nav)     { nav.classList.toggle('open', !open); nav.setAttribute('aria-hidden', open); }
     if (overlay) overlay.classList.toggle('open', !open);
+    if (burger)  burger.setAttribute('aria-expanded', !open);
 }
-
 function closeMobileNav() {
     var burger  = document.getElementById('burger');
     var nav     = document.getElementById('mobile-nav');
     var overlay = document.getElementById('mobile-nav-overlay');
-
-    // Всегда возвращаем фокус на кнопку открытия перед закрытием
-    if (burger) { 
-        burger.focus();
-        burger.classList.remove('open'); 
-        burger.setAttribute('aria-expanded', 'false'); 
-    }
-    if (nav) { 
-        nav.classList.remove('open'); 
-        nav.setAttribute('aria-hidden', 'true'); 
-    }
+    if (burger)  { burger.classList.remove('open'); burger.setAttribute('aria-expanded', 'false'); }
+    if (nav)     { nav.classList.remove('open'); nav.setAttribute('aria-hidden', 'true'); }
     if (overlay) overlay.classList.remove('open');
 }
 
-/* ── МЕССЕНДЖЕРЫ ── */
+/* ── МЕССЕНДЖЕРЫ — открыть/закрыть ── */
 function openMessenger() {
     var m = document.getElementById('messenger-modal');
     if (m) { m.classList.add('open'); document.body.style.overflow = 'hidden'; }
@@ -169,6 +145,7 @@ function closeMessenger() {
 function closeMessengerIfOutside(e) {
     if (e.target === document.getElementById('messenger-modal')) closeMessenger();
 }
+
 function openFaradayChat() {
     var m = document.getElementById('faraday-modal');
     if (m) { m.classList.add('open'); document.body.style.overflow = 'hidden'; }
@@ -200,19 +177,20 @@ function initVideo() {
     if (p !== undefined) {
         p.catch(function() {
             var unlock = function() {
-                video.play().catch(function() {});
-                document.removeEventListener('click',      unlock);
+                video.play().catch(function(){});
+                document.removeEventListener('click', unlock);
                 document.removeEventListener('touchstart', unlock);
             };
             document.addEventListener('click',      unlock, { once: true });
             document.addEventListener('touchstart', unlock, { once: true });
         });
     }
+    // Feature video (если есть в разметке)
     var fv = document.getElementById('feature-video');
-    if (fv) { fv.muted = true; fv.play().catch(function() {}); }
+    if (fv) { fv.muted = true; fv.play().catch(function(){}); }
 }
 
-/* ── NITRO BOOST ── */
+/* ── NITRO BOOST — анимация счётчиков ── */
 function initNitroBoost() {
     var section = document.getElementById('nitro-boost');
     if (!section) return;
@@ -259,9 +237,9 @@ var tooltip   = null;
 var hideTimer = null;
 
 function getStatusText(s) {
-    return s === 'online' ? (T[currentLang].status_online || 'ONLINE')
-         : s === 'busy'   ? (T[currentLang].status_busy   || 'BUSY')
-         :                   (T[currentLang].status_offline|| 'OFFLINE');
+    return s === 'online' ? (T[currentLang].status_online||'ONLINE')
+         : s === 'busy'   ? (T[currentLang].status_busy  ||'BUSY')
+         :                   (T[currentLang].status_offline||'OFFLINE');
 }
 
 function showTooltip(idx, card) {
@@ -269,21 +247,21 @@ function showTooltip(idx, card) {
     var m = TEAM[idx];
     tooltip = document.getElementById('c-tooltip');
     if (!tooltip) return;
-    var get = function(id) { return document.getElementById(id); };
+    var get = function(id){ return document.getElementById(id); };
     if (get('ctt-avatar')) get('ctt-avatar').innerText = m.emoji;
     if (get('ctt-name'))   get('ctt-name').innerText   = m.name;
-    if (get('ctt-role'))   get('ctt-role').innerText   = currentLang === 'ru' ? m.role_ru : m.role_en;
+    if (get('ctt-role'))   get('ctt-role').innerText   = currentLang==='ru' ? m.role_ru : m.role_en;
     if (get('ctt-status')) get('ctt-status').innerText = getStatusText(m.status);
-    if (get('ctt-tags'))   get('ctt-tags').innerHTML   = m.tags.map(function(t) { return '<span>' + t + '</span>'; }).join('');
+    if (get('ctt-tags'))   get('ctt-tags').innerHTML   = m.tags.map(function(t){ return '<span>'+t+'</span>'; }).join('');
     positionTooltip(card);
     tooltip.classList.add('visible');
 }
 function positionTooltip(card) {
     if (!tooltip) return;
     var r = card.getBoundingClientRect();
-    var tw = 180, th = 180;
+    var tw=180, th=180;
     var l = r.right + 12;
-    var t = r.top + (r.height / 2) - (th / 2);
+    var t = r.top + (r.height/2) - (th/2);
     if (l + tw > window.innerWidth  - 8) l = r.left - tw - 12;
     if (t < 8) t = 8;
     if (t + th > window.innerHeight - 8) t = window.innerHeight - th - 8;
@@ -291,7 +269,7 @@ function positionTooltip(card) {
     tooltip.style.top  = t + 'px';
 }
 function hideTooltip() {
-    hideTimer = setTimeout(function() { if (tooltip) tooltip.classList.remove('visible'); }, 120);
+    hideTimer = setTimeout(function(){ if(tooltip) tooltip.classList.remove('visible'); }, 120);
 }
 
 function initCarousel() {
@@ -299,31 +277,32 @@ function initCarousel() {
     if (!scene) return;
     tooltip = document.getElementById('c-tooltip');
 
-    var N  = TEAM.length;
-    var RX = Math.min(460, (scene.offsetWidth || 600) * 0.46);
+    var N = TEAM.length;
+    var els = [];
+    // Параметры эллипса — адаптируем под ширину сцены
+    var RX = Math.min(460, (scene.offsetWidth||600)*0.46);
     var RY = RX;
     var CX = 500, CY = 500;
-    var els = [];
 
     TEAM.forEach(function(m, idx) {
         var div   = document.createElement('div');   div.className = 'c-card';
         var inner = document.createElement('div');   inner.className = 'c-card-inner';
         var img   = new Image();
         img.alt     = m.name;
-        img.onload  = function() { inner.innerHTML = ''; inner.appendChild(img); };
-        img.onerror = function() {
-            inner.innerHTML = '<div class="c-card-placeholder"><div class="c-avatar">' +
-                m.emoji + '</div><div class="c-pname">' + m.name + '</div></div>';
+        img.onload  = function(){ inner.innerHTML=''; inner.appendChild(img); };
+        img.onerror = function(){
+            inner.innerHTML = '<div class="c-card-placeholder"><div class="c-avatar">'+m.emoji+'</div><div class="c-pname">'+m.name+'</div></div>';
         };
-        img.src = 'assets/gallery/photo' + (idx + 1) + '.jpg';
+        img.src = 'assets/gallery/photo'+(idx+1)+'.jpg';
         div.appendChild(inner); scene.appendChild(div); els.push(div);
-        div.addEventListener('mouseenter', function() { showTooltip(idx, div); });
+        div.addEventListener('mouseenter', function(){ showTooltip(idx, div); });
         div.addEventListener('mouseleave', hideTooltip);
-        div.addEventListener('touchstart', function() { showTooltip(idx, div); }, { passive: true });
+        // Touch-подсказка
+        div.addEventListener('touchstart', function(){ showTooltip(idx, div); }, { passive:true });
     });
 
     if (tooltip) {
-        tooltip.addEventListener('mouseenter', function() { if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; } });
+        tooltip.addEventListener('mouseenter', function(){ if(hideTimer){clearTimeout(hideTimer);hideTimer=null;} });
         tooltip.addEventListener('mouseleave', hideTooltip);
     }
 
@@ -334,18 +313,18 @@ function initCarousel() {
             var theta = angle + (i / N) * Math.PI * 2;
             var x = CX + RX * Math.cos(theta) - 60;
             var y = CY + RY * 0.36 * Math.sin(theta) - 75;
-            var s = 0.5 + 0.5 * ((Math.sin(theta) + 1) / 2);
+            var s = 0.5 + 0.5 * ((Math.sin(theta)+1)/2);
             el.style.left      = x + 'px';
             el.style.top       = y + 'px';
-            el.style.transform = 'scale(' + s.toFixed(3) + ') rotate(' + (Math.cos(theta) * -8).toFixed(1) + 'deg)';
+            el.style.transform = 'scale('+s.toFixed(3)+') rotate('+(Math.cos(theta)*-8).toFixed(1)+'deg)';
             el.style.zIndex    = Math.round(s * 100);
-            el.style.opacity   = (0.4 + 0.6 * ((Math.sin(theta) + 1) / 2)).toFixed(3);
+            el.style.opacity   = (0.4 + 0.6*((Math.sin(theta)+1)/2)).toFixed(3);
         });
     }
 
     function loop(ts) {
         if (!last) last = ts;
-        if (!paused && !window.faradaySystemPaused) angle -= (ts - last) / 1000 * 0.4;
+        if (!paused && !window.faradaySystemPaused) angle -= (ts-last)/1000 * 0.4;
         last = ts;
         render();
         requestAnimationFrame(loop);
@@ -355,77 +334,59 @@ function initCarousel() {
     var pb = document.getElementById('car-pause');
     var pv = document.getElementById('car-prev');
     var nx = document.getElementById('car-next');
-    if (pb) pb.addEventListener('click', function() { paused = !paused; this.innerHTML = paused ? '&#9654;' : '&#9646;&#9646;'; });
-    if (pv) pv.addEventListener('click', function() { angle += (2 * Math.PI / N); });
-    if (nx) nx.addEventListener('click', function() { angle -= (2 * Math.PI / N); });
+    if (pb) pb.addEventListener('click', function(){ paused=!paused; this.innerHTML = paused ? '&#9654;' : '&#9646;&#9646;'; });
+    if (pv) pv.addEventListener('click', function(){ angle += (2*Math.PI/N); });
+    if (nx) nx.addEventListener('click', function(){ angle -= (2*Math.PI/N); });
 }
 
-/* ════════════════════════════════════════════════
-   FARADAY CORE — Firebase конфиг + Проактивность
-   Вызывается из auth.js после onAuthStateChanged.
-════════════════════════════════════════════════ */
+/* ── FARADAY HUD + PROTOCOL ── */
 window.faradaySystemPaused = false;
+var faradayProtocolRef = null; // инициализируется после Firebase в auth.js
 
 function initFaradayCore() {
     if (!window.db) return;
+    faradayProtocolRef = window.db.collection('system_config').doc('faraday_protocol');
 
-    // Слушатель конфигурации
-    window.db.collection('system_config').doc('faraday_protocol')
-        .onSnapshot(function(snap) {
-            if (!snap.exists) return;
-            var cfg = snap.data();
+    faradayProtocolRef.onSnapshot(function(snap) {
+        if (!snap.exists) return;
+        var cfg = snap.data();
 
-            if (cfg.ui_theme) {
-                var root = document.documentElement;
-                if (cfg.ui_theme.accent) root.style.setProperty('--accent', cfg.ui_theme.accent);
-                if (cfg.ui_theme.blur)   root.style.setProperty('--nav-blur', cfg.ui_theme.blur);
-            }
+        if (cfg.ui_theme) {
+            var root = document.documentElement;
+            if (cfg.ui_theme.accent) root.style.setProperty('--accent', cfg.ui_theme.accent);
+            if (cfg.ui_theme.blur)   root.style.setProperty('--nav-blur', cfg.ui_theme.blur);
+        }
 
-            var vEl = document.getElementById('protocol-version');
-            if (vEl && cfg.version) vEl.innerText = 'Ver: ' + cfg.version;
+        var vEl = document.getElementById('protocol-version');
+        if (vEl && cfg.version) vEl.innerText = 'Ver: ' + cfg.version;
 
-            var paused = cfg.safety_protocols !== 'active';
-            window.faradaySystemPaused = paused;
+        var paused = cfg.safety_protocols !== 'active';
+        window.faradaySystemPaused = paused;
 
-            var hud = document.getElementById('hud-status');
-            var pil = document.getElementById('faraday-hud-status-badge');
-            var vid = document.getElementById('bg-video');
+        var hud = document.getElementById('hud-status');
+        var pil = document.getElementById('faraday-hud-status-badge');
+        var vid = document.getElementById('bg-video');
 
-            if (hud) hud.innerText = paused ? 'SYSTEM: PAUSED' : 'SYSTEM: ACTIVE';
-            if (pil) pil.innerText = paused ? 'ПАУЗА' : 'АКТИВЕН';
-            if (vid) paused ? vid.pause() : vid.play().catch(function() {});
+        if (hud) hud.innerText = paused ? 'SYSTEM: PAUSED' : 'SYSTEM: ACTIVE';
+        if (pil) pil.innerText = paused ? 'ПАУЗА' : 'АКТИВЕН';
+        if (vid) paused ? vid.pause() : vid.play().catch(function(){});
 
-        }, function(err) { console.warn('[Faraday] Protocol:', err.code); });
+    }, function(err) { console.warn('Faraday protocol:', err.code); });
 
     // Проактивное приветствие через 1.4с
     setTimeout(function() {
         var feed = document.getElementById('faraday-feed');
         if (!feed) return;
-
-        // Настроение системы
-        appendFaradayAIMsg(feed, getFaradayMood());
-
+        var mood = getFaradayMood();
+        appendFaradayAIMsg(feed, mood);
         // Последняя запись памяти
-        window.db.collection('faraday_memory')
-            .orderBy('timestamp', 'desc').limit(1).get()
+        window.db.collection('faraday_memory').orderBy('timestamp','desc').limit(1).get()
             .then(function(snap) {
                 if (snap.empty) return;
                 var note = snap.docs[0].data().content;
-                if (note) appendFaradayAIMsg(feed, 'Последняя запись: «' + note + '». Продолжим?');
-            }).catch(function() {});
+                if (note) appendFaradayAIMsg(feed, 'Последняя запись: «'+note+'». Продолжим?');
+            }).catch(function(){});
     }, 1400);
-
-    // Context Awareness: реакция на переход в Проекты (один раз)
-    var projectsObserved = false;
-    var projectsEl = document.getElementById('projects-page');
-    if (projectsEl) {
-        new IntersectionObserver(function(entries) {
-            if (!entries[0].isIntersecting || projectsObserved) return;
-            projectsObserved = true;
-            var feed = document.getElementById('faraday-feed');
-            if (feed) appendFaradayAIMsg(feed, 'Сэр, этот проект был реализован за 48 часов. Впечатляющие показатели.');
-        }, { threshold: 0.3 }).observe(projectsEl);
-    }
 
     // Случайные мысли каждые 10 минут (только если чат открыт)
     var THOUGHTS = [
@@ -439,23 +400,16 @@ function initFaradayCore() {
         var modal = document.getElementById('faraday-modal');
         if (!modal || !modal.classList.contains('open')) return;
         var feed = document.getElementById('faraday-feed');
-        if (feed) appendFaradayAIMsg(feed, THOUGHTS[Math.floor(Math.random() * THOUGHTS.length)]);
+        if (feed) appendFaradayAIMsg(feed, THOUGHTS[Math.floor(Math.random()*THOUGHTS.length)]);
     }, 600000);
-
-    // Запускаем AI-модули из chat.js
-    if (typeof initAIModules === 'function') initAIModules();
 }
 
-/* ── Настроение системы (Character Engine) ── */
 function getFaradayMood() {
     var h = new Date().getHours();
-    var memHigh = window.performance && window.performance.memory &&
-                  window.performance.memory.usedJSHeapSize > 50000000;
-    if (memHigh)  return 'Предупреждение: высокая нагрузка на память. Рекомендую перезагрузку вкладки.';
-    if (h < 6)    return 'Режим пониженного энергопотребления. Слушаю...';
-    if (h < 12)   return 'Утренний протокол. Системы работают штатно.';
-    if (h < 18)   return 'Все системы в норме. Производительность оптимальна.';
-    if (h < 22)   return 'Вечерний режим. Снижаю приоритет фоновых задач.';
+    if (h < 6)  return 'Режим пониженного энергопотребления. Слушаю...';
+    if (h < 12) return 'Утренний протокол. Системы работают штатно.';
+    if (h < 18) return 'Все системы в норме. Производительность оптимальна.';
+    if (h < 22) return 'Вечерний режим. Снижаю приоритет фоновых задач.';
     return 'Поздний протокол. Системы ожидают команд.';
 }
 
@@ -466,9 +420,6 @@ window.onload = function() {
     initNitroBoost();
     setLang('ru');
     // initFaradayCore() вызывается из auth.js после Firebase ready
-    // Вызываем анализ конкретно для этого документа из скриншота
-    analyzeCurrentContext('nitro_18');
 };
 
 console.log('%cNitro Hub v8.0 ✓', 'color:#00ff88;font-size:14px;font-weight:bold;');
-console.log('%c⚡ TTS · Tone · Diagnostic · Evolution · onerror — активны', 'color:#00bb55;font-size:12px;');

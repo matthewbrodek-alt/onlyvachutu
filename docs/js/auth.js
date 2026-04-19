@@ -1,6 +1,10 @@
 /* ════════════════════════════════════════════════
    auth.js — Firebase инициализация, вход/выход,
-               обновление UI авторизации.
+              обновление UI, слушатель ответов Faraday.
+
+   Маршрут ответа из Telegram:
+   bridge.py → Firestore users/{uid}/faraday_responses
+             → onSnapshot здесь → appendFaradayAIMsg()
 ════════════════════════════════════════════════ */
 
 var firebaseConfig = {
@@ -17,8 +21,8 @@ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 window.db   = firebase.firestore();
 window.auth = firebase.auth();
 
-var chatUnsubscribe        = null;
-var faradayResponsesUnsub    = null;
+var chatUnsubscribe         = null; // личные сообщения
+var faradayResponsesUnsub   = null; // ответы из Telegram
 
 /* ── Обновление UI ── */
 function updateAuthUI(user) {
@@ -55,61 +59,72 @@ function updateAuthUI(user) {
         if (modalChatEmail)  modalChatEmail.innerText      = user.email;
         if (userNameContacts)userNameContacts.innerText    = name;
 
-        // 1. Личный чат (твои сообщения)
+        // ── 1. Личный чат: сообщения пользователя ──
         if (chatUnsubscribe) chatUnsubscribe();
         chatUnsubscribe = window.db
             .collection('users').doc(user.uid).collection('messages')
             .orderBy('timestamp', 'asc')
             .onSnapshot(renderPersonalMessages, function(err) {
-                if (err.code === 'failed-precondition') {
-                    console.error('[Auth] Ошибка индекса! Проверьте ссылку в деталях ошибки ниже.');
-                }
-                console.error('[Auth] Chat snapshot error:', err);
+                // failed-precondition = нужен составной индекс в Firestore
+                console.error('[Auth] messages snapshot error:', err.code, err.message);
             });
 
-        // 2. Ответы Faraday (из Telegram через Bridge)
+        // ── 2. Ответы из Telegram через bridge.py ──
+        // Путь: users/{uid}/faraday_responses
+        // bridge.py пишет сюда через _deliver_to_site()
         if (faradayResponsesUnsub) faradayResponsesUnsub();
         faradayResponsesUnsub = window.db
-            .collection('users').doc(user.uid).collection('faraday_responses')
+            .collection('users').doc(user.uid)
+            .collection('faraday_responses')
             .orderBy('timestamp', 'asc')
             .onSnapshot(function(snap) {
                 snap.docChanges().forEach(function(change) {
-                    if (change.type === 'added') {
-                        var data = change.doc.data();
-                        if (window.addMessageToUI) {
-                            window.addMessageToUI('FARADAY', data.text || data.message, 'ai-msg');
-                        }
+                    // Показываем только новые документы, не пересчитываем старые
+                    if (change.type !== 'added') return;
+                    var data = change.doc.data();
+                    var text = (data.text || data.message || '').trim();
+                    if (!text) return;
+
+                    // Выводим в Faraday-чат (функция из chat.js)
+                    var feed = document.getElementById('faraday-feed');
+                    if (feed && typeof appendFaradayAIMsg === 'function') {
+                        appendFaradayAIMsg(feed, text);
                     }
                 });
             }, function(err) {
-                console.error('[Auth] Faraday Responses Error:', err);
+                // Тихо — при первом входе коллекция пуста, это нормально
+                console.warn('[Auth] faraday_responses:', err.code);
             });
 
     } else {
-        // ... (логика выхода остается без изменений)
+        // Выход
         if (lf)  lf.style.display  = 'flex';
         if (ui)  ui.style.display  = 'none';
         if (mlf) mlf.style.display = 'flex';
         if (mui) mui.style.display = 'none';
+
         if (navLoginBtn)     navLoginBtn.style.display    = 'inline-block';
         if (navUserBlock)    navUserBlock.style.display    = 'none';
         if (mobileLoginBtn)  mobileLoginBtn.style.display  = 'inline-block';
         if (mobileUserBlock) mobileUserBlock.style.display = 'none';
         if (userNameContacts)userNameContacts.innerText    = 'Guest';
 
-        if (chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
+        if (chatUnsubscribe)       { chatUnsubscribe(); chatUnsubscribe = null; }
         if (faradayResponsesUnsub) { faradayResponsesUnsub(); faradayResponsesUnsub = null; }
     }
 }
 
+/* Единственная подписка на изменение авторизации.
+   Запускает Faraday Core только один раз. */
 window.auth.onAuthStateChanged(function(user) {
     updateAuthUI(user);
+
     if (window._faradayCoreInited) return;
     window._faradayCoreInited = true;
     if (typeof initFaradayCore === 'function') initFaradayCore();
 });
 
-/* ── Вход/Выход (без изменений) ── */
+/* ── Вход ── */
 async function handleLogin() {
     var email = document.getElementById('auth-email');
     var pass  = document.getElementById('auth-pass');
@@ -125,46 +140,67 @@ async function _doLogin(email, pass) {
     try {
         await window.auth.signInWithEmailAndPassword(email, pass);
     } catch (e) {
-        if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password') {
+        if (e.code === 'auth/user-not-found' ||
+            e.code === 'auth/invalid-credential' ||
+            e.code === 'auth/wrong-password') {
             try { await window.auth.createUserWithEmailAndPassword(email, pass); }
             catch (ce) { alert(ce.message); }
         } else { alert(e.message); }
     }
 }
+
+/* ── Выход ── */
 function handleLogout() {
-    window.auth.signOut().catch(function(err) { console.error('[Auth] Logout error:', err); });
+    window.auth.signOut().catch(function(err) {
+        console.error('[Auth] Logout error:', err);
+    });
 }
 
-/* ── Анализ контекста (Исправленные имена полей) ── */
-async function analyzeCurrentContext(projectId) {
-    console.log("Faraday: Запуск глубокого анализа проекта...");
-    const say = (who, text, type) => {
-        if (window.addMessageToUI) window.addMessageToUI(who, text, type);
-    };
+/* ════════════════════════════════════════════════
+   analyzeCurrentContext — читает манифест проекта
+   из Firestore и выводит анализ в Faraday-чат.
+   Вызов: analyzeCurrentContext('nitro_18')
+════════════════════════════════════════════════ */
+function analyzeCurrentContext(projectId) {
+    if (!window.db || !projectId) return;
 
-    try {
-        const doc = await window.db.collection('project_manifests').doc(projectId).get();
-        if (doc.exists) {
-            const project = doc.data();
-            
-            // Имена полей теперь точно как в твоей БД (image_a2ec63.png)
-            const name   = project.projectName   || "Nitro Project";
-            const status = project.currentStatus || "Active";
-            
-            let tech = "не указан";
-            if (Array.isArray(project.stack)) tech = project.stack.join(', ');
-            else if (project.stack) tech = project.stack;
+    var feed = document.getElementById('faraday-feed');
+    if (!feed || typeof appendFaradayAIMsg !== 'function') {
+        // Если чат ещё не готов — повторим позже
+        setTimeout(function() { analyzeCurrentContext(projectId); }, 2000);
+        return;
+    }
 
-            say('FARADAY', "Синхронизируюсь с манифестом проекта...", 'ai-msg');
+    window.db.collection('project_manifests').doc(projectId).get()
+        .then(function(doc) {
+            if (!doc.exists) {
+                console.log('[Faraday] Манифест «' + projectId + '» не найден в Firestore.');
+                return;
+            }
+            var p = doc.data();
 
-            setTimeout(() => {
-                say('FARADAY', `Анализ ${name} завершен. Статус: [${status}]. Стек: ${tech}.`, 'ai-msg');
-                if (status.toLowerCase().includes('active')) {
-                    setTimeout(() => {
-                        say('FARADAY', "Вижу высокую активность. Системы готовы к деплою.", 'ai-msg');
+            var name   = p.projectName   || p.name   || projectId;
+            var status = p.currentStatus || p.status || 'неизвестен';
+            var tech   = Array.isArray(p.stack)
+                ? p.stack.join(', ')
+                : (p.stack || 'не указан');
+
+            appendFaradayAIMsg(feed, 'Синхронизируюсь с манифестом проекта...');
+
+            setTimeout(function() {
+                appendFaradayAIMsg(
+                    feed,
+                    'Анализ «' + name + '» завершён. Статус: [' + status + ']. Стек: ' + tech + '.'
+                );
+                if (status.toLowerCase().includes('active') ||
+                    status.toLowerCase().includes('активн')) {
+                    setTimeout(function() {
+                        appendFaradayAIMsg(feed, 'Высокая активность. Системы готовы к деплою.');
                     }, 2000);
                 }
             }, 2500);
-        }
-    } catch (err) { console.error("Faraday Context Error:", err); }
+        })
+        .catch(function(err) {
+            console.error('[Faraday] analyzeCurrentContext error:', err.message);
+        });
 }

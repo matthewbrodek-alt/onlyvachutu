@@ -1,9 +1,19 @@
 /* ════════════════════════════════════════════════
-   chat.js — Два независимых чата + AI-функции:
-   1. sendPersonalMessage() — личный → bridge.py → Firebase + Telegram
-   2. sendFaradayMessage()  — Faraday AI → команды (локально)
-   3. AI-модули: TTS, tone, diagnostic, project context, self-evolution
-   4. window.onerror — перехват ошибок → bridge + Faraday feed
+   chat.js — Два независимых чата + AI-функции.
+
+   Личные сообщения:
+     sendPersonalMessage() → api.js callBackend()
+     → bridge.py /api/memory → Telegram + Firestore
+
+   Ответы из Telegram:
+     bridge.py /api/telegram-webhook
+     → Firestore users/{uid}/faraday_responses
+     → auth.js onSnapshot → appendFaradayAIMsg()
+     (chat.js этим НЕ занимается — только auth.js)
+
+   Faraday AI чат:
+     sendFaradayMessage() → processFaradayCommand()
+     → локальные команды (локально, без bridge)
 ════════════════════════════════════════════════ */
 
 /* ══════════════════════════════════════════════
@@ -20,7 +30,7 @@ function addEmoji(inputId, emoji) {
 
 /**
  * Отправить личное сообщение.
- * Маршрут: bridge.py /api/memory → Telegram + Firestore
+ * uid добавляется автоматически в api.js callBackend().
  */
 function sendPersonalMessage(inputId, windowId) {
     var input  = document.getElementById(inputId  || 'chat-msg');
@@ -38,31 +48,24 @@ function sendPersonalMessage(inputId, windowId) {
     input.value = '';
     appendMessage(feedEl, text, 'sent');
 
-    // Анализ тональности — вешаем визуальную реакцию
+    // Анализ тональности — реакция в Faraday-чате
     var tone = analyzeTone(text);
-    if (tone === 'alert') {
-        appendFaradayAIMsg(
-            document.getElementById('faraday-feed'),
-            'Зафиксирован сигнал тревоги в сообщении. Мониторинг усилен.'
-        );
-    } else if (tone === 'friendly') {
-        appendFaradayAIMsg(
-            document.getElementById('faraday-feed'),
-            'Позитивный сигнал принят. Всё идёт по плану, сэр.'
-        );
+    var feed = document.getElementById('faraday-feed');
+    if (tone === 'alert' && feed) {
+        appendFaradayAIMsg(feed, 'Зафиксирован сигнал тревоги. Мониторинг усилен.');
+    } else if (tone === 'friendly' && feed) {
+        appendFaradayAIMsg(feed, 'Позитивный сигнал принят. Всё идёт по плану, сэр.');
     }
 
-    // Отправка через bridge.py (→ Telegram + Firestore)
+    // Отправка через bridge.py — uid добавится в callBackend автоматически
     bridgeSaveMemory(text, userEmail)
         .then(function(data) {
-            if (!data) {
-                console.warn('[Chat] Bridge недоступен — сообщение не доставлено на сервер.');
-            }
+            if (!data) console.warn('[Chat] Bridge недоступен — сообщение не доставлено.');
         });
 }
 
 /**
- * Рендер личных сообщений из Firestore (в оба окна).
+ * Рендер личных сообщений из Firestore (в оба окна чата).
  * Вызывается из auth.js через onSnapshot.
  */
 function renderPersonalMessages(snap) {
@@ -79,38 +82,6 @@ function renderPersonalMessages(snap) {
         });
         win.scrollTop = win.scrollHeight;
     });
-}
-
-/**
- * Слушать входящие ответы от Faraday (bridge → faraday_responses → фронт).
- * Вызывается из auth.js после авторизации.
- */
-function listenForFaradayResponses(uid) {
-    if (!window.db || !uid) return;
-
-    // Отписываемся от старого слушателя если был
-    if (window._faradayRespUnsub) {
-        window._faradayRespUnsub();
-        window._faradayRespUnsub = null;
-    }
-
-    window._faradayRespUnsub = window.db
-        .collection('faraday_responses')
-        .where('recipientId', '==', uid)
-        .orderBy('timestamp', 'desc')
-        .limit(1)
-        .onSnapshot(function(snapshot) {
-            snapshot.docChanges().forEach(function(change) {
-                if (change.type !== 'added') return;
-                var data = change.doc.data();
-                if (!data.text) return;
-                var feed = document.getElementById('faraday-feed');
-                if (feed) appendFaradayAIMsg(feed, data.text);
-            });
-        }, function(err) {
-            // Тихо игнорируем ошибки прав (коллекция может быть пустой)
-            console.error('[FaradayResponses] Кликни на стрелочку ниже, чтобы найти ссылку:', err);
-        });
 }
 
 /* Вспомогательный рендер одного сообщения */
@@ -143,8 +114,6 @@ function faradaySpeak(text) {
 
 /* ══════════════════════════════════════════════
    AI-МОДУЛЬ 1: АНАЛИЗ ТОНАЛЬНОСТИ
-   Определяет эмоциональный тон входящего текста.
-   Возвращает: 'alert' | 'friendly' | 'neutral'
 ══════════════════════════════════════════════ */
 function analyzeTone(text) {
     if (!text || typeof text !== 'string') return 'neutral';
@@ -157,14 +126,11 @@ function analyzeTone(text) {
 
 /* ══════════════════════════════════════════════
    AI-МОДУЛЬ 2: САМОДИАГНОСТИКА
-   Запускается через 5с после init.
-   Анализирует время загрузки и доступность bridge.
+   Запускается через 5с.
 ══════════════════════════════════════════════ */
 function performSelfDiagnostic() {
     var feed = document.getElementById('faraday-feed');
-
-    // Время загрузки страницы
-    var timing = window.performance && window.performance.timing;
+    var timing   = window.performance && window.performance.timing;
     var loadTime = timing
         ? timing.domContentLoadedEventEnd - timing.navigationStart
         : -1;
@@ -172,25 +138,25 @@ function performSelfDiagnostic() {
     setTimeout(function() {
         var report;
         if (loadTime < 0) {
-            report = 'Диагностика: данные о времени загрузки недоступны.';
+            report = 'Диагностика: данные о загрузке недоступны.';
         } else if (loadTime < 1000) {
-            report = 'Системы работают на предельной скорости. Задержек нет (' + loadTime + 'мс).';
+            report = 'Системы работают штатно. Задержек нет (' + loadTime + 'мс).';
         } else {
-            report = 'Обнаружена задержка отклика: ' + loadTime + 'мс. Рекомендую оптимизировать медиа-ресурсы.';
+            report = 'Задержка: ' + loadTime + 'мс. Рекомендую оптимизировать медиа.';
         }
 
-        // Проверяем доступность bridge.py
         checkBridgeHealth().then(function(ok) {
-            var bridgeStatus = ok ? 'Bridge: Online.' : 'Bridge: Offline — Telegram и сохранение памяти недоступны.';
-            if (feed) appendFaradayAIMsg(feed, report + ' ' + bridgeStatus);
+            var bridge = ok
+                ? 'Bridge: Online. Telegram-мост активен.'
+                : 'Bridge: Offline — Telegram недоступен.';
+            if (feed) appendFaradayAIMsg(feed, report + ' ' + bridge);
         });
     }, 5000);
 }
 
 /* ══════════════════════════════════════════════
    AI-МОДУЛЬ 3: КОНТЕКСТ ПРОЕКТА
-   Сохраняет манифест проекта в Firestore.
-   Вызов: updateProjectContext('MyApp', ['React','Firebase'], 'active')
+   Вызов: updateProjectContext('MyApp', ['React'], 'active')
 ══════════════════════════════════════════════ */
 function updateProjectContext(projectName, techStack, status) {
     if (!window.db || !projectName) return Promise.resolve();
@@ -199,17 +165,14 @@ function updateProjectContext(projectName, techStack, status) {
         current_status: status || 'unknown',
         last_update:    firebase.firestore.FieldValue.serverTimestamp()
     }).then(function() {
-        console.log('[Faraday] Контекст проекта «' + projectName + '» синхронизирован.');
+        console.log('[Faraday] Манифест «' + projectName + '» обновлён.');
     }).catch(function(err) {
-        console.warn('[Faraday] updateProjectContext error:', err.message);
+        console.warn('[Faraday] updateProjectContext:', err.message);
     });
 }
 
 /* ══════════════════════════════════════════════
    AI-МОДУЛЬ 4: SELF-EVOLUTION
-   Считает «опыт» по количеству записей в памяти
-   и обновляет индекс интеллекта в Firestore.
-   Выводит прогресс через 10с если level > 1.
 ══════════════════════════════════════════════ */
 function runSelfEvolution() {
     if (!window.db) return Promise.resolve(null);
@@ -224,8 +187,6 @@ function runSelfEvolution() {
                 experience_points:  exp,
                 last_sync:          new Date().toLocaleString()
             };
-
-            // Сохраняем состояние системы
             return window.db.collection('system_config').doc('faraday_core')
                 .set(core, { merge: true })
                 .then(function() { return core; });
@@ -236,39 +197,35 @@ function runSelfEvolution() {
                 setTimeout(function() {
                     var feed = document.getElementById('faraday-feed');
                     if (feed) {
-                        appendFaradayAIMsg(
-                            feed,
-                            'Сэр, индекс интеллекта вырос до ' + core.intelligence_index +
-                            '. Уровень протокола: ' + core.level +
-                            '. Протоколы оптимизированы.'
-                        );
+                        appendFaradayAIMsg(feed,
+                            'Индекс интеллекта: ' + core.intelligence_index +
+                            '. Уровень: ' + core.level + '. Протоколы оптимизированы.');
                     }
                 }, 10000);
             }
             return core;
         })
         .catch(function(err) {
-            console.warn('[Faraday] Self-evolution error:', err.message);
+            console.warn('[Faraday] Self-evolution:', err.message);
             return null;
         });
 }
 
 /* ══════════════════════════════════════════════
    ПЕРЕХВАТ ОШИБОК — window.onerror
-   Одна регистрация. Сообщает в feed + bridge.
-   (Предыдущие дублирующие назначения убраны.)
+   Одна регистрация. Feed + Firestore + bridge.
 ══════════════════════════════════════════════ */
-window.onerror = function(message, source, lineno, colno, error) {
+window.onerror = function(message, source, lineno) {
     var shortSrc = source ? source.split('/').pop() : 'unknown';
     var note = 'Системная нестабильность: ' + message +
-               ' в «' + shortSrc + '», строка ' + lineno +
-               '. Записываю в журнал и отправляю отчёт.';
+               ' в «' + shortSrc + '», строка ' + lineno + '. Записываю в журнал.';
 
-    // Показываем в Faraday-чате только если он уже готов
     var feed = document.getElementById('faraday-feed');
-    if (feed) appendFaradayAIMsg(feed, note);
+    if (feed && typeof appendFaradayAIMsg === 'function') {
+        appendFaradayAIMsg(feed, note);
+    }
 
-    // Сохраняем в faraday_memory через Firestore (без bridge — надёжнее при JS-ошибках)
+    // Firestore — надёжнее при JS-ошибках (нет зависимости от fetch)
     if (window.db) {
         window.db.collection('faraday_memory').add({
             topic:     'system_error',
@@ -277,13 +234,12 @@ window.onerror = function(message, source, lineno, colno, error) {
         }).catch(function() {}); // тихо — чтобы не зациклить onerror
     }
 
-    // Отправляем в Telegram через bridge (не через прямой fetch с токеном)
+    // Telegram через bridge (без токенов в JS)
     if (typeof reportErrorToBridge === 'function') {
         reportErrorToBridge(message, source, lineno);
     }
 
-    // Не подавляем дефолтный обработчик браузера
-    return false;
+    return false; // не подавляем дефолтный обработчик браузера
 };
 
 /* ══════════════════════════════════════════════
@@ -406,14 +362,15 @@ function processFaradayCommand(text) {
     // Диагностика
     if (t.includes('диагностика') || t.includes('diagnostic')) {
         performSelfDiagnostic();
-        return 'Запуск диагностики... Результат появится через несколько секунд.';
+        return 'Запуск диагностики... Результат через несколько секунд.';
     }
 
     // Self-evolution
     if (t.includes('эволюция') || t.includes('evolution') || t.includes('развитие')) {
         runSelfEvolution().then(function(core) {
             if (core && feed) {
-                appendFaradayAIMsg(feed, 'Анализ завершён. Уровень: ' + core.level +
+                appendFaradayAIMsg(feed,
+                    'Анализ завершён. Уровень: ' + core.level +
                     ', индекс: ' + core.intelligence_index +
                     ', опыт: ' + core.experience_points + ' записей.');
             }
@@ -443,7 +400,7 @@ function processFaradayCommand(text) {
     if (t.includes('помощь') || t.includes('help') || t.includes('команды') || t.includes('что умеешь')) {
         return '⚡ Команды Faraday:\n' +
                '• «смени цвет на [синий/золотой/красный/стандарт]»\n' +
-               '• «пауза» / «активируй» — управление системами\n' +
+               '• «пауза» / «активируй»\n' +
                '• «синхронизация» — загрузить конфиг\n' +
                '• «статус» — состояние системы\n' +
                '• «диагностика» — тест производительности\n' +
@@ -518,10 +475,7 @@ var recognition = null;
         setVoiceBtn(false);
     };
     recognition.onend   = function() { setVoiceBtn(false); };
-    recognition.onerror = function(e) {
-        console.warn('[Voice]', e.error);
-        setVoiceBtn(false);
-    };
+    recognition.onerror = function(e) { console.warn('[Voice]', e.error); setVoiceBtn(false); };
 })();
 
 function setVoiceBtn(on) {
@@ -536,17 +490,13 @@ function startVoiceCommand() {
 }
 
 /* ══════════════════════════════════════════════
-   ЗАПУСК AI-МОДУЛЕЙ при старте
+   ЗАПУСК AI-МОДУЛЕЙ
    Вызывается из app.js → initFaradayCore()
 ══════════════════════════════════════════════ */
 function initAIModules() {
-    // Самодиагностика через 5с
     performSelfDiagnostic();
-
-    // Self-evolution — один раз при старте
     runSelfEvolution();
 
-    // CSS для typing dots — добавляем один раз
     if (!document.getElementById('faraday-typing-css')) {
         var style = document.createElement('style');
         style.id  = 'faraday-typing-css';
