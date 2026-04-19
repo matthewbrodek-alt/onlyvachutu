@@ -8,24 +8,31 @@ var BRIDGE_URL = 'http://127.0.0.1:5000'; // адрес bridge.py
 
 /**
  * Универсальный запрос к Python bridge.
- * Возвращает Promise с распарсенным JSON или null при ошибке сети.
  */
-function callBackend(endpoint, payload) {
-    return fetch(BRIDGE_URL + endpoint, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(payload || {})
-    })
-    .then(function(r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
-    })
-    .catch(function(err) {
-        console.warn('[Bridge] Недоступен (' + endpoint + '):', err.message);
-        return null; // не бросаем дальше — caller решает что делать
-    });
-}
+async function callBackend(endpoint, payload) {
+    // Получаем текущего пользователя
+    const user = firebase.auth().currentUser;
+    
+    // Добавляем UID в полезную нагрузку, если пользователь авторизован
+    if (user) {
+        payload.uid = user.uid;
+        payload.email = payload.email || user.email; // если email не передан, берем из auth
+    }
 
+    try {
+        const response = await fetch(`${BRIDGE_URL}${endpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
+        return await response.json();
+    } catch (error) {
+        console.error('[Bridge] Fetch error:', error);
+        return null;
+    }
+}
 /**
  * Отправить уведомление в Telegram через bridge.
  * Используется из chat.js при отправке личных сообщений.
