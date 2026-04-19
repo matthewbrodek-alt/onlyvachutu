@@ -1,6 +1,6 @@
 /* ════════════════════════════════════════════════
    auth.js — Firebase инициализация, вход/выход,
-              обновление UI авторизации.
+               обновление UI авторизации.
 ════════════════════════════════════════════════ */
 
 var firebaseConfig = {
@@ -17,7 +17,7 @@ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 window.db   = firebase.firestore();
 window.auth = firebase.auth();
 
-var chatUnsubscribe          = null;
+var chatUnsubscribe        = null;
 var faradayResponsesUnsub    = null;
 
 /* ── Обновление UI ── */
@@ -61,6 +61,10 @@ function updateAuthUI(user) {
             .collection('users').doc(user.uid).collection('messages')
             .orderBy('timestamp', 'asc')
             .onSnapshot(renderPersonalMessages, function(err) {
+                // ИСПРАВЛЕНИЕ: Перехват ошибки индекса (failed-precondition)
+                if (err.code === 'failed-precondition') {
+                    console.error('[Auth] Ошибка индекса или вкладок. Проверьте ссылку в консоли ниже.');
+                }
                 console.error('[Auth] Chat snapshot error:', err);
             });
 
@@ -82,7 +86,6 @@ function updateAuthUI(user) {
         if (userNameContacts)userNameContacts.innerText    = 'Guest';
 
         if (chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
-        // Отписываемся от ответов Faraday
         if (faradayResponsesUnsub) { faradayResponsesUnsub(); faradayResponsesUnsub = null; }
     }
 }
@@ -121,20 +124,25 @@ async function _doLogin(email, pass) {
     }
 }
 
+/* ── Анализ контекста проекта ── */
 async function analyzeCurrentContext(projectId) {
     console.log("Faraday: Запуск глубокого анализа проекта...");
     
+    // Безопасный вызов функции добавления сообщения
+    const say = (who, text, type) => {
+        if (window.addMessageToUI) window.addMessageToUI(who, text, type);
+        else console.log(`${who}: ${text}`);
+    };
+
     try {
-        const doc = await db.collection('project_manifests').doc(projectId).get();
+        const doc = await window.db.collection('project_manifests').doc(projectId).get();
         
         if (doc.exists) {
             const project = doc.data();
             
-            // Сопоставляем данные строго по твоему скриншоту из Firebase
             const name   = project.projectName   || "Unknown Project";
             const status = project.currentStatus || "No Status";
             
-            // Проверяем stack (массив это или нет)
             let tech = "не указан";
             if (Array.isArray(project.stack)) {
                 tech = project.stack.join(', ');
@@ -142,17 +150,15 @@ async function analyzeCurrentContext(projectId) {
                 tech = project.stack;
             }
 
-            // Имитируем процесс "обдумывания" для живости
-            addMessageToUI('FARADAY', "Синхронизируюсь с манифестом проекта...", 'ai-msg');
+            say('FARADAY', "Синхронизируюсь с манифестом проекта...", 'ai-msg');
 
             setTimeout(() => {
                 const finalReport = `Анализ ${name} завершен. Сэр, текущий статус: [${status}]. Используемый стек: ${tech}. Система готова к масштабированию.`;
-                addMessageToUI('FARADAY', finalReport, 'ai-msg');
+                say('FARADAY', finalReport, 'ai-msg');
                 
-                // Эмоциональный отклик на статус
                 if (status.toLowerCase().includes('active')) {
                     setTimeout(() => {
-                        addMessageToUI('FARADAY', "Вижу высокую активность в разработке. Рекомендую сделать бэкап базы данных.", 'ai-msg');
+                        say('FARADAY', "Вижу высокую активность в разработке. Рекомендую сделать бэкап базы данных.", 'ai-msg');
                     }, 3000);
                 }
             }, 2500);
