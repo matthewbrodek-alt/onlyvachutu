@@ -442,6 +442,8 @@ window.onload = function() {
     initNitroBoost();
     setLang('ru');
     // initFaradayCore() вызывается из auth.js после Firebase ready
+    // Вызываем анализ конкретно для этого документа из скриншота
+    analyzeCurrentContext('nitro_18');
 };
 
 console.log('%cNitro Hub v8.0 ✓', 'color:#00ff88;font-size:14px;font-weight:bold;');

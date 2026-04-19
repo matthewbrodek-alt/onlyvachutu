@@ -121,6 +121,29 @@ async function _doLogin(email, pass) {
     }
 }
 
+async function analyzeCurrentContext(projectId) {
+    // projectId здесь должен быть "nitro_18"
+    const doc = await db.collection('project_manifests').doc(projectId).get();
+    
+    if (doc.exists) {
+        const project = doc.data();
+        
+        // Faraday обращается к полям, которые ты создал на скриншоте
+        const name = project.projectName;
+        const status = project.currentStatus; // Вот тут важно совпадение имен!
+        const tech = project.stack ? project.stack.join(', ') : 'не определен';
+
+        setTimeout(() => {
+            addMessageToUI('FARADAY', 
+                `Системный анализ завершен. Проект: ${name}. Статус: ${status}. Стек: ${tech}. Я готов к работе, сэр.`, 
+                'ai-msg'
+            );
+        }, 4000);
+    } else {
+        console.log("Faraday: Манифест проекта не найден в БД.");
+    }
+}
+
 /* ── Выход ── */
 function handleLogout() {
     window.auth.signOut().catch(function(err) {
