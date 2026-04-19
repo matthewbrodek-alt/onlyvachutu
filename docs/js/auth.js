@@ -122,25 +122,46 @@ async function _doLogin(email, pass) {
 }
 
 async function analyzeCurrentContext(projectId) {
-    // projectId здесь должен быть "nitro_18"
-    const doc = await db.collection('project_manifests').doc(projectId).get();
+    console.log("Faraday: Запуск глубокого анализа проекта...");
     
-    if (doc.exists) {
-        const project = doc.data();
+    try {
+        const doc = await db.collection('project_manifests').doc(projectId).get();
         
-        // Faraday обращается к полям, которые ты создал на скриншоте
-        const name = project.projectName;
-        const status = project.currentStatus; // Вот тут важно совпадение имен!
-        const tech = project.stack ? project.stack.join(', ') : 'не определен';
+        if (doc.exists) {
+            const project = doc.data();
+            
+            // Сопоставляем данные строго по твоему скриншоту из Firebase
+            const name   = project.projectName   || "Unknown Project";
+            const status = project.currentStatus || "No Status";
+            
+            // Проверяем stack (массив это или нет)
+            let tech = "не указан";
+            if (Array.isArray(project.stack)) {
+                tech = project.stack.join(', ');
+            } else if (project.stack) {
+                tech = project.stack;
+            }
 
-        setTimeout(() => {
-            addMessageToUI('FARADAY', 
-                `Системный анализ завершен. Проект: ${name}. Статус: ${status}. Стек: ${tech}. Я готов к работе, сэр.`, 
-                'ai-msg'
-            );
-        }, 4000);
-    } else {
-        console.log("Faraday: Манифест проекта не найден в БД.");
+            // Имитируем процесс "обдумывания" для живости
+            addMessageToUI('FARADAY', "Синхронизируюсь с манифестом проекта...", 'ai-msg');
+
+            setTimeout(() => {
+                const finalReport = `Анализ ${name} завершен. Сэр, текущий статус: [${status}]. Используемый стек: ${tech}. Система готова к масштабированию.`;
+                addMessageToUI('FARADAY', finalReport, 'ai-msg');
+                
+                // Эмоциональный отклик на статус
+                if (status.toLowerCase().includes('active')) {
+                    setTimeout(() => {
+                        addMessageToUI('FARADAY', "Вижу высокую активность в разработке. Рекомендую сделать бэкап базы данных.", 'ai-msg');
+                    }, 3000);
+                }
+            }, 2500);
+
+        } else {
+            console.error("Faraday Error: Манифест '" + projectId + "' не найден в Firestore.");
+        }
+    } catch (err) {
+        console.error("Faraday Context Error:", err);
     }
 }
 
