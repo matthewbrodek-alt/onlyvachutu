@@ -109,7 +109,7 @@ function listenForFaradayResponses(uid) {
             });
         }, function(err) {
             // Тихо игнорируем ошибки прав (коллекция может быть пустой)
-            console.warn('[FaradayResponses]', err.code);
+            console.error('[FaradayResponses] Кликни на стрелочку ниже, чтобы найти ссылку:', err);
         });
 }
 
