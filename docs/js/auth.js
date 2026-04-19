@@ -1,6 +1,6 @@
 /* ════════════════════════════════════════════════
    auth.js — Firebase инициализация, вход/выход,
-              обновление UI авторизации
+              обновление UI авторизации.
 ════════════════════════════════════════════════ */
 
 var firebaseConfig = {
@@ -12,31 +12,30 @@ var firebaseConfig = {
     appId:             '1:391088510675:web:ff1c4d866c37f921886626'
 };
 
-// Инициализируем Firebase один раз
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 
-// Экспортируем в глобальный scope (нужен другим модулям)
 window.db   = firebase.firestore();
 window.auth = firebase.auth();
 
-var chatUnsubscribe = null; // слушатель личного чата
+var chatUnsubscribe          = null;
+var faradayResponsesUnsub    = null;
 
-/* ── Обновление UI в зависимости от состояния авторизации ── */
+/* ── Обновление UI ── */
 function updateAuthUI(user) {
     var lf  = document.getElementById('login-form');
     var ui  = document.getElementById('user-info');
     var mlf = document.getElementById('modal-login-form');
     var mui = document.getElementById('modal-user-info');
 
-    var navLoginBtn     = document.getElementById('nav-login-btn');
-    var navUserBlock    = document.getElementById('nav-user-block');
-    var navUserName     = document.getElementById('nav-user-name');
-    var mobileLoginBtn  = document.getElementById('mobile-login-btn');
-    var mobileUserBlock = document.getElementById('mobile-user-block');
-    var mobileUserName  = document.getElementById('mobile-user-name');
-    var chatEmail       = document.getElementById('chat-user-email');
-    var modalChatEmail  = document.getElementById('modal-chat-user-email');
-    var userNameContacts= document.getElementById('user-name-contacts');
+    var navLoginBtn      = document.getElementById('nav-login-btn');
+    var navUserBlock     = document.getElementById('nav-user-block');
+    var navUserName      = document.getElementById('nav-user-name');
+    var mobileLoginBtn   = document.getElementById('mobile-login-btn');
+    var mobileUserBlock  = document.getElementById('mobile-user-block');
+    var mobileUserName   = document.getElementById('mobile-user-name');
+    var chatEmail        = document.getElementById('chat-user-email');
+    var modalChatEmail   = document.getElementById('modal-chat-user-email');
+    var userNameContacts = document.getElementById('user-name-contacts');
 
     if (user) {
         var name = user.email.split('@')[0];
@@ -46,24 +45,29 @@ function updateAuthUI(user) {
         if (mlf) mlf.style.display = 'none';
         if (mui) mui.style.display = 'flex';
 
-        if (navLoginBtn)     navLoginBtn.style.display     = 'none';
-        if (navUserBlock)    navUserBlock.style.display     = 'flex';
-        if (navUserName)     navUserName.innerText          = name;
-        if (mobileLoginBtn)  mobileLoginBtn.style.display   = 'none';
-        if (mobileUserBlock) mobileUserBlock.style.display  = 'flex';
-        if (mobileUserName)  mobileUserName.innerText       = name;
-        if (chatEmail)       chatEmail.innerText            = user.email;
-        if (modalChatEmail)  modalChatEmail.innerText       = user.email;
-        if (userNameContacts)userNameContacts.innerText     = name;
+        if (navLoginBtn)     navLoginBtn.style.display    = 'none';
+        if (navUserBlock)    navUserBlock.style.display    = 'flex';
+        if (navUserName)     navUserName.innerText         = name;
+        if (mobileLoginBtn)  mobileLoginBtn.style.display  = 'none';
+        if (mobileUserBlock) mobileUserBlock.style.display = 'flex';
+        if (mobileUserName)  mobileUserName.innerText      = name;
+        if (chatEmail)       chatEmail.innerText           = user.email;
+        if (modalChatEmail)  modalChatEmail.innerText      = user.email;
+        if (userNameContacts)userNameContacts.innerText    = name;
 
-        // Подписываемся на личный чат
+        // Личный чат — Firestore
         if (chatUnsubscribe) chatUnsubscribe();
         chatUnsubscribe = window.db
             .collection('users').doc(user.uid).collection('messages')
             .orderBy('timestamp', 'asc')
             .onSnapshot(renderPersonalMessages, function(err) {
-                console.error('Chat snapshot error:', err);
+                console.error('[Auth] Chat snapshot error:', err);
             });
+
+        // Слушаем входящие ответы от Faraday (bridge → Firestore → фронт)
+        if (typeof listenForFaradayResponses === 'function') {
+            listenForFaradayResponses(user.uid);
+        }
 
     } else {
         if (lf)  lf.style.display  = 'flex';
@@ -78,13 +82,15 @@ function updateAuthUI(user) {
         if (userNameContacts)userNameContacts.innerText    = 'Guest';
 
         if (chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
+        // Отписываемся от ответов Faraday
+        if (faradayResponsesUnsub) { faradayResponsesUnsub(); faradayResponsesUnsub = null; }
     }
 }
 
-// Единственная подписка на изменение состояния авторизации
+// Единственная подписка — запускает Faraday Core только один раз
 window.auth.onAuthStateChanged(function(user) {
     updateAuthUI(user);
-    // Запускаем Faraday Core только один раз при старте
+
     if (window._faradayCoreInited) return;
     window._faradayCoreInited = true;
     if (typeof initFaradayCore === 'function') initFaradayCore();
@@ -101,13 +107,11 @@ async function handleLoginModal() {
     var pass  = document.getElementById('modal-auth-pass');
     if (email && pass) await _doLogin(email.value.trim(), pass.value);
 }
-
 async function _doLogin(email, pass) {
     if (!email || !pass) return;
     try {
         await window.auth.signInWithEmailAndPassword(email, pass);
     } catch (e) {
-        // Если пользователь не найден — пробуем создать
         if (e.code === 'auth/user-not-found' ||
             e.code === 'auth/invalid-credential' ||
             e.code === 'auth/wrong-password') {
@@ -119,5 +123,7 @@ async function _doLogin(email, pass) {
 
 /* ── Выход ── */
 function handleLogout() {
-    window.auth.signOut().catch(function(err) { console.error('Logout error:', err); });
+    window.auth.signOut().catch(function(err) {
+        console.error('[Auth] Logout error:', err);
+    });
 }

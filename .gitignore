@@ -3,7 +3,7 @@ backend/serviceAccountKey.json
 
 # Файлы окружения с токенами
 .env
-
+*.pyc
 # Папки виртуального окружения Python (если создавал)
 venv/
 .venv/
