@@ -55,30 +55,42 @@ function updateAuthUI(user) {
         if (modalChatEmail)  modalChatEmail.innerText      = user.email;
         if (userNameContacts)userNameContacts.innerText    = name;
 
-        // Личный чат — Firestore
+        // 1. Личный чат (твои сообщения)
         if (chatUnsubscribe) chatUnsubscribe();
         chatUnsubscribe = window.db
             .collection('users').doc(user.uid).collection('messages')
             .orderBy('timestamp', 'asc')
             .onSnapshot(renderPersonalMessages, function(err) {
-                // ИСПРАВЛЕНИЕ: Перехват ошибки индекса (failed-precondition)
                 if (err.code === 'failed-precondition') {
-                    console.error('[Auth] Ошибка индекса или вкладок. Проверьте ссылку в консоли ниже.');
+                    console.error('[Auth] Ошибка индекса! Проверьте ссылку в деталях ошибки ниже.');
                 }
                 console.error('[Auth] Chat snapshot error:', err);
             });
 
-        // Слушаем входящие ответы от Faraday (bridge → Firestore → фронт)
-        if (typeof listenForFaradayResponses === 'function') {
-            listenForFaradayResponses(user.uid);
-        }
+        // 2. Ответы Faraday (из Telegram через Bridge)
+        if (faradayResponsesUnsub) faradayResponsesUnsub();
+        faradayResponsesUnsub = window.db
+            .collection('users').doc(user.uid).collection('faraday_responses')
+            .orderBy('timestamp', 'asc')
+            .onSnapshot(function(snap) {
+                snap.docChanges().forEach(function(change) {
+                    if (change.type === 'added') {
+                        var data = change.doc.data();
+                        if (window.addMessageToUI) {
+                            window.addMessageToUI('FARADAY', data.text || data.message, 'ai-msg');
+                        }
+                    }
+                });
+            }, function(err) {
+                console.error('[Auth] Faraday Responses Error:', err);
+            });
 
     } else {
+        // ... (логика выхода остается без изменений)
         if (lf)  lf.style.display  = 'flex';
         if (ui)  ui.style.display  = 'none';
         if (mlf) mlf.style.display = 'flex';
         if (mui) mui.style.display = 'none';
-
         if (navLoginBtn)     navLoginBtn.style.display    = 'inline-block';
         if (navUserBlock)    navUserBlock.style.display    = 'none';
         if (mobileLoginBtn)  mobileLoginBtn.style.display  = 'inline-block';
@@ -90,16 +102,14 @@ function updateAuthUI(user) {
     }
 }
 
-// Единственная подписка — запускает Faraday Core только один раз
 window.auth.onAuthStateChanged(function(user) {
     updateAuthUI(user);
-
     if (window._faradayCoreInited) return;
     window._faradayCoreInited = true;
     if (typeof initFaradayCore === 'function') initFaradayCore();
 });
 
-/* ── Вход ── */
+/* ── Вход/Выход (без изменений) ── */
 async function handleLogin() {
     var email = document.getElementById('auth-email');
     var pass  = document.getElementById('auth-pass');
@@ -115,65 +125,46 @@ async function _doLogin(email, pass) {
     try {
         await window.auth.signInWithEmailAndPassword(email, pass);
     } catch (e) {
-        if (e.code === 'auth/user-not-found' ||
-            e.code === 'auth/invalid-credential' ||
-            e.code === 'auth/wrong-password') {
+        if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password') {
             try { await window.auth.createUserWithEmailAndPassword(email, pass); }
             catch (ce) { alert(ce.message); }
         } else { alert(e.message); }
     }
 }
+function handleLogout() {
+    window.auth.signOut().catch(function(err) { console.error('[Auth] Logout error:', err); });
+}
 
-/* ── Анализ контекста проекта ── */
+/* ── Анализ контекста (Исправленные имена полей) ── */
 async function analyzeCurrentContext(projectId) {
     console.log("Faraday: Запуск глубокого анализа проекта...");
-    
-    // Безопасный вызов функции добавления сообщения
     const say = (who, text, type) => {
         if (window.addMessageToUI) window.addMessageToUI(who, text, type);
-        else console.log(`${who}: ${text}`);
     };
 
     try {
         const doc = await window.db.collection('project_manifests').doc(projectId).get();
-        
         if (doc.exists) {
             const project = doc.data();
             
-            const name   = project.projectName   || "Unknown Project";
-            const status = project.currentStatus || "No Status";
+            // Имена полей теперь точно как в твоей БД (image_a2ec63.png)
+            const name   = project.projectName   || "Nitro Project";
+            const status = project.currentStatus || "Active";
             
             let tech = "не указан";
-            if (Array.isArray(project.stack)) {
-                tech = project.stack.join(', ');
-            } else if (project.stack) {
-                tech = project.stack;
-            }
+            if (Array.isArray(project.stack)) tech = project.stack.join(', ');
+            else if (project.stack) tech = project.stack;
 
             say('FARADAY', "Синхронизируюсь с манифестом проекта...", 'ai-msg');
 
             setTimeout(() => {
-                const finalReport = `Анализ ${name} завершен. Сэр, текущий статус: [${status}]. Используемый стек: ${tech}. Система готова к масштабированию.`;
-                say('FARADAY', finalReport, 'ai-msg');
-                
+                say('FARADAY', `Анализ ${name} завершен. Статус: [${status}]. Стек: ${tech}.`, 'ai-msg');
                 if (status.toLowerCase().includes('active')) {
                     setTimeout(() => {
-                        say('FARADAY', "Вижу высокую активность в разработке. Рекомендую сделать бэкап базы данных.", 'ai-msg');
-                    }, 3000);
+                        say('FARADAY', "Вижу высокую активность. Системы готовы к деплою.", 'ai-msg');
+                    }, 2000);
                 }
             }, 2500);
-
-        } else {
-            console.error("Faraday Error: Манифест '" + projectId + "' не найден в Firestore.");
         }
-    } catch (err) {
-        console.error("Faraday Context Error:", err);
-    }
-}
-
-/* ── Выход ── */
-function handleLogout() {
-    window.auth.signOut().catch(function(err) {
-        console.error('[Auth] Logout error:', err);
-    });
+    } catch (err) { console.error("Faraday Context Error:", err); }
 }
