@@ -1,23 +1,12 @@
 /* ════════════════════════════════════════════════
-   chat.js — Два независимых чата + AI-функции.
+   chat.js — Два независимых чата + AI-модули.
 
-   ┌─ ЛИЧНЫЙ ЧАТ ──────────────────────────────┐
-   │ sendPersonalMessage()                       │
-   │ → api.js callBackend() [uid auto-inject]   │
-   │ → bridge.py /api/memory                    │
-   │ → Telegram + Firestore faraday_memory       │
-   │                                             │
-   │ Ответы обратно:                             │
-   │ Telegram → bridge webhook                  │
-   │ → Firestore users/{uid}/faraday_responses  │
-   │ → auth.js onSnapshot → личный чат feed     │
-   └─────────────────────────────────────────────┘
+   ЛИЧНЫЙ ЧАТ:   sendPersonalMessage() → bridge → Telegram
+                 Ответы из Telegram → chat-window (auth.js)
 
-   ┌─ FARADAY AI ЧАТ ──────────────────────────┐
-   │ sendFaradayMessage() → processFaradayCommand│
-   │ → локальные команды + Firestore             │
-   │ → TTS голос (Jarvis / en-GB мужской)       │
-   └─────────────────────────────────────────────┘
+   FARADAY AI:   sendFaradayMessage() → локально
+                 Голос: en-GB (Jarvis) / ru-RU (мужской)
+                 Поиск в интернете через Wikipedia API
 ════════════════════════════════════════════════ */
 
 /* ══════════════════════════════════════════════
@@ -31,7 +20,7 @@ function addEmoji(inputId, emoji) {
 /* ══════════════════════════════════════════════
    ЛИЧНЫЙ МЕССЕНДЖЕР
    Только Firebase + Telegram через bridge.
-   НЕ касается Faraday AI.
+   Полностью изолирован от Faraday AI.
 ══════════════════════════════════════════════ */
 function sendPersonalMessage(inputId, windowId) {
     var input  = document.getElementById(inputId  || 'chat-msg');
@@ -44,24 +33,16 @@ function sendPersonalMessage(inputId, windowId) {
         alert('Сначала войдите в систему');
         return;
     }
-
     var userEmail = window.auth.currentUser.email || 'guest@nitro.hub';
     input.value = '';
     appendMessage(feedEl, text, 'sent');
 
-    // uid добавляется автоматически в callBackend (api.js)
-    bridgeSaveMemory(text, userEmail)
-        .then(function(data) {
-            if (!data) {
-                console.warn('[Chat] Bridge недоступен — сообщение не доставлено в Telegram.');
-            }
-        });
+    // uid добавляется в callBackend (api.js) автоматически
+    bridgeSaveMemory(text, userEmail).then(function(data) {
+        if (!data) console.warn('[Chat] Bridge недоступен.');
+    });
 }
 
-/**
- * Рендер личных сообщений из Firestore (в оба окна чата).
- * Вызывается из auth.js через onSnapshot.
- */
 function renderPersonalMessages(snap) {
     ['chat-window', 'modal-chat-window'].forEach(function(id) {
         var win = document.getElementById(id);
@@ -89,33 +70,53 @@ function appendMessage(feedEl, text, type) {
 
 /* ══════════════════════════════════════════════
    TTS — ГОЛОС JARVIS
-   Подбирает мужской британский голос (David /
-   Google UK English Male) с низким pitch и
-   замедленным темпом — максимально близко к
-   голосу Jarvis из фильмов Marvel.
-   Fallback: любой доступный голос en-GB → en.
+   EN → en-GB мужской (David / Google UK English Male)
+   RU → ru-RU мужской (приоритет: Pavel, Yuri, любой муж. ru)
+        — это наиболее близкий к голосу Григория Переля
+          вариант доступный через Web Speech API.
+          Web Speech API не даёт выбрать конкретного
+          актёра озвучки — только системные голоса.
 ══════════════════════════════════════════════ */
 var faradayTTSEnabled = true;
-var _jarvisVoice      = null; // кешируем выбранный голос
+var _ttsLang          = 'ru'; // текущий язык сайта
+var _voiceCache       = {};   // кеш подобранных голосов
 
-function _pickJarvisVoice() {
-    if (_jarvisVoice) return _jarvisVoice;
+/* Вызывается из app.js при смене языка */
+function onLangChanged(lang) {
+    _ttsLang = lang;
+    _voiceCache = {}; // сбрасываем кеш — для нового языка выбираем заново
+}
+
+function _pickVoice(lang) {
+    if (_voiceCache[lang]) return _voiceCache[lang];
     var voices = window.speechSynthesis.getVoices();
-    if (!voices || voices.length === 0) return null;
+    if (!voices || !voices.length) return null;
 
-    // Приоритет: имя содержит David, затем Google UK English Male,
-    // затем любой en-GB мужской, затем любой en-GB, затем любой en.
-    var priority = [
-        function(v) { return /david/i.test(v.name); },
-        function(v) { return /google uk english male/i.test(v.name); },
-        function(v) { return v.lang === 'en-GB' && /male|man/i.test(v.name); },
-        function(v) { return v.lang === 'en-GB'; },
-        function(v) { return v.lang && v.lang.startsWith('en'); },
-    ];
+    var isRu = lang === 'ru';
+    var priority;
+
+    if (isRu) {
+        // Приоритет для русского голоса — мужские имена
+        priority = [
+            function(v) { return v.lang === 'ru-RU' && /pavel|pavel|yuri|dmitri|male/i.test(v.name); },
+            function(v) { return v.lang === 'ru-RU' && !/female|woman|женщин|anya|alena|milena/i.test(v.name); },
+            function(v) { return v.lang === 'ru-RU'; },
+            function(v) { return v.lang && v.lang.startsWith('ru'); },
+        ];
+    } else {
+        // Приоритет для английского — Jarvis-style
+        priority = [
+            function(v) { return /david/i.test(v.name); },
+            function(v) { return /google uk english male/i.test(v.name); },
+            function(v) { return v.lang === 'en-GB' && /male|man/i.test(v.name); },
+            function(v) { return v.lang === 'en-GB'; },
+            function(v) { return v.lang && v.lang.startsWith('en'); },
+        ];
+    }
 
     for (var i = 0; i < priority.length; i++) {
         var found = voices.filter(priority[i]);
-        if (found.length) { _jarvisVoice = found[0]; return _jarvisVoice; }
+        if (found.length) { _voiceCache[lang] = found[0]; return found[0]; }
     }
     return null;
 }
@@ -123,31 +124,76 @@ function _pickJarvisVoice() {
 function faradaySpeak(text) {
     if (!faradayTTSEnabled || !window.speechSynthesis) return;
     window.speechSynthesis.cancel();
-
-    var clean = text.replace(/<[^>]+>/g, '').replace(/^FARADAY:\s*/i, '').trim();
+    var clean = text.replace(/<[^>]+>/g, '').replace(/^(JARVIS|FARADAY):\s*/i, '').trim();
     if (!clean) return;
 
-    var utt   = new SpeechSynthesisUtterance(clean);
-    utt.lang  = 'en-GB';   // британский английский — ближайший к Jarvis
-    utt.pitch = 0.6;        // низкий, уверенный голос
-    utt.rate  = 0.88;       // чуть медленнее нормального — солидно
+    var utt = new SpeechSynthesisUtterance(clean);
+    var isRu = _ttsLang === 'ru';
+
+    utt.lang   = isRu ? 'ru-RU' : 'en-GB';
+    utt.pitch  = isRu ? 0.75 : 0.6;   // RU: чуть выше; EN: низкий Jarvis
+    utt.rate   = isRu ? 0.92 : 0.88;  // RU: чуть медленнее; EN: солидно
     utt.volume = 0.95;
 
-    // Подбираем голос. Если синтез ещё не загрузил список — ждём.
-    var voice = _pickJarvisVoice();
+    var voice = _pickVoice(_ttsLang);
     if (voice) {
         utt.voice = voice;
     } else {
-        // Список голосов может грузиться асинхронно
+        // Голоса ещё загружаются — ждём
         window.speechSynthesis.onvoiceschanged = function() {
             window.speechSynthesis.onvoiceschanged = null;
-            _jarvisVoice = null; // сбрасываем кеш
-            var v = _pickJarvisVoice();
+            _voiceCache = {};
+            var v = _pickVoice(_ttsLang);
             if (v) utt.voice = v;
+            window.speechSynthesis.speak(utt);
         };
+        return; // speak будет вызван в onvoiceschanged
     }
-
     window.speechSynthesis.speak(utt);
+}
+
+/* ══════════════════════════════════════════════
+   ПОИСК В ИНТЕРНЕТЕ — Wikipedia API
+   Используется в Faraday AI при команде "найди"
+   или неизвестном вопросе. Публичный API,
+   не требует ключей.
+══════════════════════════════════════════════ */
+function searchWikipedia(query, lang) {
+    var wikiLang = (lang === 'ru') ? 'ru' : 'en';
+    var url = 'https://ru.wikipedia.org/w/api.php?' +
+        'action=query&format=json&origin=*' +
+        '&prop=extracts&exintro=true&explaintext=true' +
+        '&exsentences=3&redirects=1' +
+        '&titles=' + encodeURIComponent(query);
+    if (wikiLang === 'en') {
+        url = url.replace('ru.wikipedia.org', 'en.wikipedia.org');
+    }
+    return fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var pages  = data.query && data.query.pages;
+            if (!pages) return null;
+            var pageId = Object.keys(pages)[0];
+            if (pageId === '-1') return null; // не найдено
+            var extract = pages[pageId].extract;
+            if (!extract) return null;
+            // Берём первые 3 предложения
+            var sentences = extract.split(/(?<=[.!?])\s+/).slice(0, 3).join(' ');
+            return sentences.trim() || null;
+        })
+        .catch(function() { return null; });
+}
+
+/* Быстрый поиск определения через словарь DuckDuckGo instant */
+function searchDDG(query) {
+    var url = 'https://api.duckduckgo.com/?q=' + encodeURIComponent(query) +
+              '&format=json&no_html=1&skip_disambig=1';
+    return fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            return data.AbstractText || data.Answer || null;
+        })
+        .catch(function() { return null; });
 }
 
 /* ══════════════════════════════════════════════
@@ -168,22 +214,18 @@ function analyzeTone(text) {
 function performSelfDiagnostic() {
     var feed    = document.getElementById('faraday-feed');
     var timing  = window.performance && window.performance.timing;
-    var loadMs  = timing
-        ? timing.domContentLoadedEventEnd - timing.navigationStart
-        : -1;
+    var loadMs  = timing ? timing.domContentLoadedEventEnd - timing.navigationStart : -1;
 
     setTimeout(function() {
         var report = loadMs < 0
-            ? 'Diagnostics: load time data unavailable.'
+            ? 'Диагностика: данные загрузки недоступны.'
             : loadMs < 1000
-                ? 'All systems nominal. Response time: ' + loadMs + 'ms.'
-                : 'Elevated response latency: ' + loadMs + 'ms. I recommend optimising media resources.';
+                ? 'Системы работают штатно. Время отклика: ' + loadMs + 'мс.'
+                : 'Задержка: ' + loadMs + 'мс. Рекомендую оптимизировать медиа.';
 
         checkBridgeHealth().then(function(ok) {
-            var bridge = ok
-                ? 'Bridge: Online. Telegram relay active.'
-                : 'Bridge: Offline. Telegram and memory storage unavailable.';
-            if (feed) appendFaradayAIMsg(feed, report + ' ' + bridge);
+            var br = ok ? 'Bridge: Online.' : 'Bridge: Offline — Telegram недоступен.';
+            if (feed) appendFaradayAIMsg(feed, report + ' ' + br);
         });
     }, 5000);
 }
@@ -198,7 +240,7 @@ function updateProjectContext(projectName, techStack, status) {
         current_status: status || 'unknown',
         last_update:    firebase.firestore.FieldValue.serverTimestamp()
     }).then(function() {
-        console.log('[Faraday] Manifest «' + projectName + '» updated.');
+        console.log('[Faraday] Манифест «' + projectName + '» обновлён.');
     }).catch(function(err) {
         console.warn('[Faraday] updateProjectContext:', err.message);
     });
@@ -209,7 +251,6 @@ function updateProjectContext(projectName, techStack, status) {
 ══════════════════════════════════════════════ */
 function runSelfEvolution() {
     if (!window.db) return Promise.resolve(null);
-
     return window.db.collection('faraday_memory').get()
         .then(function(snap) {
             var exp   = snap.size;
@@ -221,19 +262,16 @@ function runSelfEvolution() {
                 last_sync:          new Date().toLocaleString()
             };
             return window.db.collection('system_config').doc('faraday_core')
-                .set(core, { merge: true })
-                .then(function() { return core; });
+                .set(core, { merge: true }).then(function() { return core; });
         })
         .then(function(core) {
             if (!core) return null;
             if (core.level > 1) {
                 setTimeout(function() {
                     var feed = document.getElementById('faraday-feed');
-                    if (feed) {
-                        appendFaradayAIMsg(feed,
-                            'Intelligence index updated to ' + core.intelligence_index +
-                            '. Protocol level: ' + core.level + '. Systems optimised.');
-                    }
+                    if (feed) appendFaradayAIMsg(feed,
+                        'Индекс интеллекта: ' + core.intelligence_index +
+                        '. Уровень: ' + core.level + '. Протоколы оптимизированы.');
                 }, 10000);
             }
             return core;
@@ -245,37 +283,27 @@ function runSelfEvolution() {
 }
 
 /* ══════════════════════════════════════════════
-   ПЕРЕХВАТ ОШИБОК — window.onerror
-   Одна регистрация. Firestore + bridge → Telegram.
+   ПЕРЕХВАТ ОШИБОК
 ══════════════════════════════════════════════ */
 window.onerror = function(message, source, lineno) {
     var shortSrc = source ? source.split('/').pop() : 'unknown';
-    var note = 'System instability detected: ' + message +
-               ' in «' + shortSrc + '», line ' + lineno + '. Logging to memory.';
-
+    var note = 'Системная нестабильность: ' + message +
+               ' в «' + shortSrc + '», строка ' + lineno + '. Записываю в журнал.';
     var feed = document.getElementById('faraday-feed');
-    if (feed && typeof appendFaradayAIMsg === 'function') {
-        appendFaradayAIMsg(feed, note);
-    }
-
+    if (feed && typeof appendFaradayAIMsg === 'function') appendFaradayAIMsg(feed, note);
     if (window.db) {
         window.db.collection('faraday_memory').add({
-            topic:     'system_error',
-            content:   message + ' | ' + source + ':' + lineno,
+            topic: 'system_error',
+            content: message + ' | ' + source + ':' + lineno,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        }).catch(function() {});
+        }).catch(function(){});
     }
-
-    if (typeof reportErrorToBridge === 'function') {
-        reportErrorToBridge(message, source, lineno);
-    }
-
+    if (typeof reportErrorToBridge === 'function') reportErrorToBridge(message, source, lineno);
     return false;
 };
 
 /* ══════════════════════════════════════════════
    FARADAY AI ЧАТ
-   Полностью изолирован от личного мессенджера.
 ══════════════════════════════════════════════ */
 function sendFaradayMessage() {
     var input = document.getElementById('faraday-input');
@@ -291,7 +319,14 @@ function sendFaradayMessage() {
     setTimeout(function() {
         removeFaradayTyping(tid);
         var resp = processFaradayCommand(text);
-        appendFaradayAIMsg(feed, resp);
+        // resp может быть строкой или Promise (для поиска)
+        if (resp && typeof resp.then === 'function') {
+            resp.then(function(answer) {
+                appendFaradayAIMsg(feed, answer);
+            });
+        } else {
+            appendFaradayAIMsg(feed, resp);
+        }
     }, 450 + Math.random() * 350);
 }
 
@@ -310,17 +345,17 @@ function processFaradayCommand(text) {
 
     function setHUD(msg) { if (hudSt) hudSt.innerText = msg; }
 
-    // TTS
+    // TTS управление
     if (t.includes('замолчи') || t.includes('тихо') || t.includes('silence') || t.includes('mute')) {
         faradayTTSEnabled = false;
         window.speechSynthesis && window.speechSynthesis.cancel();
         setHUD('TTS: OFF');
-        return 'Voice output disabled, sir.';
+        return 'Голосовой вывод отключён.';
     }
     if (t.includes('говори') || t.includes('включи голос') || t.includes('speak') || t.includes('unmute')) {
         faradayTTSEnabled = true;
         setHUD('TTS: ON');
-        return 'Voice output re-engaged.';
+        return 'Голосовой вывод активирован.';
     }
 
     // Цвет акцента
@@ -331,16 +366,16 @@ function processFaradayCommand(text) {
         'розовый':'#ff66cc','pink':'#ff66cc',
         'стандарт':'#00ff88','default':'#00ff88','зелёный':'#00ff88','green':'#00ff88',
     };
-    if (t.includes('смени цвет') || t.includes('цвет на') || t.includes('change color') || t.includes('color')) {
+    if (t.includes('смени цвет') || t.includes('цвет на') || t.includes('change color')) {
         var color = '#00ff88';
         for (var k in colorMap) { if (t.includes(k)) { color = colorMap[k]; break; } }
         document.documentElement.style.setProperty('--accent', color);
         document.documentElement.style.setProperty('--accent-dim', color + '1a');
         document.documentElement.style.setProperty('--border-accent', color + '38');
         window.db && window.db.collection('system_config').doc('faraday_protocol')
-            .update({ 'ui_theme.accent': color }).catch(function() {});
+            .update({ 'ui_theme.accent': color }).catch(function(){});
         setHUD('COLOR: ' + color.toUpperCase());
-        return 'Accent colour updated to ' + color + '.';
+        return 'Акцент изменён на ' + color + '.';
     }
 
     // Пауза
@@ -351,8 +386,8 @@ function processFaradayCommand(text) {
         setHUD('SYSTEM: PAUSED');
         if (pill) pill.innerText = 'ПАУЗА';
         window.db && window.db.collection('system_config').doc('faraday_protocol')
-            .update({ safety_protocols: 'paused' }).catch(function() {});
-        return 'All systems suspended, sir.';
+            .update({ safety_protocols: 'paused' }).catch(function(){});
+        return 'Системы приостановлены.';
     }
 
     // Запуск
@@ -360,16 +395,16 @@ function processFaradayCommand(text) {
         t.includes('start') || t.includes('activate') || t.includes('resume')) {
         window.faradaySystemPaused = false;
         var v2 = document.getElementById('bg-video');
-        if (v2) v2.play().catch(function() {});
+        if (v2) v2.play().catch(function(){});
         setHUD('SYSTEM: ACTIVE');
         if (pill) pill.innerText = 'АКТИВЕН';
         window.db && window.db.collection('system_config').doc('faraday_protocol')
-            .update({ safety_protocols: 'active' }).catch(function() {});
-        return 'All systems are back online, sir.';
+            .update({ safety_protocols: 'active' }).catch(function(){});
+        return 'Все системы запущены.';
     }
 
     // Синхронизация
-    if (t.includes('синхронизация') || t.includes('sync') || t.includes('обнови') || t.includes('refresh')) {
+    if (t.includes('синхронизация') || t.includes('sync') || t.includes('обнови')) {
         setHUD('SYNCING...');
         window.db && window.db.collection('system_config').doc('faraday_protocol').get()
             .then(function(snap) {
@@ -379,35 +414,32 @@ function processFaradayCommand(text) {
                     document.documentElement.style.setProperty('--accent', cfg.ui_theme.accent);
                 setHUD('SYSTEM: READY');
                 if (feed) appendFaradayAIMsg(feed,
-                    'Configuration loaded from Firestore. Protocol version: ' + (cfg.version || '—'));
+                    'Конфигурация загружена. Версия: ' + (cfg.version || '—'));
             }).catch(function() { setHUD('SYNC ERROR'); });
-        return 'Querying Firestore…';
+        return 'Запрашиваю Firestore...';
     }
 
     // Статус
     if (t.includes('статус') || t.includes('status')) {
-        return 'System status: ' + (window.faradaySystemPaused ? 'SUSPENDED' : 'ACTIVE') +
-               '. Firebase: online. Voice: ' + (faradayTTSEnabled ? 'on' : 'off') + '. ' +
-               (typeof getFaradayMood === 'function' ? getFaradayMood() : '');
+        return 'Система: ' + (window.faradaySystemPaused ? 'ПАУЗА' : 'АКТИВНА') +
+               '. Firebase: OK. TTS: ' + (faradayTTSEnabled ? 'ON' : 'OFF') +
+               '. ' + (typeof getFaradayMood === 'function' ? getFaradayMood() : '');
     }
 
     // Диагностика
     if (t.includes('диагностика') || t.includes('diagnostic') || t.includes('scan')) {
         performSelfDiagnostic();
-        return 'Running diagnostics, sir. Results incoming shortly.';
+        return 'Запуск диагностики... Результат через несколько секунд.';
     }
 
     // Self-evolution
-    if (t.includes('эволюция') || t.includes('evolution') || t.includes('развитие') || t.includes('level')) {
+    if (t.includes('эволюция') || t.includes('evolution') || t.includes('развитие')) {
         runSelfEvolution().then(function(core) {
-            if (core && feed) {
-                appendFaradayAIMsg(feed,
-                    'Analysis complete. Level: ' + core.level +
-                    ', intelligence index: ' + core.intelligence_index +
-                    ', total memory records: ' + core.experience_points + '.');
-            }
+            if (core && feed) appendFaradayAIMsg(feed,
+                'Анализ завершён. Уровень: ' + core.level +
+                ', индекс: ' + core.intelligence_index + '.');
         });
-        return 'Initiating self-analysis…';
+        return 'Запускаю анализ саморазвития...';
     }
 
     // Запомни
@@ -415,41 +447,83 @@ function processFaradayCommand(text) {
         var mem = text.replace(/^(запомни|remember|note)\s*/i, '').trim();
         if (mem && window.db) {
             window.db.collection('faraday_memory').add({
-                topic:     'user_note',
-                content:   mem,
+                topic: 'user_note', content: mem,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(function() {
-                if (feed) appendFaradayAIMsg(feed, 'Noted, sir: «' + mem + '»');
+                if (feed) appendFaradayAIMsg(feed, 'Запомнено: «' + mem + '»');
             }).catch(function(e) {
-                if (feed) appendFaradayAIMsg(feed, 'Memory write error: ' + e.message);
+                if (feed) appendFaradayAIMsg(feed, 'Ошибка памяти: ' + e.message);
             });
-            return 'Accessing memory core…';
+            return 'Обращаюсь к ядру памяти...';
         }
-        return 'What should I remember? Say: «Remember [text]»';
+        return 'Что запомнить? Напишите: «Запомни [текст]»';
+    }
+
+    // ── ПОИСК В ИНТЕРНЕТЕ (Wikipedia) ──
+    // Триггеры: «найди», «что такое», «кто такой», «поищи», «find», «search», «what is»
+    var searchTriggers = ['найди ', 'что такое ', 'кто такой ', 'кто такая ', 'поищи ',
+                          'find ', 'search ', 'what is ', 'who is ', 'расскажи о '];
+    var searchQuery = null;
+    for (var si = 0; si < searchTriggers.length; si++) {
+        if (t.startsWith(searchTriggers[si])) {
+            searchQuery = text.slice(searchTriggers[si].length).trim();
+            break;
+        }
+    }
+    if (searchQuery) {
+        setHUD('SEARCHING...');
+        var sq = searchQuery;
+        // Возвращаем Promise — sendFaradayMessage умеет с ним работать
+        return searchWikipedia(sq, _ttsLang).then(function(result) {
+            setHUD('SYSTEM: ACTIVE');
+            if (result) {
+                return '🌐 Wikipedia: ' + result;
+            }
+            // Fallback: DuckDuckGo instant
+            return searchDDG(sq).then(function(ddgResult) {
+                if (ddgResult) return '🌐 ' + ddgResult;
+                return 'По запросу «' + sq + '» ничего не найдено. Попробуйте переформулировать.';
+            });
+        });
     }
 
     // Помощь
-    if (t.includes('помощь') || t.includes('help') || t.includes('команды') || t.includes('commands')) {
-        return 'Available directives:\n' +
-               '• «change color [blue/gold/red/default]» — accent colour\n' +
-               '• «pause» / «activate» — system control\n' +
-               '• «sync» — reload configuration\n' +
-               '• «status» — system report\n' +
-               '• «diagnostic» — performance scan\n' +
-               '• «evolution» — self-analysis\n' +
-               '• «remember [text]» — store in memory\n' +
-               '• «silence» / «speak» — voice control';
+    if (t.includes('помощь') || t.includes('help') || t.includes('команды') || t.includes('что умеешь')) {
+        return '⚡ Команды Faraday:\n' +
+               '• «смени цвет на [синий/золотой/красный/стандарт]»\n' +
+               '• «пауза» / «активируй» — системы\n' +
+               '• «синхронизация» — загрузить конфиг\n' +
+               '• «статус» — состояние\n' +
+               '• «диагностика» — тест производительности\n' +
+               '• «эволюция» — саморазвитие\n' +
+               '• «запомни [текст]» — память\n' +
+               '• «найди [запрос]» — поиск Wikipedia\n' +
+               '• «замолчи» / «говори» — TTS';
     }
 
     // Приветствие
     if (t.includes('привет') || t.includes('hello') || t.includes('hi') || t.includes('hey')) {
-        return 'Good day, sir. ' +
+        return 'Приветствую. ' +
                (typeof getFaradayMood === 'function' ? getFaradayMood() : '') +
-               ' How may I be of service?';
+               ' Чем могу помочь? Введите «помощь» для списка команд.';
+    }
+
+    // ── УМНЫЙ FALLBACK: неизвестный запрос → поиск ──
+    // Если фраза похожа на вопрос — пробуем найти ответ
+    var isQuestion = t.endsWith('?') || t.startsWith('как ') || t.startsWith('почему ') ||
+                     t.startsWith('where ') || t.startsWith('when ') || t.startsWith('how ');
+    if (isQuestion) {
+        var fallbackQuery = text.replace(/\?$/, '').trim();
+        setHUD('SEARCHING...');
+        return searchWikipedia(fallbackQuery, _ttsLang).then(function(result) {
+            setHUD('SYSTEM: STANDBY');
+            if (result) return '🌐 ' + result;
+            return 'Команда не распознана. Введите «помощь» для команд Faraday.';
+        });
     }
 
     setHUD('SYSTEM: STANDBY');
-    return 'Directive not recognised, sir. Say «help» for available commands.';
+    return 'Команда не распознана. Попробуйте «помощь» или «найди [тема]» для поиска.';
 }
 
 /* ── Рендер сообщений Faraday ── */
@@ -464,9 +538,10 @@ function appendFaradayUserMsg(feed, text) {
 
 function appendFaradayAIMsg(feed, text) {
     if (!feed) return;
+    var label = (_ttsLang === 'ru') ? 'ДЖАРВИС' : 'JARVIS';
     var div = document.createElement('div');
     div.className = 'msg-box ai-msg';
-    div.innerHTML = '<strong>JARVIS:</strong> ' + text.replace(/\n/g, '<br>');
+    div.innerHTML = '<strong>' + label + ':</strong> ' + text.replace(/\n/g, '<br>');
     feed.appendChild(div);
     feed.scrollTop = feed.scrollHeight;
     faradaySpeak(text);
@@ -476,9 +551,9 @@ function appendFaradayTyping(feed) {
     if (!feed) return null;
     var id  = 'typing-' + Date.now();
     var div = document.createElement('div');
-    div.id  = id;
-    div.className = 'msg-box ai-msg';
-    div.innerHTML = '<strong>JARVIS:</strong> <span class="typing-dots">●●●</span>';
+    div.id  = id; div.className = 'msg-box ai-msg';
+    div.innerHTML = '<strong>' + (_ttsLang === 'ru' ? 'ДЖАРВИС' : 'JARVIS') +
+                    ':</strong> <span class="typing-dots">●●●</span>';
     feed.appendChild(div);
     feed.scrollTop = feed.scrollHeight;
     return id;
@@ -496,7 +571,6 @@ var recognition = null;
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) return;
     recognition = new SR();
-    recognition.lang           = 'ru-RU';
     recognition.continuous     = false;
     recognition.interimResults = false;
 
@@ -507,10 +581,7 @@ var recognition = null;
         setVoiceBtn(false);
     };
     recognition.onend   = function() { setVoiceBtn(false); };
-    recognition.onerror = function(e) {
-        console.warn('[Voice]', e.error);
-        setVoiceBtn(false);
-    };
+    recognition.onerror = function(e) { console.warn('[Voice]', e.error); setVoiceBtn(false); };
 })();
 
 function setVoiceBtn(on) {
@@ -520,19 +591,18 @@ function setVoiceBtn(on) {
 
 function startVoiceCommand() {
     if (!recognition) { alert('Голосовой ввод не поддерживается.'); return; }
+    // Язык распознавания совпадает с языком интерфейса
+    recognition.lang = (_ttsLang === 'ru') ? 'ru-RU' : 'en-GB';
     try { recognition.start(); setVoiceBtn(true); }
     catch(e) { console.warn('[Voice start]', e); }
 }
 
 /* ══════════════════════════════════════════════
    ЗАПУСК AI-МОДУЛЕЙ
-   Вызывается из app.js → initFaradayCore()
 ══════════════════════════════════════════════ */
 function initAIModules() {
-    // Предзагрузка голосов (Chrome требует взаимодействия, но список грузим заранее)
-    if (window.speechSynthesis) {
-        window.speechSynthesis.getVoices(); // инициирует загрузку списка
-    }
+    // Предзагружаем список голосов
+    if (window.speechSynthesis) window.speechSynthesis.getVoices();
 
     performSelfDiagnostic();
     runSelfEvolution();

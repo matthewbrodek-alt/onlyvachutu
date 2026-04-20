@@ -1,15 +1,17 @@
 """
 bridge.py — Python-мост для Nitro Hub v8.1
-Деплой: Render.com (gunicorn)
-
 Маршруты сообщений:
-  Сайт → /api/memory         → Telegram + Firestore faraday_memory
+  Сайт → /api/memory  → Telegram + Firestore faraday_memory
   Telegram → /api/telegram-webhook → Firestore users/{uid}/faraday_responses → Сайт
 
-Переменные окружения (Render → Environment):
+Запуск:
+    pip install flask flask-cors python-dotenv requests firebase-admin
+    python bridge.py
+
+Переменные окружения (backend/.env):
     TELEGRAM_BOT_TOKEN=...
     TELEGRAM_CHAT_ID=...
-    PORT задаётся Render автоматически
+    PORT=5000
 """
 
 import os
@@ -22,15 +24,14 @@ load_dotenv()
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
 TELEGRAM_CHAT_ID   = os.getenv('TELEGRAM_CHAT_ID', '')
+PORT               = int(os.getenv('PORT', 5000))
 
-# ── Таблица маршрутизации ────────────────────────
-# telegram_chat_id → firebase_uid
-# Заполняется при каждом сообщении с сайта.
-# На Render.com живёт в RAM одного воркера —
-# для production используй Redis или Firestore routing.
-user_routing: dict = {}
+# Таблица маршрутизации: telegram_chat_id → firebase_uid
+# Заполняется автоматически при каждом сообщении с сайта.
+# Сбрасывается при перезапуске сервера (достаточно для одного владельца).
+user_routing = {}
 
-# ── Firebase Admin ───────────────────────────────
+# ── Firebase Admin ──────────────────────────────
 db       = None
 fs_admin = None
 
@@ -49,9 +50,9 @@ try:
     else:
         print('[Bridge] serviceAccountKey.json не найден — Firestore недоступен')
 except ImportError:
-    print('[Bridge] firebase-admin не установлен')
+    print('[Bridge] firebase-admin не установлен — Firestore недоступен')
 
-# ── Flask ────────────────────────────────────────
+# ── Flask ───────────────────────────────────────
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
@@ -60,11 +61,11 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 # ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 # ══════════════════════════════════════════════════
 
-def _send_telegram(text: str, chat_id: str | None = None) -> bool:
+def _send_telegram(text: str, chat_id: str = None) -> bool:
     """Отправить текст в Telegram."""
     target = chat_id or TELEGRAM_CHAT_ID
     if not TELEGRAM_BOT_TOKEN or not target:
-        print('[Bridge] Telegram credentials не заданы')
+        print('[Bridge] Telegram credentials не заданы в .env')
         return False
     try:
         url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
@@ -74,7 +75,7 @@ def _send_telegram(text: str, chat_id: str | None = None) -> bool:
             'parse_mode': 'HTML'
         }, timeout=5)
         if not r.ok:
-            print(f'[Bridge] Telegram HTTP {r.status_code}: {r.text[:200]}')
+            print(f'[Bridge] Telegram HTTP {r.status_code}: {r.text}')
         return r.ok
     except requests.RequestException as e:
         print(f'[Bridge] Telegram error: {e}')
@@ -84,7 +85,7 @@ def _send_telegram(text: str, chat_id: str | None = None) -> bool:
 def _deliver_to_site(uid: str, text: str) -> bool:
     """
     Записать ответ в Firestore users/{uid}/faraday_responses.
-    auth.js слушает этот путь через onSnapshot и выводит в Faraday-чат.
+    Фронтенд слушает именно этот путь через onSnapshot в auth.js.
     """
     if not db or not uid or not text:
         return False
@@ -95,7 +96,7 @@ def _deliver_to_site(uid: str, text: str) -> bool:
               'sender':    'FARADAY',
               'timestamp': fs_admin.SERVER_TIMESTAMP
           })
-        print(f'[Bridge] → users/{uid[:8]}…/faraday_responses: OK')
+        print(f'[Bridge] Ответ записан → users/{uid}/faraday_responses')
         return True
     except Exception as e:
         print(f'[Bridge] Firestore write error: {e}')
@@ -108,7 +109,7 @@ def _deliver_to_site(uid: str, text: str) -> bool:
 
 @app.route('/health', methods=['GET'])
 def health():
-    """Проверка состояния. Используется в self-diagnostic фронтенда."""
+    """Проверка состояния сервера."""
     return jsonify({
         'status':       'ok',
         'version':      '8.1',
@@ -121,12 +122,11 @@ def health():
 @app.route('/api/memory', methods=['POST'])
 def save_memory():
     """
-    Принять сообщение с сайта (личный мессенджер).
-    1. Сохраняем uid→chat_id в user_routing для обратного роутинга.
-    2. Отправляем в Telegram.
-    3. Сохраняем в faraday_memory.
+    Принять сообщение с сайта.
+    Шаг 1: отправить в Telegram (с указанием uid для обратного роутинга).
+    Шаг 2: сохранить в faraday_memory.
 
-    Body: { "content"/"message": str, "email": str, "uid": str }
+    Body: { "content"/"message": "текст", "email": "...", "uid": "firebase_uid" }
     """
     data    = request.get_json(silent=True) or {}
     content = (data.get('content') or data.get('message', '')).strip()
@@ -136,19 +136,18 @@ def save_memory():
     if not content:
         return jsonify({'error': 'content is required'}), 400
 
-    # Обновляем таблицу маршрутизации
-    # Ключ = TELEGRAM_CHAT_ID (твой личный чат с ботом),
-    # значение = uid пользователя который сейчас пишет с сайта.
+    # Запоминаем связку TELEGRAM_CHAT_ID → uid для обратного роутинга
+    # (chat_id определяется на стороне webhook при получении ответа)
     if uid and TELEGRAM_CHAT_ID:
         user_routing[TELEGRAM_CHAT_ID] = uid
-        print(f'[Bridge] Routing updated: {TELEGRAM_CHAT_ID} → {uid[:8]}…')
+        print(f'[Bridge] Routing: {TELEGRAM_CHAT_ID} → {uid[:8]}…')
 
-    # Telegram
-    uid_label = uid[:8] + '…' if len(uid) > 8 else (uid or '—')
-    tg_text = (
-        f'📨 <b>Nitro Hub — Личный чат</b>\n'
+    # Telegram: показываем uid чтобы можно было проверить маршрут
+    uid_short = uid[:8] + '...' if len(uid) > 8 else uid
+    tg_text   = (
+        f'📨 <b>Nitro Hub</b>\n'
         f'👤 {email}\n'
-        f'🆔 <code>{uid_label}</code>\n'
+        f'🆔 <code>{uid_short}</code>\n'
         f'💬 {content}'
     )
     tg_ok = _send_telegram(tg_text)
@@ -168,41 +167,43 @@ def save_memory():
         except Exception as e:
             print(f'[Bridge] faraday_memory write error: {e}')
 
-    print(f'[Bridge] /api/memory | TG: {tg_ok} | FS: {fs_ok}')
+    print(f'[Bridge] /api/memory | TG: {tg_ok} | FS: {fs_ok} | uid: {uid_short}')
     return jsonify({'ok': True, 'telegram': tg_ok, 'firestore': fs_ok})
 
 
 @app.route('/api/telegram-webhook', methods=['POST'])
 def telegram_webhook():
     """
-    Получить входящий ответ из Telegram (владелец отвечает пользователю).
-    Telegram webhook должен быть настроен через setWebhook на этот URL.
+    Получить входящее сообщение из Telegram (ваш ответ пользователю).
+    Telegram должен быть настроен на этот webhook через setWebhook.
 
-    Маршрут: Telegram → bridge → Firestore users/{uid}/faraday_responses → сайт.
+    Маршрут: Telegram → bridge → users/{uid}/faraday_responses → сайт.
     """
-    data    = request.get_json(silent=True) or {}
+    data = request.get_json(silent=True) or {}
+
+    # Обрабатываем только обычные текстовые сообщения
     message = data.get('message', {})
     text    = message.get('text', '').strip()
     chat_id = str(message.get('chat', {}).get('id', ''))
 
     if not text or not chat_id:
-        return jsonify({'ok': True})  # служебные обновления — игнорируем
+        return jsonify({'ok': True})  # игнорируем служебные события
 
+    # Ищем uid пользователя которому нужно ответить
     recipient_uid = user_routing.get(chat_id)
 
     if recipient_uid:
-        ok     = _deliver_to_site(recipient_uid, text)
+        ok = _deliver_to_site(recipient_uid, text)
         status = 'доставлен' if ok else 'ошибка Firestore'
-        print(f'[Bridge] Webhook: «{text[:40]}» → uid {recipient_uid[:8]}… | {status}')
+        print(f'[Bridge] Webhook: ответ «{text[:40]}» → uid {recipient_uid} | {status}')
     else:
-        # Маршрут не найден — пользователь не писал с сайта в этой сессии
-        hint = (
-            '⚠️ Маршрут не найден.\n'
-            f'Известные chat_id: {list(user_routing.keys()) or "нет"}\n'
-            'Попросите пользователя отправить сообщение с сайта первым.'
+        print(f'[Bridge] Webhook: нет маршрута для chat_id {chat_id}. '
+              f'Известные чаты: {list(user_routing.keys())}')
+        # Отправляем подсказку обратно в Telegram
+        _send_telegram(
+            '⚠️ Маршрут не найден. Попросите пользователя отправить сообщение с сайта первым.',
+            chat_id
         )
-        print(f'[Bridge] Webhook: нет маршрута для chat_id={chat_id}')
-        _send_telegram(hint, chat_id)
 
     return jsonify({'ok': True})
 
@@ -210,8 +211,8 @@ def telegram_webhook():
 @app.route('/api/notify', methods=['POST'])
 def notify():
     """
-    Системные уведомления → Telegram (ошибки, window.onerror и т.д.).
-    Body: { "message": str, "email": str }
+    Отправить произвольное уведомление в Telegram (ошибки, системные события).
+    Body: { "message": "текст", "email": "..." }
     """
     data    = request.get_json(silent=True) or {}
     message = data.get('message', '').strip()
@@ -227,16 +228,13 @@ def notify():
 
 @app.route('/api/memory', methods=['GET'])
 def get_memory():
-    """Последние 5 записей из faraday_memory (для self-evolution и диагностики)."""
+    """Получить последние 5 записей из faraday_memory."""
     if not db:
         return jsonify({'error': 'Firebase not configured'}), 503
     try:
-        docs = (
-            db.collection('faraday_memory')
-              .order_by('timestamp', direction=fs_admin.Query.DESCENDING)
-              .limit(5)
-              .stream()
-        )
+        docs   = db.collection('faraday_memory') \
+                   .order_by('timestamp', direction=fs_admin.Query.DESCENDING) \
+                   .limit(5).stream()
         result = []
         for d in docs:
             row = d.to_dict()
@@ -248,10 +246,9 @@ def get_memory():
         return jsonify({'error': str(e)}), 500
 
 
-# ── Запуск ───────────────────────────────────────
+# ── Запуск ──────────────────────────────────────
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    print(f'[Bridge] v8.1 → порт {port}')
-    print(f'[Bridge] Telegram: {"OK" if TELEGRAM_BOT_TOKEN else "НЕ НАСТРОЕН"}')
-    print(f'[Bridge] Firebase: {"OK" if db else "НЕ НАСТРОЕН"}')
+    # Render сам назначит нужный порт, обычно это 10000 или другой случайный
+    port = int(os.environ.get("PORT", 5000)) 
+    print(f'[Bridge] v8.1 запущен на порту {port}')
     app.run(host='0.0.0.0', port=port, debug=False)

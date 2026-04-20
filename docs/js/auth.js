@@ -1,10 +1,16 @@
 /* ════════════════════════════════════════════════
    auth.js — Firebase инициализация, вход/выход,
-              обновление UI, слушатель ответов Faraday.
+              обновление UI.
 
-   Маршрут ответа из Telegram:
-   bridge.py → Firestore users/{uid}/faraday_responses
-             → onSnapshot здесь → appendFaradayAIMsg()
+   Маршруты:
+   ┌─ ЛИЧНЫЙ ЧАТ ────────────────────────────────┐
+   │  users/{uid}/messages      → chat-window     │
+   │  users/{uid}/faraday_resp  → chat-window     │  ← ответы из Telegram
+   └─────────────────────────────────────────────┘
+   ┌─ FARADAY AI ────────────────────────────────┐
+   │  AI отвечает локально (chat.js)              │
+   │  Без Telegram                                │
+   └─────────────────────────────────────────────┘
 ════════════════════════════════════════════════ */
 
 var firebaseConfig = {
@@ -21,8 +27,8 @@ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 window.db   = firebase.firestore();
 window.auth = firebase.auth();
 
-var chatUnsubscribe         = null; // личные сообщения
-var faradayResponsesUnsub   = null; // ответы из Telegram
+var chatUnsubscribe       = null; // личные сообщения
+var telegramRespUnsub     = null; // ответы владельца из Telegram
 
 /* ── Обновление UI ── */
 function updateAuthUI(user) {
@@ -59,45 +65,50 @@ function updateAuthUI(user) {
         if (modalChatEmail)  modalChatEmail.innerText      = user.email;
         if (userNameContacts)userNameContacts.innerText    = name;
 
-        // ── 1. Личный чат: сообщения пользователя ──
+        /* ── 1. Исходящие сообщения пользователя ──
+           Рендерим в окно личного чата.              */
         if (chatUnsubscribe) chatUnsubscribe();
         chatUnsubscribe = window.db
             .collection('users').doc(user.uid).collection('messages')
             .orderBy('timestamp', 'asc')
             .onSnapshot(renderPersonalMessages, function(err) {
-                // failed-precondition = нужен составной индекс в Firestore
-                console.error('[Auth] messages snapshot error:', err.code, err.message);
+                if (err.code !== 'permission-denied')
+                    console.error('[Auth] messages snapshot:', err.code);
             });
 
-        // ── 2. Ответы из Telegram через bridge.py ──
-        // Путь: users/{uid}/faraday_responses
-        // bridge.py пишет сюда через _deliver_to_site()
-        if (faradayResponsesUnsub) faradayResponsesUnsub();
-        faradayResponsesUnsub = window.db
+        /* ── 2. Ответы владельца из Telegram ──
+           bridge.py пишет в users/{uid}/faraday_responses.
+           Показываем ТОЛЬКО в личном чате (не в Faraday AI).
+           Это «прямое общение» — ответ от живого человека.  */
+        if (telegramRespUnsub) telegramRespUnsub();
+        telegramRespUnsub = window.db
             .collection('users').doc(user.uid)
             .collection('faraday_responses')
             .orderBy('timestamp', 'asc')
             .onSnapshot(function(snap) {
                 snap.docChanges().forEach(function(change) {
-                    // Показываем только новые документы, не пересчитываем старые
                     if (change.type !== 'added') return;
                     var data = change.doc.data();
                     var text = (data.text || data.message || '').trim();
                     if (!text) return;
 
-                    // Выводим в Faraday-чат (функция из chat.js)
-                    var feed = document.getElementById('faraday-feed');
-                    if (feed && typeof appendFaradayAIMsg === 'function') {
-                        appendFaradayAIMsg(feed, text);
+                    // ← Ответ идёт В ЛИЧНЫЙ ЧАТ, не в Faraday AI
+                    var chatWin = document.getElementById('chat-window');
+                    if (chatWin && typeof appendMessage === 'function') {
+                        appendMessage(chatWin, '💬 ' + text, 'received');
+                    }
+                    var modalWin = document.getElementById('modal-chat-window');
+                    if (modalWin && typeof appendMessage === 'function') {
+                        appendMessage(modalWin, '💬 ' + text, 'received');
                     }
                 });
             }, function(err) {
-                // Тихо — при первом входе коллекция пуста, это нормально
-                console.warn('[Auth] faraday_responses:', err.code);
+                // Тихо — при первом входе коллекция пуста
+                if (err.code !== 'permission-denied')
+                    console.warn('[Auth] faraday_responses:', err.code);
             });
 
     } else {
-        // Выход
         if (lf)  lf.style.display  = 'flex';
         if (ui)  ui.style.display  = 'none';
         if (mlf) mlf.style.display = 'flex';
@@ -109,16 +120,14 @@ function updateAuthUI(user) {
         if (mobileUserBlock) mobileUserBlock.style.display = 'none';
         if (userNameContacts)userNameContacts.innerText    = 'Guest';
 
-        if (chatUnsubscribe)       { chatUnsubscribe(); chatUnsubscribe = null; }
-        if (faradayResponsesUnsub) { faradayResponsesUnsub(); faradayResponsesUnsub = null; }
+        if (chatUnsubscribe)   { chatUnsubscribe(); chatUnsubscribe = null; }
+        if (telegramRespUnsub) { telegramRespUnsub(); telegramRespUnsub = null; }
     }
 }
 
-/* Единственная подписка на изменение авторизации.
-   Запускает Faraday Core только один раз. */
+/* Единственная подписка. Faraday Core инициализируется один раз. */
 window.auth.onAuthStateChanged(function(user) {
     updateAuthUI(user);
-
     if (window._faradayCoreInited) return;
     window._faradayCoreInited = true;
     if (typeof initFaradayCore === 'function') initFaradayCore();
@@ -156,51 +165,25 @@ function handleLogout() {
     });
 }
 
-/* ════════════════════════════════════════════════
-   analyzeCurrentContext — читает манифест проекта
-   из Firestore и выводит анализ в Faraday-чат.
-   Вызов: analyzeCurrentContext('nitro_18')
-════════════════════════════════════════════════ */
+/* ── analyzeCurrentContext ── */
 function analyzeCurrentContext(projectId) {
     if (!window.db || !projectId) return;
-
     var feed = document.getElementById('faraday-feed');
     if (!feed || typeof appendFaradayAIMsg !== 'function') {
-        // Если чат ещё не готов — повторим позже
         setTimeout(function() { analyzeCurrentContext(projectId); }, 2000);
         return;
     }
-
     window.db.collection('project_manifests').doc(projectId).get()
         .then(function(doc) {
-            if (!doc.exists) {
-                console.log('[Faraday] Манифест «' + projectId + '» не найден в Firestore.');
-                return;
-            }
-            var p = doc.data();
-
-            var name   = p.projectName   || p.name   || projectId;
+            if (!doc.exists) return;
+            var p      = doc.data();
+            var name   = p.projectName || p.name || projectId;
             var status = p.currentStatus || p.status || 'неизвестен';
-            var tech   = Array.isArray(p.stack)
-                ? p.stack.join(', ')
-                : (p.stack || 'не указан');
-
+            var tech   = Array.isArray(p.stack) ? p.stack.join(', ') : (p.stack || 'не указан');
             appendFaradayAIMsg(feed, 'Синхронизируюсь с манифестом проекта...');
-
             setTimeout(function() {
-                appendFaradayAIMsg(
-                    feed,
-                    'Анализ «' + name + '» завершён. Статус: [' + status + ']. Стек: ' + tech + '.'
-                );
-                if (status.toLowerCase().includes('active') ||
-                    status.toLowerCase().includes('активн')) {
-                    setTimeout(function() {
-                        appendFaradayAIMsg(feed, 'Высокая активность. Системы готовы к деплою.');
-                    }, 2000);
-                }
+                appendFaradayAIMsg(feed, 'Анализ «' + name + '» завершён. Статус: [' + status + ']. Стек: ' + tech + '.');
             }, 2500);
         })
-        .catch(function(err) {
-            console.error('[Faraday] analyzeCurrentContext error:', err.message);
-        });
+        .catch(function(err) { console.error('[Faraday] analyzeCurrentContext:', err.message); });
 }
