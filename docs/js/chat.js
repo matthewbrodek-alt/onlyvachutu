@@ -68,6 +68,35 @@ function appendMessage(feedEl, text, type) {
     feedEl.scrollTop = feedEl.scrollHeight;
 }
 
+// Функция для прослушивания ответов от Faraday (Telegram)
+function listenForTelegramReplies(uid) {
+    console.log("[Chat] Слушатель Telegram запущен для UID:", uid);
+    
+    // Путь к подколлекции ответов конкретного пользователя
+    var responsesRef = db.collection('users').doc(uid).collection('faraday_responses');
+
+    // Слушаем изменения в коллекции в реальном времени
+    responsesRef.orderBy('timestamp', 'asc').onSnapshot(function(snapshot) {
+        snapshot.docChanges().forEach(function(change) {
+            if (change.type === "added") {
+                var data = change.doc.data();
+                
+                // Проверяем, что это сообщение от ИИ
+                if (data.sender === 'FARADAY') {
+                    // Вызываем стандартную функцию отрисовки сообщения в интерфейсе
+                    if (typeof renderMessage === 'function') {
+                        renderMessage(data.text, 'ai'); 
+                    } else {
+                        console.warn("[Chat] Функция renderMessage не найдена. Сообщение:", data.text);
+                    }
+                }
+            }
+        });
+    }, function(error) {
+        console.error("[Chat] Ошибка слушателя Firestore:", error);
+    });
+}
+
 /* ══════════════════════════════════════════════
    TTS — ГОЛОС JARVIS
    EN → en-GB мужской (David / Google UK English Male)

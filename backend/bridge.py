@@ -44,34 +44,49 @@ def save_memory():
     try:
         data = request.get_json(silent=True) or {}
         content = data.get('content', '').strip()
-        uid = data.get('uid', '').strip()
+        uid = data.get('uid', '').strip() # Получаем UID пользователя с фронтенда
 
-        if not content:
-            return jsonify({'error': 'No content'}), 400
+        if not content or not uid:
+            return jsonify({'error': 'UID and content required'}), 400
 
-        # Telegram
-        tg_ok = False
-        if TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID:
-            url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
-            payload = {'chat_id': TELEGRAM_CHAT_ID, 'text': f"💬 {content}", 'parse_mode': 'HTML'}
-            tg_res = requests.post(url, json=payload, timeout=5)
-            tg_ok = tg_res.ok
+        # 1. Запоминаем связь UID и ChatID (чтобы бот знал, кому отвечать)
+        if db:
+            db.collection('routing').document(str(TELEGRAM_CHAT_ID)).set({'uid': uid})
 
-        # Firestore
-        fs_ok = False
-        if db and uid:
-            db.collection('faraday_memory').add({
-                'content': content,
-                'uid': uid,
+        # 2. Отправляем в Telegram
+        url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
+        text = f"👤 <b>User:</b> {uid[:8]}...\n💬 {content}"
+        requests.post(url, json={'chat_id': TELEGRAM_CHAT_ID, 'text': text, 'parse_mode': 'HTML'})
+
+        return jsonify({'ok': True}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/telegram-webhook', methods=['POST'])
+def telegram_webhook():
+    data = request.get_json(silent=True) or {}
+    message = data.get('message', {})
+    text = message.get('text', '')
+    chat_id = str(message.get('chat', {}).get('id', ''))
+
+    if not text or not chat_id:
+        return jsonify({'ok': True})
+
+    # 1. Ищем, какому UID принадлежит этот Chat ID
+    if db:
+        doc = db.collection('routing').document(chat_id).get()
+        if doc.exists:
+            uid = doc.to_dict().get('uid')
+            
+            # 2. Пишем ответ в коллекцию, которую слушает фронтенд
+            db.collection('users').document(uid).collection('faraday_responses').add({
+                'text': text,
+                'sender': 'FARADAY',
                 'timestamp': firestore.SERVER_TIMESTAMP
             })
-            fs_ok = True
+            print(f"Reply delivered to {uid}")
 
-        return jsonify({'ok': True, 'tg': tg_ok, 'fs': fs_ok}), 200
-
-    except Exception as e:
-        print(f"CRITICAL: {e}")
-        return jsonify({'error': str(e)}), 500
+    return jsonify({'ok': True})
 
 @app.route('/health', methods=['GET'])
 def health():
