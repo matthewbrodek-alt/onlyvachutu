@@ -39,26 +39,20 @@ async function callBackend(endpoint, payload) {
 }
 
 async function callBackend(endpoint, data) {
-    try {
-        // Мы используем 'data', так как это имя аргумента функции
-        var response = await fetch(BRIDGE_URL + endpoint, {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify(data) 
-        });
-        
-        if (!response.ok) {
-            // Читаем текст ошибки (например, если Render вернет 500)
-            const errorText = await response.text();
-            throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 100)}`);
-        }
-        
-        return await response.json();
-    } catch (err) {
-        // Если сервер лежит или случился CORS — ошибка упадет сюда
-        console.error('[Bridge] Error during request:', err);
-        return null;
-    }
+  try {
+    var response = await fetch(BRIDGE_URL + endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+
+    if (!response.ok) throw new Error('Server returned ' + response.status);
+
+    return await response.json();
+  } catch (err) {
+    console.error('[Bridge] Error during request:', err);
+    return null;
+  }
 }
 /**
  * Сохранить сообщение через bridge.
