@@ -20,17 +20,17 @@ try:
     import firebase_admin
     from firebase_admin import credentials, firestore as _fs
 
-    cred = None
-    if FIREBASE_KEY_JSON:
-        cred_dict = json.loads(FIREBASE_KEY_JSON)
-        cred = credentials.Certificate(cred_dict)
-    
-    if cred:
+    # Читаем из секретного файла, который мы создадим на Render
+    if os.path.exists('serviceAccountKey.json'):
+        cred = credentials.Certificate('serviceAccountKey.json')
         if not firebase_admin._apps:
             firebase_admin.initialize_app(cred)
         db       = _fs.client()
         fs_admin = _fs
-        print('[Bridge] Firebase Admin: подключён')
+        print('[Bridge] Firebase Admin: подключён через файл')
+    else:
+        print('[Bridge] Ошибка: файл serviceAccountKey.json не найден')
+
 except Exception as e:
     print(f'[Bridge] Ошибка Firebase: {e}')
 
