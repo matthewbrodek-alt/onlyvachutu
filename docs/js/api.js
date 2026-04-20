@@ -8,15 +8,12 @@
    чтобы bridge.py мог маршрутизировать ответ.
 ════════════════════════════════════════════════ */
 
-var BACKEND_URL = "https://5000-firebase-onlyvachutu-1776714141230.cluster-bqwaigqtxbeautecnatk4o6ynk.cloudworkstations.dev";
+var BRIDGE_URL = "https://5000-firebase-onlyvachutu-1776714141230.cluster-bqwaigqtxbeautecnatk4o6ynk.cloudworkstations.dev";
 
-/**
- * Универсальная функция вызова бэкенда
- */
 function callBackend(endpoint, data) {
-    // Формируем полный путь, например: https://...dev/api/memory
-    var fullUrl = BACKEND_URL + endpoint;
-
+    var fullUrl = BRIDGE_URL + endpoint;
+    // ... остальной код функции ...
+}
     // Достаем UID текущего пользователя из Firebase Auth
     var userId = (window.auth && window.auth.currentUser) ? window.auth.currentUser.uid : 'guest';
     
