@@ -137,9 +137,11 @@ def save_memory():
         return jsonify({'error': 'content is required'}), 400
 
     # Запоминаем связку chat_id → uid для обратного роутинга
-    if uid and TELEGRAM_CHAT_ID:
-        user_routing[TELEGRAM_CHAT_ID] = uid
-        print(f'[Bridge] Routing: chat {TELEGRAM_CHAT_ID} → uid {uid}')
+    recipient_uid = None
+    if db:
+        route_doc = db.collection('routing').document(chat_id).get()
+        if route_doc.exists:
+            recipient_uid = route_doc.to_dict().get('uid')
 
     # Telegram: показываем uid чтобы можно было проверить маршрут
     uid_short = uid[:8] + '...' if len(uid) > 8 else uid
@@ -247,10 +249,7 @@ def get_memory():
 
 # ── Запуск ──────────────────────────────────────
 if __name__ == '__main__':
-    print(f'[Bridge] v8.1 запущен на порту {PORT}')
-    print(f'[Bridge] Telegram: {"OK" if TELEGRAM_BOT_TOKEN else "НЕ НАСТРОЕН (.env)"}')
-    print(f'[Bridge] Firebase: {"OK" if db else "НЕ НАСТРОЕН (serviceAccountKey.json)"}')
-    print()
-    print('[Bridge] Webhook URL для Telegram: https://ВАШ_ДОМЕН/api/telegram-webhook')
-    print('[Bridge] Настроить: curl "https://api.telegram.org/botТОКЕН/setWebhook?url=URL"')
-    app.run(host='0.0.0.0', port=PORT, debug=False)
+    # Render сам назначит нужный порт, обычно это 10000 или другой случайный
+    port = int(os.environ.get("PORT", 5000)) 
+    print(f'[Bridge] v8.1 запущен на порту {port}')
+    app.run(host='0.0.0.0', port=port, debug=False)
