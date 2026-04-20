@@ -13,12 +13,13 @@ var BRIDGE_URL = 'https://onlyvachutu.onrender.com';
 /**
  * Универсальный запрос к Python bridge.
  * Автоматически добавляет uid и email авторизованного пользователя.
+ * Всегда возвращает объект {ok, ...} либо null при полном сбое сети.
  */
 async function callBackend(endpoint, payload) {
     var body = Object.assign({}, payload || {});
 
-    // Добавляем uid для обратного роутинга в bridge.py
-    var user = window.auth && window.auth.currentUser;
+    // Добавляем uid/email авторизованного пользователя (для роутинга в bridge.py)
+    var user = (window.auth && window.auth.currentUser) || null;
     if (user) {
         if (!body.uid)   body.uid   = user.uid;
         if (!body.email) body.email = user.email;
@@ -30,30 +31,24 @@ async function callBackend(endpoint, payload) {
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify(body)
         });
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        return await response.json();
+
+        // Пытаемся распарсить JSON даже если статус != 2xx —
+        // bridge.py теперь возвращает {ok:false,...} с CORS-заголовками.
+        var data = null;
+        try { data = await response.json(); } catch (_) { /* not json */ }
+
+        if (!response.ok) {
+            console.warn('[Bridge] ' + endpoint + ' → HTTP ' + response.status, data);
+            return data || { ok: false, error: 'HTTP ' + response.status };
+        }
+        return data || { ok: true };
     } catch (err) {
+        // Сеть недоступна / CORS / DNS
         console.warn('[Bridge] Недоступен (' + endpoint + '):', err.message);
         return null;
     }
 }
 
-async function callBackend(endpoint, data) {
-  try {
-    var response = await fetch(BRIDGE_URL + endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    });
-
-    if (!response.ok) throw new Error('Server returned ' + response.status);
-
-    return await response.json();
-  } catch (err) {
-    console.error('[Bridge] Error during request:', err);
-    return null;
-  }
-}
 /**
  * Сохранить сообщение через bridge.
  * Bridge: Telegram-уведомление + запись в faraday_memory + роутинг uid.
@@ -73,6 +68,18 @@ function sendTelegramMessage(text, email) {
     return callBackend('/api/notify', {
         message: text,
         email:   email || 'anonymous'
+    });
+}
+
+/**
+ * Поиск в интернете через bridge (Wikipedia + DuckDuckGo).
+ * Используется Faraday AI для саморазвития / ответов на вопросы.
+ * Возвращает { ok, query, answer, source } или null.
+ */
+function bridgeWebSearch(query, lang) {
+    return callBackend('/api/search', {
+        query: query,
+        lang:  lang || 'ru'
     });
 }
 
