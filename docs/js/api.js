@@ -8,56 +8,47 @@
    чтобы bridge.py мог маршрутизировать ответ.
 ════════════════════════════════════════════════ */
 
-var BRIDGE_URL = 'https://onlyvachutu.onrender.com';
+var BACKEND_URL = "https://5000-firebase-onlyvachutu-1776714141230.cluster-bqwaigqtxbeautecnatk4o6ynk.cloudworkstations.dev";
 
 /**
- * Универсальный запрос к Python bridge.
- * Автоматически добавляет uid и email авторизованного пользователя.
- * ЕДИНСТВЕННОЕ определение callBackend — не дублировать ниже!
+ * Универсальная функция вызова бэкенда
  */
-async function callBackend(endpoint, payload) {
-    var body = Object.assign({}, payload || {});
+function callBackend(endpoint, data) {
+    // Формируем полный путь, например: https://...dev/api/memory
+    var fullUrl = BACKEND_URL + endpoint;
 
-    // Добавляем uid для обратного роутинга в bridge.py
-    var user = window.auth && window.auth.currentUser;
-    if (user) {
-        if (!body.uid)   body.uid   = user.uid;
-        if (!body.email) body.email = user.email;
-    }
+    // Достаем UID текущего пользователя из Firebase Auth
+    var userId = (window.auth && window.auth.currentUser) ? window.auth.currentUser.uid : 'guest';
+    
+    // Добавляем uid в данные автоматически, как и планировалось
+    data.uid = userId;
 
-    try {
-        var response = await fetch(BRIDGE_URL + endpoint, {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify(body)
-        });
+    console.log("[API] Отправка на:", fullUrl, data);
 
-        // Пытаемся прочитать JSON даже при не-OK ответе,
-        // чтобы увидеть {ok:false, error:...} от bridge.py
-        var data = null;
-        try { data = await response.json(); } catch (_) { data = null; }
-
-        if (!response.ok) {
-            var msg = (data && (data.error || data.message)) || ('HTTP ' + response.status);
-            console.warn('[Bridge] ' + endpoint + ' → ' + msg);
-            return null;
-        }
-        return data;
-    } catch (err) {
-        console.warn('[Bridge] Недоступен (' + endpoint + '):', err && err.message);
+    return fetch(fullUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(function(res) {
+        if (!res.ok) throw new Error('Ошибка сервера: ' + res.status);
+        return res.json();
+    })
+    .catch(function(err) {
+        console.error("[API] Ошибка вызова:", err);
         return null;
-    }
+    });
 }
 
 /**
- * Сохранить сообщение через bridge.
- * Bridge: Telegram-уведомление + запись в faraday_memory + роутинг uid.
+ * Твоя функция сохранения памяти
  */
 function bridgeSaveMemory(content, email) {
     return callBackend('/api/memory', {
         content: content,
         email:   email || 'anonymous'
-        // uid добавится автоматически в callBackend
     });
 }
 
