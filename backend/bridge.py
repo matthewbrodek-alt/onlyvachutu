@@ -12,83 +12,78 @@ TELEGRAM_CHAT_ID   = os.getenv('TELEGRAM_CHAT_ID', '')
 FIREBASE_KEY_JSON  = os.getenv('FIREBASE_SERVICE_ACCOUNT', '')
 PORT               = int(os.environ.get("PORT", 5000))
 
-# ── Разрешённые источники (CORS) ──────────────────
-ALLOWED_ORIGINS = [
-    'https://matthewbrodek-alt.github.io',
-    'http://localhost:5500',
-    'http://127.0.0.1:5500',
-    'http://localhost:3000',
-]
+ALLOWED_ORIGIN = "https://matthewbrodek-alt.github.io"
 
-# ── Firebase Admin ────────────────────────────────
+# ── Firebase Admin (НЕ ПАДАЕМ если ключа нет) ──
 db       = None
 fs_admin = None
 
 def _init_firebase():
-    """Инициализация из файла ИЛИ из переменной окружения FIREBASE_SERVICE_ACCOUNT (JSON)."""
     global db, fs_admin
     try:
         import firebase_admin
         from firebase_admin import credentials, firestore as _fs
 
         cred = None
-        if os.path.exists('serviceAccountKey.json'):
+
+        # 1) Render Secret File (по умолчанию монтируется в /etc/secrets/)
+        render_path = '/etc/secrets/serviceAccountKey.json'
+        if os.path.exists(render_path):
+            cred = credentials.Certificate(render_path)
+            print(f'[Bridge] Firebase: ключ найден в {render_path}')
+
+        # 2) Локальный файл рядом с bridge.py
+        elif os.path.exists('serviceAccountKey.json'):
             cred = credentials.Certificate('serviceAccountKey.json')
-            print('[Bridge] Firebase: использую файл serviceAccountKey.json')
+            print('[Bridge] Firebase: ключ найден локально')
+
+        # 3) Переменная окружения с JSON-строкой
         elif FIREBASE_KEY_JSON:
             try:
-                key_data = json.loads(FIREBASE_KEY_JSON)
-                cred = credentials.Certificate(key_data)
-                print('[Bridge] Firebase: использую переменную окружения FIREBASE_SERVICE_ACCOUNT')
+                info = json.loads(FIREBASE_KEY_JSON)
+                cred = credentials.Certificate(info)
+                print('[Bridge] Firebase: ключ загружен из FIREBASE_SERVICE_ACCOUNT')
             except Exception as e:
-                print(f'[Bridge] FIREBASE_SERVICE_ACCOUNT невалидный JSON: {e}')
+                print(f'[Bridge] Firebase: невалидный FIREBASE_SERVICE_ACCOUNT: {e}')
 
-        if cred:
-            if not firebase_admin._apps:
-                firebase_admin.initialize_app(cred)
-            db       = _fs.client()
-            fs_admin = _fs
-            print('[Bridge] Firebase Admin: ✅ подключён')
-        else:
-            print('[Bridge] ⚠️ Firebase не сконфигурирован — Firestore отключён, но сервер работает')
+        if cred is None:
+            print('[Bridge] WARNING: Firebase ключ не найден ни в одном источнике')
+            return
+
+        if not firebase_admin._apps:
+            firebase_admin.initialize_app(cred)
+
+        db       = _fs.client()
+        fs_admin = _fs
+        print('[Bridge] Firebase Admin: успешно подключён')
+
     except Exception as e:
-        print(f'[Bridge] Ошибка инициализации Firebase: {e}')
+        # ВАЖНО: не пробрасываем — иначе воркер умрёт при старте (SIGKILL/SystemExit)
+        print(f'[Bridge] Firebase init error (продолжаем без Firebase): {e}')
 
 _init_firebase()
 
-# ── Flask ─────────────────────────────────────────
+# ── Flask ───────────────────────────────────────
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": ALLOWED_ORIGIN}}, supports_credentials=False)
 
-# CORS — разрешаем все нужные origin + все методы + preflight
-CORS(
-    app,
-    resources={r"/*": {"origins": ALLOWED_ORIGINS}},
-    supports_credentials=False,
-    methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization"],
-)
-
-# Доп. страховка: принудительно добавляем CORS-заголовки к ЛЮБОМУ ответу,
-# включая ответы с ошибкой 500 — чтобы браузер видел сообщение, а не CORS-блок.
+# ГАРАНТИРУЕМ CORS даже на 500-х ответах
 @app.after_request
-def _ensure_cors(resp):
+def _force_cors(resp):
     origin = request.headers.get('Origin', '')
-    if origin in ALLOWED_ORIGINS:
-        resp.headers['Access-Control-Allow-Origin']  = origin
+    if origin == ALLOWED_ORIGIN:
+        resp.headers['Access-Control-Allow-Origin']  = ALLOWED_ORIGIN
         resp.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         resp.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        resp.headers['Vary'] = 'Origin'
     return resp
 
-# Глобальный обработчик ошибок — чтобы 500 приходил как JSON с CORS
 @app.errorhandler(Exception)
-def _handle_any_error(e):
-    print(f'[Bridge] Unhandled exception: {e}')
-    return jsonify({'ok': False, 'error': 'Internal Server Error', 'message': str(e)}), 500
+def _all_errors(e):
+    print(f'[Bridge] UNHANDLED: {e}')
+    return jsonify({'ok': False, 'error': str(e)}), 500
 
-# ══════════════════════════════════════════════════
-# ВСПОМОГАТЕЛЬНЫЕ
-# ══════════════════════════════════════════════════
-
+# ════════════════════════════════════════════════
 def _send_telegram(text: str, chat_id: str = None) -> bool:
     target = chat_id or TELEGRAM_CHAT_ID
     if not TELEGRAM_BOT_TOKEN or not target:
@@ -106,8 +101,7 @@ def _send_telegram(text: str, chat_id: str = None) -> bool:
         return False
 
 def _deliver_to_site(uid: str, text: str) -> bool:
-    if not db or not uid:
-        return False
+    if not db or not uid: return False
     try:
         db.collection('users').document(uid) \
           .collection('faraday_responses').add({
@@ -120,10 +114,7 @@ def _deliver_to_site(uid: str, text: str) -> bool:
         print(f'[Bridge] Firestore write error: {e}')
         return False
 
-# ══════════════════════════════════════════════════
-# ENDPOINTS
-# ══════════════════════════════════════════════════
-
+# ════════════════════════════════════════════════
 @app.route('/api/memory', methods=['POST', 'OPTIONS'])
 def save_memory():
     if request.method == 'OPTIONS':
@@ -132,24 +123,21 @@ def save_memory():
         data    = request.get_json(silent=True) or {}
         content = (data.get('content') or data.get('message', '')).strip()
         email   = data.get('email', 'anonymous')
-        uid     = (data.get('uid') or '').strip()
+        uid     = (data.get('uid', '') or '').strip()
 
         if not content:
-            return jsonify({'ok': False, 'error': 'content is required'}), 400
+            return jsonify({'error': 'content is required'}), 400
 
-        # 1. Сохранение маршрута uid → chat_id (только если Firestore доступен)
         if uid and TELEGRAM_CHAT_ID and db:
             try:
                 db.collection('routing').document(TELEGRAM_CHAT_ID).set({'uid': uid})
             except Exception as e:
                 print(f'[Bridge] Routing save error: {e}')
 
-        # 2. Telegram (работает без Firestore)
         tg_ok = _send_telegram(
-            f'📨 <b>Nitro Hub</b>\n👤 {email}\n🆔 <code>{uid[:8] if uid else "—"}</code>\n💬 {content}'
+            f'📨 <b>Nitro Hub</b>\n👤 {email}\n🆔 <code>{uid[:8]}</code>\n💬 {content}'
         )
 
-        # 3. Firestore (опционально)
         fs_ok = False
         if db:
             try:
@@ -161,97 +149,19 @@ def save_memory():
                 })
                 fs_ok = True
             except Exception as e:
-                print(f'[Bridge] Firestore memory write error: {e}')
+                print(f'[Bridge] Firestore save error: {e}')
 
         return jsonify({'ok': True, 'telegram': tg_ok, 'firestore': fs_ok}), 200
 
     except Exception as e:
-        print(f'[Bridge] CRITICAL /api/memory: {e}')
-        return jsonify({'ok': False, 'error': 'Internal Server Error', 'message': str(e)}), 500
-
-
-@app.route('/api/notify', methods=['POST', 'OPTIONS'])
-def notify():
-    if request.method == 'OPTIONS':
-        return ('', 204)
-    try:
-        data    = request.get_json(silent=True) or {}
-        message = (data.get('message') or '').strip()
-        email   = data.get('email', 'system')
-        if not message:
-            return jsonify({'ok': False, 'error': 'message is required'}), 400
-        ok = _send_telegram(f'🔔 <b>{email}</b>\n{message}')
-        return jsonify({'ok': True, 'telegram': ok})
-    except Exception as e:
+        print(f'[Bridge] /api/memory ERROR: {e}')
         return jsonify({'ok': False, 'error': str(e)}), 500
-
-
-# ── САМОРАЗВИТИЕ / ПОИСК В ИНТЕРНЕТЕ ──────────────
-# Без внешних API-ключей: Wikipedia + DuckDuckGo Instant Answer.
-@app.route('/api/search', methods=['POST', 'OPTIONS'])
-def web_search():
-    if request.method == 'OPTIONS':
-        return ('', 204)
-    try:
-        data  = request.get_json(silent=True) or {}
-        query = (data.get('query') or '').strip()
-        lang  = data.get('lang', 'ru')
-        if not query:
-            return jsonify({'ok': False, 'error': 'query is required'}), 400
-
-        answer = None
-        source = None
-
-        # 1) DuckDuckGo Instant Answer
-        try:
-            r = requests.get('https://api.duckduckgo.com/', params={
-                'q': query, 'format': 'json', 'no_html': 1, 'skip_disambig': 1,
-            }, timeout=8)
-            if r.ok:
-                j = r.json()
-                answer = j.get('AbstractText') or j.get('Answer') or None
-                if answer:
-                    source = j.get('AbstractURL') or 'duckduckgo.com'
-        except Exception as e:
-            print(f'[Bridge] DDG error: {e}')
-
-        # 2) Wikipedia (если DDG пустой)
-        if not answer:
-            try:
-                wiki = 'ru' if lang == 'ru' else 'en'
-                r = requests.get(
-                    f'https://{wiki}.wikipedia.org/w/api.php',
-                    params={
-                        'action': 'query', 'format': 'json',
-                        'prop': 'extracts', 'exintro': 'true', 'explaintext': 'true',
-                        'exsentences': 3, 'redirects': 1, 'titles': query,
-                    }, timeout=8
-                )
-                if r.ok:
-                    pages = (r.json().get('query') or {}).get('pages') or {}
-                    for pid, page in pages.items():
-                        if pid != '-1' and page.get('extract'):
-                            answer = page['extract']
-                            source = f'https://{wiki}.wikipedia.org/wiki/{query.replace(" ", "_")}'
-                            break
-            except Exception as e:
-                print(f'[Bridge] Wiki error: {e}')
-
-        return jsonify({
-            'ok': bool(answer),
-            'query': query,
-            'answer': answer,
-            'source': source,
-        })
-    except Exception as e:
-        return jsonify({'ok': False, 'error': str(e)}), 500
-
 
 @app.route('/api/telegram-webhook', methods=['POST'])
 def telegram_webhook():
-    data    = request.get_json(silent=True) or {}
+    data = request.get_json(silent=True) or {}
     message = data.get('message', {})
-    text    = (message.get('text') or '').strip()
+    text    = message.get('text', '').strip()
     chat_id = str(message.get('chat', {}).get('id', ''))
 
     if not text or not chat_id:
@@ -268,26 +178,67 @@ def telegram_webhook():
 
     if recipient_uid:
         ok = _deliver_to_site(recipient_uid, text)
-        print(f'[Bridge] Webhook: {text[:30]}... -> {recipient_uid[:8]} | {"OK" if ok else "ERR"}')
+        print(f'[Bridge] Webhook -> {recipient_uid[:8]} | {"OK" if ok else "ERR"}')
     else:
         _send_telegram('⚠️ Маршрут не найден. Напишите с сайта ещё раз.', chat_id)
 
     return jsonify({'ok': True})
 
+# ── Поиск в интернете (саморазвитие): без API-ключей ──
+@app.route('/api/search', methods=['POST', 'OPTIONS'])
+def web_search():
+    if request.method == 'OPTIONS':
+        return ('', 204)
+    try:
+        data  = request.get_json(silent=True) or {}
+        query = (data.get('query') or '').strip()
+        if not query:
+            return jsonify({'error': 'query is required'}), 400
+
+        result = {'query': query, 'wikipedia': None, 'duckduckgo': None}
+
+        try:
+            w = requests.get(
+                f'https://ru.wikipedia.org/api/rest_v1/page/summary/{requests.utils.quote(query)}',
+                timeout=8
+            )
+            if w.ok:
+                j = w.json()
+                result['wikipedia'] = {
+                    'title':   j.get('title'),
+                    'extract': j.get('extract'),
+                    'url':     j.get('content_urls', {}).get('desktop', {}).get('page')
+                }
+        except Exception as e:
+            print(f'[Bridge] wiki err: {e}')
+
+        try:
+            d = requests.get(
+                'https://api.duckduckgo.com/',
+                params={'q': query, 'format': 'json', 'no_html': 1, 'skip_disambig': 1},
+                timeout=8
+            )
+            if d.ok:
+                j = d.json()
+                result['duckduckgo'] = {
+                    'abstract': j.get('AbstractText'),
+                    'source':   j.get('AbstractSource'),
+                    'url':      j.get('AbstractURL')
+                }
+        except Exception as e:
+            print(f'[Bridge] ddg err: {e}')
+
+        return jsonify({'ok': True, 'result': result})
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e)}), 500
 
 @app.route('/health', methods=['GET'])
 def health():
     return jsonify({
         'status':   'ok',
         'firebase': db is not None,
-        'telegram': bool(TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID),
+        'telegram': bool(TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID)
     })
-
-
-@app.route('/', methods=['GET'])
-def root():
-    return jsonify({'service': 'Nitro Hub Bridge', 'status': 'running'})
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=PORT)
