@@ -1,17 +1,24 @@
 import os
-import json
 import requests
 import firebase_admin
 from firebase_admin import credentials, firestore
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = Flask(__name__)
-# Максимально простой CORS для стабильности
-CORS(app, resources={r"/api/*": {"origins": "https://matthewbrodek-alt.github.io"}})
+
+# ── Глобальная настройка CORS ──
+# Разрешаем твой домен, методы и обязательно заголовок Content-Type для всех маршрутов (/*)
+CORS(app, resources={
+    r"/*": {
+        "origins": "https://matthewbrodek-alt.github.io",
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
+    }
+})
 
 # Константы
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
@@ -31,25 +38,16 @@ try:
 except Exception as e:
     print(f'[Bridge] Firebase Init Error: {e}')
 
-# ── Вспомогательные функции ──
-def _corsify(data, status=200):
-    response = make_response(jsonify(data), status)
-    response.headers.add("Access-Control-Allow-Origin", "https://matthewbrodek-alt.github.io")
-    return response
-
 # ── Endpoints ──
-@app.route('/api/memory', methods=['POST', 'OPTIONS'])
+@app.route('/api/memory', methods=['POST'])
 def save_memory():
-    if request.method == 'OPTIONS':
-        return _corsify({'ok': True})
-
     try:
         data = request.get_json(silent=True) or {}
         content = data.get('content', '').strip()
         uid = data.get('uid', '').strip()
 
         if not content:
-            return _corsify({'error': 'No content'}, 400)
+            return jsonify({'error': 'No content'}), 400
 
         # Telegram
         tg_ok = False
@@ -69,15 +67,15 @@ def save_memory():
             })
             fs_ok = True
 
-        return _corsify({'ok': True, 'tg': tg_ok, 'fs': fs_ok})
+        return jsonify({'ok': True, 'tg': tg_ok, 'fs': fs_ok}), 200
 
     except Exception as e:
         print(f"CRITICAL: {e}")
-        return _corsify({'error': str(e)}, 500)
+        return jsonify({'error': str(e)}), 500
 
-@app.route('/health')
+@app.route('/health', methods=['GET'])
 def health():
-    return jsonify({'status': 'ok', 'db': db is not None})
+    return jsonify({'status': 'ok', 'db': db is not None}), 200
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
