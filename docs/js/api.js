@@ -38,6 +38,25 @@ async function callBackend(endpoint, payload) {
     }
 }
 
+async function callBackend(endpoint, data) {
+   try {
+        var response = await fetch(BRIDGE_URL + endpoint, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(body)
+        });
+        
+        if (!response.ok) {
+            // Attempt to read the error message from the server response
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 100)}`);
+        }
+        return await response.json();
+    } catch (err) {
+        console.error('[Bridge] Error during request:', err);
+        return null;
+    }
+ }   
 /**
  * Сохранить сообщение через bridge.
  * Bridge: Telegram-уведомление + запись в faraday_memory + роутинг uid.

@@ -35,7 +35,10 @@ except Exception as e:
     print(f'[Bridge] Ошибка Firebase: {e}')
 
 # ── Flask ───────────────────────────────────────
+from flask_cors import CORS
+
 app = Flask(__name__)
+# Разрешаем все методы (GET, POST, OPTIONS) и заголовки
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 # ══════════════════════════════════════════════════
