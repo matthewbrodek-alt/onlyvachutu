@@ -378,6 +378,15 @@ button { font-family: var(--font-b); }
     transform: translateX(-50%);
     width: 600px; height: 1000px; pointer-events: none;
 }
+
+/* ── Мобильная карусель: выше и левее ── */
+@media (max-width: 599px) {
+    .carousel-section { padding: 32px var(--page-px) 48px; }
+    .carousel-scene {
+        top: -220px;
+        transform: translateX(-56%);
+    }
+}
 .c-card {
     position: absolute; width: 120px; height: 150px;
     border-radius: 14px; overflow: visible;
