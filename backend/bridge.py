@@ -80,26 +80,28 @@ def _deliver_to_site(uid: str, text: str) -> bool:
 
 @app.route('/api/memory', methods=['POST'])
 def save_memory():
-    data    = request.get_json(silent=True) or {}
-    content = (data.get('content') or data.get('message', '')).strip()
-    email   = data.get('email', 'anonymous')
-    uid     = data.get('uid', '').strip()
+    try:
+        data    = request.get_json(silent=True) or {}
+        content = (data.get('content') or data.get('message', '')).strip()
+        email   = data.get('email', 'anonymous')
+        uid     = data.get('uid', '').strip()
 
-    if not content:
-        return jsonify({'error': 'content is required'}), 400
+        if not content:
+            return jsonify({'error': 'content is required'}), 400
 
-    # Сохраняем маршрут в БД, чтобы он не пропадал при перезагрузке
-    if uid and TELEGRAM_CHAT_ID and db:
-        try:
-            db.collection('routing').document(TELEGRAM_CHAT_ID).set({'uid': uid})
-        except Exception as e:
-            print(f'[Bridge] Routing save error: {e}')
+        # 1. Сохранение маршрута
+        if uid and TELEGRAM_CHAT_ID and db:
+            try:
+                db.collection('routing').document(TELEGRAM_CHAT_ID).set({'uid': uid})
+            except Exception as e:
+                print(f'[Bridge] Routing save error: {e}')
 
-    tg_ok = _send_telegram(f'📨 <b>Nitro Hub</b>\n👤 {email}\n🆔 <code>{uid[:8]}</code>\n💬 {content}')
+        # 2. Отправка в Telegram
+        tg_ok = _send_telegram(f'📨 <b>Nitro Hub</b>\n👤 {email}\n🆔 <code>{uid[:8]}</code>\n💬 {content}')
 
-    fs_ok = False
-    if db:
-        try:
+        # 3. Сохранение в Firestore
+        fs_ok = False
+        if db:
             db.collection('faraday_memory').add({
                 'content':   content,
                 'email':     email,
@@ -107,10 +109,21 @@ def save_memory():
                 'timestamp': fs_admin.SERVER_TIMESTAMP
             })
             fs_ok = True
-        except Exception as e:
-            print(f'[Bridge] Memory save error: {e}')
 
-    return jsonify({'ok': True, 'telegram': tg_ok, 'firestore': fs_ok})
+        return jsonify({
+            'ok': True, 
+            'telegram': tg_ok, 
+            'firestore': fs_ok
+        }), 200
+
+    except Exception as e:
+        # Это ловит любой критический сбой и возвращает JSON вместо краша
+        print(f'[Bridge] CRITICAL ERROR: {e}')
+        return jsonify({
+            'ok': False,
+            'error': 'Internal Server Error',
+            'message': str(e)
+        }), 500
 
 @app.route('/api/telegram-webhook', methods=['POST'])
 def telegram_webhook():
