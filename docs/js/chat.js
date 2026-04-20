@@ -33,13 +33,33 @@ function sendPersonalMessage(inputId, windowId) {
         alert('Сначала войдите в систему');
         return;
     }
+
+    // Собираем данные
     var userEmail = window.auth.currentUser.email || 'guest@nitro.hub';
+    var userId = window.auth.currentUser.uid || 'unknown_id'; // Важно для Firestore
+
+    // Очищаем поле и добавляем сообщение в интерфейс сразу
     input.value = '';
     appendMessage(feedEl, text, 'sent');
 
-    // uid добавляется в callBackend (api.js) автоматически
-    bridgeSaveMemory(text, userEmail).then(function(data) {
-        if (!data) console.warn('[Chat] Bridge недоступен.');
+    // --- ВОТ ЭТОТ БЛОК ОТПРАВЛЯЕТ ДАННЫЕ В ТВОЙ BRIDGE ---
+    var bridgeUrl = "https://5000-firebase-onlyvachutu-1776714141230.cluster-bqwaigqtxbeautecnatk4o6ynk.cloudworkstations.dev/api/memory";
+
+    fetch(bridgeUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            content: text,
+            uid: userId,
+            email: userEmail
+        })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        console.log('[Chat] Ответ моста:', data);
+    })
+    .catch(function(err) {
+        console.warn('[Chat] Ошибка моста:', err);
     });
 }
 
