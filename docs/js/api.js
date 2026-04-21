@@ -12,12 +12,11 @@ var BRIDGE_URL = "https://5000-firebase-onlyvachutu-1776714141230.cluster-bqwaig
 
 function callBackend(endpoint, data) {
     var fullUrl = BRIDGE_URL + endpoint;
-    // ... остальной код функции ...
-}
+
     // Достаем UID текущего пользователя из Firebase Auth
     var userId = (window.auth && window.auth.currentUser) ? window.auth.currentUser.uid : 'guest';
     
-    // Добавляем uid в данные автоматически, как и планировалось
+    // Добавляем uid в данные автоматически
     data.uid = userId;
 
     console.log("[API] Отправка на:", fullUrl, data);
@@ -37,7 +36,7 @@ function callBackend(endpoint, data) {
         console.error("[API] Ошибка вызова:", err);
         return null;
     });
-}
+} // <--- Теперь функция закрывается здесь, и ошибки не будет
 
 /**
  * Твоя функция сохранения памяти
