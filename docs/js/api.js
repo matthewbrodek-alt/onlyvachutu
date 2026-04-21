@@ -15,17 +15,17 @@
    https://5000-firebase-{workspace}-{id}.cluster-{region}.cloudworkstations.dev
 
    Текущий URL (обнови при смене сессии Studio):  */
-<<<<<<< HEAD
-var BRIDGE_URL = (function() {
-=======
    var BRIDGE_URL = (function() {
->>>>>>> 2d5ec76 (новые правила)
     // Пробуем взять из localStorage если был сохранён
     try {
         var saved = localStorage.getItem('nitro_bridge_url');
-        if (saved && saved.startsWith('https://')) return saved;
+        // Убираем слеш на конце, если он есть, для корректной конкатенации
+        if (saved && saved.startsWith('https://')) {
+            return saved.endsWith('/') ? saved.slice(0, -1) : saved;
+        }
     } catch(e) {}
-    // Дефолтный URL Firebase Studio
+    
+    // Дефолтный URL Firebase Studio (без слеша на конце)
     return 'https://5000-firebase-onlyvachutu-1776714141230.cluster-bqwaigqtxbeautecnatk4o6ynk.cloudworkstations.dev';
 })();
 
@@ -33,6 +33,7 @@ var BRIDGE_URL = (function() {
    nitro.setBridgeUrl('https://5000-firebase-...')   */
 window.nitro = window.nitro || {};
 window.nitro.setBridgeUrl = function(url) {
+    if (url.endsWith('/')) url = url.slice(0, -1);
     BRIDGE_URL = url;
     try { localStorage.setItem('nitro_bridge_url', url); } catch(e) {}
     console.log('[Bridge] URL обновлён →', url);
