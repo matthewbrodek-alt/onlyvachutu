@@ -15,7 +15,11 @@
    https://5000-firebase-{workspace}-{id}.cluster-{region}.cloudworkstations.dev
 
    Текущий URL (обнови при смене сессии Studio):  */
+<<<<<<< HEAD
 var BRIDGE_URL = (function() {
+=======
+   var BRIDGE_URL = (function() {
+>>>>>>> 2d5ec76 (новые правила)
     // Пробуем взять из localStorage если был сохранён
     try {
         var saved = localStorage.getItem('nitro_bridge_url');
