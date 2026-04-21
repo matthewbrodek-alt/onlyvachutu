@@ -26,40 +26,26 @@ function sendPersonalMessage(inputId, windowId) {
     var input  = document.getElementById(inputId  || 'chat-msg');
     var feedEl = document.getElementById(windowId || 'chat-window');
     if (!input) return;
+    
     var text = input.value.trim();
     if (!text) return;
 
     if (!window.auth || !window.auth.currentUser) {
-        alert('Сначала войдите в систему');
+        alert('Для отправки сообщений необходимо войти в систему.');
         return;
     }
 
-    // Собираем данные
     var userEmail = window.auth.currentUser.email || 'guest@nitro.hub';
-    var userId = window.auth.currentUser.uid || 'unknown_id'; // Важно для Firestore
 
-    // Очищаем поле и добавляем сообщение в интерфейс сразу
+    // Очистка поля ввода и добавление сообщения в интерфейс сразу
     input.value = '';
-    appendMessage(feedEl, text, 'sent');
+    if (typeof appendMessage === 'function') {
+        appendMessage(feedEl, text, 'sent');
+    }
 
-    // --- ВОТ ЭТОТ БЛОК ОТПРАВЛЯЕТ ДАННЫЕ В ТВОЙ BRIDGE ---
-    var bridgeUrl = "https://5000-firebase-onlyvachutu-1776714141230.cluster-bqwaigqtxbeautecnatk4o6ynk.cloudworkstations.dev/api/memory";
-
-    fetch(bridgeUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            content: text,
-            uid: userId,
-            email: userEmail
-        })
-    })
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-        console.log('[Chat] Ответ моста:', data);
-    })
-    .catch(function(err) {
-        console.warn('[Chat] Ошибка моста:', err);
+    // Вызов моста для сохранения в Firestore и отправки в Telegram
+    bridgeSaveMemory(text, userEmail).then(function(data) {
+        if (!data) console.warn('[Chat] Не удалось отправить сообщение через мост.');
     });
 }
 

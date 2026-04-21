@@ -13,19 +13,15 @@ var BRIDGE_URL = "https://5000-firebase-onlyvachutu-1776714141230.cluster-bqwaig
 function callBackend(endpoint, data) {
     var fullUrl = BRIDGE_URL + endpoint;
 
-    // Достаем UID текущего пользователя из Firebase Auth
+    // Автоматически берем UID из Firebase Auth, если он есть
     var userId = (window.auth && window.auth.currentUser) ? window.auth.currentUser.uid : 'guest';
-    
-    // Добавляем uid в данные автоматически
     data.uid = userId;
 
-    console.log("[API] Отправка на:", fullUrl, data);
+    console.log("[API] Вызов:", fullUrl, data);
 
     return fetch(fullUrl, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     })
     .then(function(res) {
@@ -33,13 +29,13 @@ function callBackend(endpoint, data) {
         return res.json();
     })
     .catch(function(err) {
-        console.error("[API] Ошибка вызова:", err);
+        console.error("[API] Ошибка:", err);
         return null;
     });
-} // <--- Теперь функция закрывается здесь, и ошибки не будет
+}
 
 /**
- * Твоя функция сохранения памяти
+ * Сохранение личного сообщения в базу и отправка в TG
  */
 function bridgeSaveMemory(content, email) {
     return callBackend('/api/memory', {
@@ -49,36 +45,14 @@ function bridgeSaveMemory(content, email) {
 }
 
 /**
- * Отправить системное уведомление в Telegram (ошибки, события).
- */
-function sendTelegramMessage(text, email) {
-    return callBackend('/api/notify', {
-        message: text,
-        email:   email || 'anonymous'
-    });
-}
-
-/**
- * Получить последние записи из faraday_memory (GET).
- */
-function bridgeGetMemory() {
-    return fetch(BRIDGE_URL + '/api/memory')
-        .then(function(r) { return r.ok ? r.json() : []; })
-        .catch(function() { return []; });
-}
-
-/**
- * Проверить доступность bridge.py.
- * Используется в self-diagnostic (chat.js).
+ * Проверка здоровья моста (используется в диагностике)
  */
 function checkBridgeHealth() {
-    return fetch(BRIDGE_URL + '/health', {
-        // Includes cookies/auth headers for cross-origin requests
-        credentials: 'include' 
-    })
-    .then(function(r) { return r.ok; })
-    .catch(function() { return false; });
+    return fetch(BRIDGE_URL + '/test')
+        .then(function(r) { return r.ok; })
+        .catch(function() { return false; });
 }
+
 /**
  * Отправить отчёт об ошибке через bridge → Telegram.
  * Без токенов в JS.
