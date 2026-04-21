@@ -72,11 +72,13 @@ function bridgeGetMemory() {
  * Используется в self-diagnostic (chat.js).
  */
 function checkBridgeHealth() {
-    return fetch(BRIDGE_URL + '/health')
-        .then(function(r) { return r.ok; })
-        .catch(function() { return false; });
+    return fetch(BRIDGE_URL + '/health', {
+        // Includes cookies/auth headers for cross-origin requests
+        credentials: 'include' 
+    })
+    .then(function(r) { return r.ok; })
+    .catch(function() { return false; });
 }
-
 /**
  * Отправить отчёт об ошибке через bridge → Telegram.
  * Без токенов в JS.
