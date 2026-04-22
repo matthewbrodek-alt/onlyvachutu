@@ -10,9 +10,9 @@
   ];
 
   env = {
-    PORT = "5005";
-    PYTHONUNBUFFERED = "1";
-    GOOGLE_APPLICATION_CREDENTIALS = "serviceAccountKey.json";
+    PORT                            = "5005";
+    PYTHONUNBUFFERED                = "1";
+    GOOGLE_APPLICATION_CREDENTIALS = "backend/serviceAccountKey.json";
   };
 
   idx = {
@@ -24,9 +24,8 @@
     ];
 
     workspace = {
-      # Один раз при создании воркспейса
       onCreate = {
-        create-venv = "python3 -m venv .venv";
+        create-venv         = "python3 -m venv .venv";
         install-python-deps = ''
           ./.venv/bin/pip install --upgrade pip && \
           ./.venv/bin/pip install \
@@ -35,7 +34,6 @@
             requests \
             python-dotenv \
             firebase-admin \
-            functions-framework \
             google-cloud-firestore
         '';
         default.openFiles = [
@@ -44,38 +42,25 @@
         ];
       };
 
-      # При каждом старте воркспейса
       onStart = {
+        # ТОЛЬКО установка зависимостей — запуск НЕ здесь
         check-python-deps = ''
           ./.venv/bin/pip install -q \
             flask flask-cors requests python-dotenv \
-            firebase-admin functions-framework google-cloud-firestore
+            firebase-admin google-cloud-firestore
         '';
       };
     };
 
+    # Только previews запускает bridge — один раз
     previews = {
       enable = true;
       previews = {
-        # Локальный Flask-мост (Telegram <-> сайт)
         web = {
-          command = ["./.venv/bin/python" "backend/bridge.py"];
+          command = [ "./.venv/bin/python" "backend/bridge.py" ];
           manager = "web";
           env = {
             PORT = "5005";
-          };
-        };
-        # Firebase Functions на Python через functions-framework
-        functions = {
-          command = [
-            "./.venv/bin/functions-framework"
-            "--source=functions/main.py"
-            "--target=bridge"
-            "--port=8080"
-          ];
-          manager = "web";
-          env = {
-            PORT = "8080";
           };
         };
       };

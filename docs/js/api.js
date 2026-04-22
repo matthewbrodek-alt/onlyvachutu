@@ -15,7 +15,7 @@ var BRIDGE_URL = (function() {
             return saved.replace(/\/$/, '');
         }
     } catch(e) {}
-    return 'https://5000-firebase-onlyvachutu-1776714141230.cluster-bqwaigqtxbeautecnatk4o6ynk.cloudworkstations.dev';
+    return 'https://5005-firebase-onlyvachutu-1776714141230.cluster-bqwaigqtxbeautecnatk4o6ynk.cloudworkstations.dev';
 })();
 
 /* Обновить URL моста из консоли браузера */
