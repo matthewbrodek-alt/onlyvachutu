@@ -38,7 +38,6 @@ import os
 import sys
 import re
 import json
-import signal
 import logging
 import threading
 import time
@@ -47,7 +46,7 @@ import requests
 import firebase_admin
 from firebase_admin import credentials, firestore
 from dotenv import load_dotenv
-import google.generativeai as genai  # ИИ Мозг
+from google import genai  # Новый ИИ Мозг (SDK v2)
 
 # ── Загрузка переменных окружения ────────────────
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -69,12 +68,16 @@ TELEGRAM_CHAT_ID   = os.getenv('TELEGRAM_CHAT_ID', '')
 GOOGLE_API_KEY     = os.getenv('GOOGLE_API_KEY', '')
 
 # ── Глобальные объекты Firebase и AI ─────────────
-db       = None
-fs       = None 
+db = None
+fs = None 
+client = None
 
 if GOOGLE_API_KEY:
-    genai.configure(api_key=GOOGLE_API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
+    # Инициализация нового клиента Gemini
+    client = genai.Client(
+    api_key=GOOGLE_API_KEY,
+    http_options={'api_version': 'v1'}
+)
 
 # ─────────────────────────────────────────────────
 #  FIREBASE INIT
@@ -151,12 +154,12 @@ FARADAY_SYSTEM_PROMPT = """
 3. Твой стиль: лаконичный, футуристичный, вежливый.
 4. Если тебя спрашивают о твоих командах, перечисли: смену цвета, диагностику, управление голосом и паузу систем.
 5. Ты помогаешь посетителям узнать о проектах владельца и его навыках. Если вопрос касается личных данных владельца, которых у тебя нет — отвечай уклончиво в стиле ИИ. 
-6.Отвечай коротко, не более 2-3 предложений, если не просят подробностей.
+6. Отвечай коротко, не более 2-3 предложений, если не просят подробностей.
 """
 
 def get_gemini_response(uid: str, user_message: str) -> str:
     """Генерация ответа через Gemini с учетом истории последних 5 сообщений."""
-    if not GOOGLE_API_KEY:
+    if not client:
         return "Ошибка: GOOGLE_API_KEY не настроен на сервере."
     try:
         history_ref = db.collection('users').document(uid).collection('messages')
@@ -171,15 +174,20 @@ def get_gemini_response(uid: str, user_message: str) -> str:
         context_parts.append(f"User: {user_message}")
         full_prompt = "\n".join(context_parts)
 
-        response = model.generate_content(full_prompt)
-        return response.text.strip()
+        # Вызов через новый SDK v2
+       # Внутри get_gemini_response:
+        response = client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=full_prompt
+        )
+        if response and response.text:
+            return response.text.strip()
+        else:
+            return "Я не смог сформулировать ответ. Попробуйте перефразировать вопрос."
     except Exception as e:
         log.error(f"Gemini Error: {e}")
         return "Мои нейронные связи временно перегружены. Попробуйте чуть позже."
-
-# ─────────────────────────────────────────────────
-#  ОБРАБОТКА ОДНОГО ДОКУМЕНТА ИЗ bridge_queue
-# ─────────────────────────────────────────────────
+        
 def process_queue_doc(doc):
     doc_id    = doc.id
     data      = doc.to_dict() or {}
@@ -221,7 +229,7 @@ def process_queue_doc(doc):
         ai_tg_text = f"🤖 <b>Faraday AI ответил {email}:</b>\n\n{ai_reply}"
         send_telegram(ai_tg_text)
 
-    # Шаг 2: отправка оригинала в Telegram (метку ID: uid используем для Reply-логики)
+    # Шаг 2: отправка оригинала в Telegram
     tg_text = (
         f'💬 <b>Новое сообщение [{chat_type.upper()}]</b>\n'
         f'👤 {email}\n'
@@ -265,24 +273,20 @@ def start_queue_listener():
 
     def on_snapshot(col_snapshot, changes, read_time):
         for change in changes:
-            # Нас интересуют только новые или измененные документы со статусом pending
             if change.type.name in ('ADDED', 'MODIFIED'):
                 doc = change.document
                 data = doc.to_dict() or {}
                 doc_id = doc.id
 
-                # Проверка: если статус не pending или мы УЖЕ обрабатываем этот ID — пропускаем
                 if data.get('status') != 'pending' or doc_id in processing_ids:
                     continue
 
-                # Помечаем ID как занятый
                 processing_ids.add(doc_id)
 
                 def run_and_cleanup(d):
                     try:
                         process_queue_doc(d)
                     finally:
-                        # После завершения удаляем из списка обработки (через небольшую паузу)
                         time.sleep(2) 
                         processing_ids.discard(d.id)
 
@@ -301,11 +305,7 @@ def start_queue_listener():
 #  TELEGRAM POLLING (INCOMING REPLIES)
 # ─────────────────────────────────────────────────
 def run_telegram_polling():
-    """
-    Заменяет Webhook-сервер. Постоянно опрашивает Telegram.
-    Для работы требуется pip install pyTelegramBotAPI
-    """
-    import telebot # Импорт внутри для минимизации зависимостей, если не используется
+    import telebot 
 
     bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 
@@ -317,7 +317,6 @@ def run_telegram_polling():
 
         reply_text = message.reply_to_message.text or ""
         
-        # Извлекаем uid из метки ID: или из тега 🆔
         recipient_uid = None
         m = re.search(r'ID: ([a-zA-Z0-9]{20,})', reply_text)
         if not m:
@@ -348,7 +347,6 @@ if __name__ == '__main__':
     init_firebase()
     start_queue_listener()
     
-    # Запускаем поллинг Telegram. Это блокирующая операция.
     try:
         run_telegram_polling()
     except KeyboardInterrupt:
