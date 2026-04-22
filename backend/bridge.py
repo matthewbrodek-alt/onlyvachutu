@@ -178,7 +178,7 @@ def get_gemini_response(uid: str, user_message: str) -> str:
             print(f"Доступная модель: {m.name}")
        # Внутри get_gemini_response:
         response = client.models.generate_content(
-            model="gemini-1.5-flash-latest", # Убедись, что здесь именно эта строка
+            model="gemini-2.0-flash", # Убедись, что здесь именно эта строка
             contents=full_prompt
             )
         if response and response.text:
