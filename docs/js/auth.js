@@ -1,13 +1,17 @@
 /* ════════════════════════════════════════════════
-   auth.js — Firebase, вход/выход, UI-авторизации.
+   auth.js — Firebase init, вход/выход, UI, слушатели чата.
 
-   Маршруты данных:
+   Маршруты данных v9.0:
    ┌─ ЛИЧНЫЙ ЧАТ ────────────────────────────────┐
-   │  users/{uid}/messages       → sent bubbles    │
-   │  users/{uid}/faraday_responses → received     │  ← ответы владельца из Telegram
+   │  users/{uid}/messages      → sent bubbles    │
+   │  users/{uid}/faraday_responses → received    │  ← ответы владельца из Telegram
    └─────────────────────────────────────────────┘
-   Faraday AI работает ЛОКАЛЬНО — Firestore только
-   для памяти (faraday_memory), Telegram не касается.
+   ┌─ ОЧЕРЕДЬ (только запись) ───────────────────┐
+   │  bridge_queue  ← JS пишет pending-документы │
+   │  bridge.py читает через on_snapshot          │
+   └─────────────────────────────────────────────┘
+   Faraday AI: только локально + faraday_memory.
+   Telegram не касается.
 ════════════════════════════════════════════════ */
 
 var firebaseConfig = {
@@ -24,43 +28,45 @@ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 window.db   = firebase.firestore();
 window.auth = firebase.auth();
 
-var chatUnsubscribe   = null;  // личные исходящие
-var tgRespUnsubscribe = null;  // ответы из Telegram
+var chatUnsubscribe   = null;  // слушатель исходящих сообщений
+var tgRespUnsubscribe = null;  // слушатель ответов из Telegram
 
-/* ── Обновление UI ── */
+/* ════════════════════════════════════════════════
+   UI АВТОРИЗАЦИИ
+════════════════════════════════════════════════ */
 function updateAuthUI(user) {
     function g(id) { return document.getElementById(id); }
 
     if (user) {
         var name = user.email.split('@')[0];
 
-        /* Скрываем формы входа */
+        /* Скрываем формы входа, показываем чат */
         if (g('login-form'))       g('login-form').style.display       = 'none';
         if (g('user-info'))        g('user-info').style.display        = 'flex';
         if (g('modal-login-form')) g('modal-login-form').style.display = 'none';
         if (g('modal-user-info'))  g('modal-user-info').style.display  = 'flex';
 
         /* Навбар */
-        if (g('nav-login-btn'))     g('nav-login-btn').style.display    = 'none';
-        if (g('nav-user-block'))    g('nav-user-block').style.display   = 'flex';
-        if (g('nav-user-name'))     g('nav-user-name').innerText        = name;
-        if (g('mobile-login-btn'))  g('mobile-login-btn').style.display = 'none';
-        if (g('mobile-user-block')) g('mobile-user-block').style.display= 'flex';
-        if (g('mobile-user-name'))  g('mobile-user-name').innerText     = name;
-        if (g('chat-user-email'))   g('chat-user-email').innerText      = user.email;
+        if (g('nav-login-btn'))     g('nav-login-btn').style.display     = 'none';
+        if (g('nav-user-block'))    g('nav-user-block').style.display    = 'flex';
+        if (g('nav-user-name'))     g('nav-user-name').innerText         = name;
+        if (g('mobile-login-btn'))  g('mobile-login-btn').style.display  = 'none';
+        if (g('mobile-user-block')) g('mobile-user-block').style.display = 'flex';
+        if (g('mobile-user-name'))  g('mobile-user-name').innerText      = name;
+        if (g('chat-user-email'))       g('chat-user-email').innerText       = user.email;
         if (g('modal-chat-user-email')) g('modal-chat-user-email').innerText = user.email;
-        if (g('user-name-contacts'))g('user-name-contacts').innerText   = name;
+        if (g('user-name-contacts'))    g('user-name-contacts').innerText    = name;
 
-        /* ── Слушатель 1: исходящие сообщения пользователя ──
-           Показываем В КОНЦЕ (прокрутка к последнему).      */
+        /* ── Слушатель 1: история исходящих сообщений ──
+           users/{uid}/messages — то что пользователь отправил.
+           Рендерим ВСЕ при открытии, прокручиваем к последнему. */
         if (chatUnsubscribe) chatUnsubscribe();
         chatUnsubscribe = window.db
-            .collection('users').doc(user.uid).collection('messages')
+            .collection('users').doc(user.uid)
+            .collection('messages')
             .orderBy('timestamp', 'asc')
             .onSnapshot(function(snap) {
-                /* Рендерим все сообщения пользователя */
-                var windows = ['chat-window', 'modal-chat-window'];
-                windows.forEach(function(winId) {
+                ['chat-window', 'modal-chat-window'].forEach(function(winId) {
                     var win = document.getElementById(winId);
                     if (!win) return;
                     win.innerHTML = '';
@@ -71,17 +77,17 @@ function updateAuthUI(user) {
                         div.textContent = d.message || '';
                         win.appendChild(div);
                     });
-                    /* Прокрутка к последнему */
                     win.scrollTop = win.scrollHeight;
                 });
             }, function(err) {
                 if (err.code !== 'permission-denied')
-                    console.error('[Auth] messages:', err.code);
+                    console.error('[Auth] messages snapshot:', err.code);
             });
 
         /* ── Слушатель 2: ответы владельца из Telegram ──
-           bridge.py пишет в users/{uid}/faraday_responses.
-           ТОЛЬКО добавленные документы → в личный чат.    */
+           users/{uid}/faraday_responses — bridge.py пишет сюда.
+           Показываем только НОВЫЕ документы (docChanges ADDED).
+           Не перерисовываем весь список — только добавляем. */
         if (tgRespUnsubscribe) tgRespUnsubscribe();
         tgRespUnsubscribe = window.db
             .collection('users').doc(user.uid)
@@ -93,8 +99,6 @@ function updateAuthUI(user) {
                     var d    = change.doc.data();
                     var text = (d.text || d.message || '').trim();
                     if (!text) return;
-
-                    /* Добавляем в оба окна личного чата */
                     ['chat-window', 'modal-chat-window'].forEach(function(winId) {
                         var win = document.getElementById(winId);
                         if (!win) return;
@@ -107,11 +111,11 @@ function updateAuthUI(user) {
                 });
             }, function(err) {
                 if (err.code !== 'permission-denied')
-                    console.warn('[Auth] faraday_responses:', err.code);
+                    console.warn('[Auth] faraday_responses snapshot:', err.code);
             });
 
     } else {
-        /* Сброс UI при выходе */
+        /* Выход — сброс UI */
         if (g('login-form'))       g('login-form').style.display       = 'flex';
         if (g('user-info'))        g('user-info').style.display        = 'none';
         if (g('modal-login-form')) g('modal-login-form').style.display = 'flex';
@@ -127,7 +131,7 @@ function updateAuthUI(user) {
     }
 }
 
-/* Единственная подписка. Faraday Core — один раз. */
+/* Единственная подписка на смену авторизации. */
 window.auth.onAuthStateChanged(function(user) {
     updateAuthUI(user);
     if (window._faradayCoreInited) return;
@@ -135,7 +139,9 @@ window.auth.onAuthStateChanged(function(user) {
     if (typeof initFaradayCore === 'function') initFaradayCore();
 });
 
-/* ── Вход ── */
+/* ════════════════════════════════════════════════
+   ВХОД / ВЫХОД
+════════════════════════════════════════════════ */
 async function handleLogin() {
     var e = document.getElementById('auth-email');
     var p = document.getElementById('auth-pass');
@@ -150,15 +156,14 @@ async function _doLogin(email, pass) {
     if (!email || !pass) return;
     try {
         await window.auth.signInWithEmailAndPassword(email, pass);
-    } catch (err) {
-        if (['auth/user-not-found','auth/invalid-credential','auth/wrong-password'].includes(err.code)) {
+    } catch(err) {
+        var CODES = ['auth/user-not-found','auth/invalid-credential','auth/wrong-password'];
+        if (CODES.includes(err.code)) {
             try { await window.auth.createUserWithEmailAndPassword(email, pass); }
-            catch (ce) { alert(ce.message); }
+            catch(ce) { alert(ce.message); }
         } else { alert(err.message); }
     }
 }
-
-/* ── Выход ── */
 function handleLogout() {
     window.auth.signOut().catch(function(e) {
         console.error('[Auth] Logout:', e);

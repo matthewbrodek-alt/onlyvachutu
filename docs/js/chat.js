@@ -1,25 +1,25 @@
 /* ════════════════════════════════════════════════
-   chat.js — Два независимых чата.
+   chat.js — Два независимых чата. v9.0 Queue Mode
 
    ┌─ ЛИЧНЫЙ ЧАТ ────────────────────────────────┐
    │  sendPersonalMessage()                        │
-   │  → bridgeSaveMessage() [api.js]              │
-   │  → bridge.py /api/message                    │
-   │  → Firestore users/{uid}/messages            │
+   │  → bridge_queue (Firestore, status:pending)  │  ← НОВЫЙ путь
+   │  bridge.py подхватывает через on_snapshot    │
    │  → Telegram (уведомление владельцу)          │
+   │  → users/{uid}/messages (история)            │
    │                                               │
    │  Ответ из Telegram:                           │
-   │  /api/telegram-webhook → Firestore            │
-   │  → faraday_responses → auth.js → chat-window │
+   │  /api/telegram-webhook → bridge.py           │
+   │  → users/{uid}/faraday_responses             │
+   │  → auth.js on_snapshot → chat-window         │
    └─────────────────────────────────────────────┘
 
    ┌─ FARADAY AI ────────────────────────────────┐
    │  sendFaradayMessage()                         │
-   │  → processFaradayCommand() — локально        │
+   │  → processFaradayCommand() — только локально│
    │  → Wikipedia / DDG поиск                     │
    │  → TTS                                       │
    │  Telegram НЕ задействован.                   │
-   │  Стикеры/эмодзи в поле ввода — убраны.      │
    └─────────────────────────────────────────────┘
 ════════════════════════════════════════════════ */
 
@@ -33,7 +33,9 @@ function addEmoji(inputId, emoji) {
 
 /* ══════════════════════════════════════════════
    ЛИЧНЫЙ МЕССЕНДЖЕР
-   Только bridge.py + Telegram. Без ИИ.
+   v9.0: пишем в bridge_queue (Firestore).
+   bridge.py подхватит через on_snapshot.
+   Без fetch, без HTTP, без CORS-проблем.
 ══════════════════════════════════════════════ */
 function sendPersonalMessage(inputId, windowId) {
     var input  = document.getElementById(inputId  || 'chat-msg');
@@ -46,17 +48,29 @@ function sendPersonalMessage(inputId, windowId) {
         alert('Сначала войдите в систему');
         return;
     }
-    var userEmail = window.auth.currentUser.email || '';
+    var user  = window.auth.currentUser;
     input.value = '';
 
     /* Оптимистичный рендер — сразу показываем */
     appendMessage(feedEl, text, 'sent');
 
-    /* Отправляем через мост → Telegram + Firestore */
-    bridgeSaveMessage(text, userEmail)
-        .catch(function(err) {
-            console.warn('[Chat] Ошибка моста:', err);
-        });
+    /* Пишем в bridge_queue — bridge.py заберёт через on_snapshot */
+    if (!window.db) {
+        console.error('[Chat] Firestore не инициализирован');
+        return;
+    }
+    window.db.collection('bridge_queue').add({
+        content:   text,
+        uid:       user.uid,
+        email:     user.email || 'anonymous',
+        status:    'pending',
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(function(ref) {
+        console.log('[Queue] Добавлено:', ref.id.slice(0, 8) + '…');
+    }).catch(function(err) {
+        console.error('[Queue] Ошибка записи:', err.message);
+        appendMessage(feedEl, '⚠️ Ошибка отправки. Проверьте подключение.', 'received');
+    });
 }
 
 /* Добавить одно сообщение в ленту */
