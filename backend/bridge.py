@@ -76,7 +76,7 @@ if GOOGLE_API_KEY:
     # Инициализация нового клиента Gemini
     client = genai.Client(
     api_key=GOOGLE_API_KEY,
-    http_options={'api_version': 'v1'}
+    http_options={'api_version': 'v1'} # Оставляем v1
 )
 
 # ─────────────────────────────────────────────────
@@ -174,12 +174,13 @@ def get_gemini_response(uid: str, user_message: str) -> str:
         context_parts.append(f"User: {user_message}")
         full_prompt = "\n".join(context_parts)
 
-        # Вызов через новый SDK v2
+        for m in client.models.list():
+            print(f"Доступная модель: {m.name}")
        # Внутри get_gemini_response:
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-1.5-flash-latest", # Убедись, что здесь именно эта строка
             contents=full_prompt
-        )
+            )
         if response and response.text:
             return response.text.strip()
         else:
@@ -187,7 +188,7 @@ def get_gemini_response(uid: str, user_message: str) -> str:
     except Exception as e:
         log.error(f"Gemini Error: {e}")
         return "Мои нейронные связи временно перегружены. Попробуйте чуть позже."
-        
+
 def process_queue_doc(doc):
     doc_id    = doc.id
     data      = doc.to_dict() or {}
