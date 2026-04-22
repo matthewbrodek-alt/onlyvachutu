@@ -10,7 +10,7 @@
   ];
 
   env = {
-    PORT = "5000";
+    PORT = "5005";
     PYTHONUNBUFFERED = "1";
     GOOGLE_APPLICATION_CREDENTIALS = "serviceAccountKey.json";
   };
@@ -62,7 +62,7 @@
           command = ["./.venv/bin/python" "backend/bridge.py"];
           manager = "web";
           env = {
-            PORT = "5000";
+            PORT = "5005";
           };
         };
         # Firebase Functions на Python через functions-framework

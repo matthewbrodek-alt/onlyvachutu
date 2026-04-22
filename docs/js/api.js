@@ -1,57 +1,42 @@
 /* ════════════════════════════════════════════════
    api.js — Запросы к Python-мосту (bridge.py)
-   Хост: Firebase Studio Cloud Workstation
-
-   ВАЖНО: Этот файл грузится ПЕРВЫМ (до chat.js)
-   чтобы checkBridgeHealth и bridgeSaveMemory
-   были доступны когда chat.js выполняется.
-
-   Если URL моста изменился (новая сессия Studio):
-   поменяй BRIDGE_URL ниже на актуальный адрес.
+   
+   Загружается ПЕРВЫМ: checkBridgeHealth и
+   bridgeSaveMessage должны быть доступны до chat.js.
+   
+   Для смены URL моста выполни в консоли браузера:
+     nitro.setBridgeUrl('https://5000-firebase-...')
 ════════════════════════════════════════════════ */
 
-/* ── URL Firebase Studio ──────────────────────
-   Формат для локального Studio:
-   https://5000-firebase-{workspace}-{id}.cluster-{region}.cloudworkstations.dev
-
-   Текущий URL (обнови при смене сессии Studio):  */
-   var BRIDGE_URL = (function() {
-    // Пробуем взять из localStorage если был сохранён
+var BRIDGE_URL = (function() {
     try {
         var saved = localStorage.getItem('nitro_bridge_url');
-        // Убираем слеш на конце, если он есть, для корректной конкатенации
         if (saved && saved.startsWith('https://')) {
-            return saved.endsWith('/') ? saved.slice(0, -1) : saved;
+            return saved.replace(/\/$/, '');
         }
     } catch(e) {}
-    
-    // Дефолтный URL Firebase Studio (без слеша на конце)
     return 'https://5000-firebase-onlyvachutu-1776714141230.cluster-bqwaigqtxbeautecnatk4o6ynk.cloudworkstations.dev';
 })();
 
-/* Позволяет обновить URL моста прямо из консоли браузера:
-   nitro.setBridgeUrl('https://5000-firebase-...')   */
+/* Обновить URL моста из консоли браузера */
 window.nitro = window.nitro || {};
 window.nitro.setBridgeUrl = function(url) {
-    if (url.endsWith('/')) url = url.slice(0, -1);
-    BRIDGE_URL = url;
-    try { localStorage.setItem('nitro_bridge_url', url); } catch(e) {}
-    console.log('[Bridge] URL обновлён →', url);
+    BRIDGE_URL = url.replace(/\/$/, '');
+    try { localStorage.setItem('nitro_bridge_url', BRIDGE_URL); } catch(e) {}
+    console.log('[Bridge] URL →', BRIDGE_URL);
 };
 
 /* ══════════════════════════════════════════════
-   CORE — универсальный запрос к bridge.py
-   Автоматически добавляет uid + email из Firebase Auth.
+   CORE — универсальный POST к bridge.py
+   Автоматически добавляет uid + email из Auth.
 ══════════════════════════════════════════════ */
 async function callBackend(endpoint, payload) {
     var body = Object.assign({}, payload || {});
-
     var user = window.auth && window.auth.currentUser;
     if (user) {
         if (!body.uid)   body.uid   = user.uid;
         if (!body.email) body.email = user.email;
     }
-
     try {
         var response = await fetch(BRIDGE_URL + endpoint, {
             method:  'POST',
@@ -61,36 +46,35 @@ async function callBackend(endpoint, payload) {
         if (!response.ok) throw new Error('HTTP ' + response.status);
         return await response.json();
     } catch (err) {
-        console.warn('[Bridge] Недоступен (' + endpoint + '):', err.message);
+        console.warn('[Bridge] ' + endpoint + ':', err.message);
         return null;
     }
 }
 
-/* ── Сохранить сообщение → Telegram + Firestore ── */
-function bridgeSaveMemory(content, email) {
-    return callBackend('/api/memory', {
+/* ── Отправить личное сообщение → /api/message ──
+   bridge.py пишет в Firestore + уведомляет Telegram.
+   ТОЛЬКО для личного чата. Faraday AI не использует. */
+function bridgeSaveMessage(content, email) {
+    return callBackend('/api/message', {
         content: content,
         email:   email || 'anonymous'
     });
+}
+
+/* Алиас для обратной совместимости */
+function bridgeSaveMemory(content, email) {
+    return bridgeSaveMessage(content, email);
 }
 
 /* ── Системное уведомление → Telegram ── */
 function sendTelegramMessage(text, email) {
     return callBackend('/api/notify', {
         message: text,
-        email:   email || 'anonymous'
+        email:   email || 'system'
     });
 }
 
-/* ── Получить записи памяти (GET) ── */
-function bridgeGetMemory() {
-    return fetch(BRIDGE_URL + '/api/memory')
-        .then(function(r) { return r.ok ? r.json() : []; })
-        .catch(function() { return []; });
-}
-
-/* ── Проверить доступность bridge.py ──
-   Используется в performSelfDiagnostic (chat.js) ── */
+/* ── Health-check (используется в chat.js → performSelfDiagnostic) ── */
 function checkBridgeHealth() {
     return fetch(BRIDGE_URL + '/health', { method: 'GET' })
         .then(function(r) { return r.ok; })

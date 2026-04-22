@@ -69,7 +69,7 @@
         </div>
 
         <!-- Кнопка личного мессенджера -->
-        <button class="nav-contact-btn" onclick="openMessenger()" data-lang="btn_contact_short">Связаться</button>
+        <button class="nav-contact-btn" onclick="showPage('contacts-page')" data-lang="btn_contact_short">Связаться</button>
 
         <!-- Кнопка Faraday AI -->
         <button class="nav-faraday-btn" onclick="openFaradayChat()" aria-label="Открыть Faraday AI">
@@ -126,7 +126,7 @@
                 <p class="hero-sub" data-lang="hero_sub">Мы создаём премиальные интерфейсы и архитектурные решения, которые задают будущее цифрового мира.</p>
                 <div class="hero-btns">
                     <button class="btn-primary" onclick="showPage('projects-page')" data-lang="btn_projects">Смотреть проекты →</button>
-                    <button class="btn-outline" onclick="openMessenger()">
+                    <button class="btn-outline" onclick="showPage('contacts-page')">
                         <span data-lang="btn_contact">Связаться с нами</span>
                         <span class="pulse-dot" aria-hidden="true"></span>
                     </button>
@@ -472,17 +472,6 @@
             <button class="quick-cmd" onclick="faradayQuick('активируй')">▶ Пуск</button>
             <button class="quick-cmd" onclick="faradayQuick('синхронизация')">🔄 Синхронизация</button>
         </div>
-
-        <!-- Эмодзи AI чата -->
-        <div class="emoji-bar" aria-label="Эмодзи для AI чата">
-            <button onclick="addEmoji('faraday-input','⚡')">⚡</button>
-            <button onclick="addEmoji('faraday-input','🤖')">🤖</button>
-            <button onclick="addEmoji('faraday-input','💡')">💡</button>
-            <button onclick="addEmoji('faraday-input','🔧')">🔧</button>
-            <button onclick="addEmoji('faraday-input','🎯')">🎯</button>
-            <button onclick="addEmoji('faraday-input','🛸')">🛸</button>
-        </div>
-
         <!-- Поле ввода AI -->
         <div class="chat-input-row">
             <button class="voice-btn" onclick="startVoiceCommand()" aria-label="Голосовой ввод">🎤</button>
@@ -516,9 +505,14 @@
     </div>
 </div>
 
+<!-- Порядок загрузки КРИТИЧЕН:
+     1. api.js   — BRIDGE_URL, checkBridgeHealth, bridgeSaveMessage
+     2. auth.js  — Firebase init, window.db/auth, updateAuthUI
+     3. app.js   — навигация, карусель, initFaradayCore
+     4. chat.js  — sendPersonalMessage, sendFaradayMessage, AI-модули -->
 <script src="js/api.js"></script>
-<script src="js/app.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/app.js"></script>
 <script src="js/chat.js"></script>
 </body>
 </html>

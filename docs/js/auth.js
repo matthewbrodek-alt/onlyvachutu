@@ -1,16 +1,13 @@
 /* ════════════════════════════════════════════════
-   auth.js — Firebase инициализация, вход/выход,
-              обновление UI.
+   auth.js — Firebase, вход/выход, UI-авторизации.
 
-   Маршруты:
+   Маршруты данных:
    ┌─ ЛИЧНЫЙ ЧАТ ────────────────────────────────┐
-   │  users/{uid}/messages      → chat-window     │
-   │  users/{uid}/faraday_resp  → chat-window     │  ← ответы из Telegram
+   │  users/{uid}/messages       → sent bubbles    │
+   │  users/{uid}/faraday_responses → received     │  ← ответы владельца из Telegram
    └─────────────────────────────────────────────┘
-   ┌─ FARADAY AI ────────────────────────────────┐
-   │  AI отвечает локально (chat.js)              │
-   │  Без Telegram                                │
-   └─────────────────────────────────────────────┘
+   Faraday AI работает ЛОКАЛЬНО — Firestore только
+   для памяти (faraday_memory), Telegram не касается.
 ════════════════════════════════════════════════ */
 
 var firebaseConfig = {
@@ -27,105 +24,110 @@ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 window.db   = firebase.firestore();
 window.auth = firebase.auth();
 
-var chatUnsubscribe       = null; // личные сообщения
-var telegramRespUnsub     = null; // ответы владельца из Telegram
+var chatUnsubscribe   = null;  // личные исходящие
+var tgRespUnsubscribe = null;  // ответы из Telegram
 
 /* ── Обновление UI ── */
 function updateAuthUI(user) {
-    var lf  = document.getElementById('login-form');
-    var ui  = document.getElementById('user-info');
-    var mlf = document.getElementById('modal-login-form');
-    var mui = document.getElementById('modal-user-info');
-
-    var navLoginBtn      = document.getElementById('nav-login-btn');
-    var navUserBlock     = document.getElementById('nav-user-block');
-    var navUserName      = document.getElementById('nav-user-name');
-    var mobileLoginBtn   = document.getElementById('mobile-login-btn');
-    var mobileUserBlock  = document.getElementById('mobile-user-block');
-    var mobileUserName   = document.getElementById('mobile-user-name');
-    var chatEmail        = document.getElementById('chat-user-email');
-    var modalChatEmail   = document.getElementById('modal-chat-user-email');
-    var userNameContacts = document.getElementById('user-name-contacts');
+    function g(id) { return document.getElementById(id); }
 
     if (user) {
         var name = user.email.split('@')[0];
 
-        if (lf)  lf.style.display  = 'none';
-        if (ui)  ui.style.display  = 'flex';
-        if (mlf) mlf.style.display = 'none';
-        if (mui) mui.style.display = 'flex';
+        /* Скрываем формы входа */
+        if (g('login-form'))       g('login-form').style.display       = 'none';
+        if (g('user-info'))        g('user-info').style.display        = 'flex';
+        if (g('modal-login-form')) g('modal-login-form').style.display = 'none';
+        if (g('modal-user-info'))  g('modal-user-info').style.display  = 'flex';
 
-        if (navLoginBtn)     navLoginBtn.style.display    = 'none';
-        if (navUserBlock)    navUserBlock.style.display    = 'flex';
-        if (navUserName)     navUserName.innerText         = name;
-        if (mobileLoginBtn)  mobileLoginBtn.style.display  = 'none';
-        if (mobileUserBlock) mobileUserBlock.style.display = 'flex';
-        if (mobileUserName)  mobileUserName.innerText      = name;
-        if (chatEmail)       chatEmail.innerText           = user.email;
-        if (modalChatEmail)  modalChatEmail.innerText      = user.email;
-        if (userNameContacts)userNameContacts.innerText    = name;
+        /* Навбар */
+        if (g('nav-login-btn'))     g('nav-login-btn').style.display    = 'none';
+        if (g('nav-user-block'))    g('nav-user-block').style.display   = 'flex';
+        if (g('nav-user-name'))     g('nav-user-name').innerText        = name;
+        if (g('mobile-login-btn'))  g('mobile-login-btn').style.display = 'none';
+        if (g('mobile-user-block')) g('mobile-user-block').style.display= 'flex';
+        if (g('mobile-user-name'))  g('mobile-user-name').innerText     = name;
+        if (g('chat-user-email'))   g('chat-user-email').innerText      = user.email;
+        if (g('modal-chat-user-email')) g('modal-chat-user-email').innerText = user.email;
+        if (g('user-name-contacts'))g('user-name-contacts').innerText   = name;
 
-        /* ── 1. Исходящие сообщения пользователя ──
-           Рендерим в окно личного чата.              */
+        /* ── Слушатель 1: исходящие сообщения пользователя ──
+           Показываем В КОНЦЕ (прокрутка к последнему).      */
         if (chatUnsubscribe) chatUnsubscribe();
         chatUnsubscribe = window.db
             .collection('users').doc(user.uid).collection('messages')
             .orderBy('timestamp', 'asc')
-            .onSnapshot(renderPersonalMessages, function(err) {
+            .onSnapshot(function(snap) {
+                /* Рендерим все сообщения пользователя */
+                var windows = ['chat-window', 'modal-chat-window'];
+                windows.forEach(function(winId) {
+                    var win = document.getElementById(winId);
+                    if (!win) return;
+                    win.innerHTML = '';
+                    snap.forEach(function(doc) {
+                        var d   = doc.data();
+                        var div = document.createElement('div');
+                        div.className   = 'msg-box sent';
+                        div.textContent = d.message || '';
+                        win.appendChild(div);
+                    });
+                    /* Прокрутка к последнему */
+                    win.scrollTop = win.scrollHeight;
+                });
+            }, function(err) {
                 if (err.code !== 'permission-denied')
-                    console.error('[Auth] messages snapshot:', err.code);
+                    console.error('[Auth] messages:', err.code);
             });
 
-        /* ── 2. Ответы владельца из Telegram ──
+        /* ── Слушатель 2: ответы владельца из Telegram ──
            bridge.py пишет в users/{uid}/faraday_responses.
-           Показываем ТОЛЬКО в личном чате (не в Faraday AI).
-           Это «прямое общение» — ответ от живого человека.  */
-        if (telegramRespUnsub) telegramRespUnsub();
-        telegramRespUnsub = window.db
+           ТОЛЬКО добавленные документы → в личный чат.    */
+        if (tgRespUnsubscribe) tgRespUnsubscribe();
+        tgRespUnsubscribe = window.db
             .collection('users').doc(user.uid)
             .collection('faraday_responses')
             .orderBy('timestamp', 'asc')
             .onSnapshot(function(snap) {
                 snap.docChanges().forEach(function(change) {
                     if (change.type !== 'added') return;
-                    var data = change.doc.data();
-                    var text = (data.text || data.message || '').trim();
+                    var d    = change.doc.data();
+                    var text = (d.text || d.message || '').trim();
                     if (!text) return;
 
-                    // ← Ответ идёт В ЛИЧНЫЙ ЧАТ, не в Faraday AI
-                    var chatWin = document.getElementById('chat-window');
-                    if (chatWin && typeof appendMessage === 'function') {
-                        appendMessage(chatWin, '💬 ' + text, 'received');
-                    }
-                    var modalWin = document.getElementById('modal-chat-window');
-                    if (modalWin && typeof appendMessage === 'function') {
-                        appendMessage(modalWin, '💬 ' + text, 'received');
-                    }
+                    /* Добавляем в оба окна личного чата */
+                    ['chat-window', 'modal-chat-window'].forEach(function(winId) {
+                        var win = document.getElementById(winId);
+                        if (!win) return;
+                        var div = document.createElement('div');
+                        div.className   = 'msg-box received';
+                        div.textContent = text;
+                        win.appendChild(div);
+                        win.scrollTop = win.scrollHeight;
+                    });
                 });
             }, function(err) {
-                // Тихо — при первом входе коллекция пуста
                 if (err.code !== 'permission-denied')
                     console.warn('[Auth] faraday_responses:', err.code);
             });
 
     } else {
-        if (lf)  lf.style.display  = 'flex';
-        if (ui)  ui.style.display  = 'none';
-        if (mlf) mlf.style.display = 'flex';
-        if (mui) mui.style.display = 'none';
+        /* Сброс UI при выходе */
+        if (g('login-form'))       g('login-form').style.display       = 'flex';
+        if (g('user-info'))        g('user-info').style.display        = 'none';
+        if (g('modal-login-form')) g('modal-login-form').style.display = 'flex';
+        if (g('modal-user-info'))  g('modal-user-info').style.display  = 'none';
+        if (g('nav-login-btn'))    g('nav-login-btn').style.display    = 'inline-block';
+        if (g('nav-user-block'))   g('nav-user-block').style.display   = 'none';
+        if (g('mobile-login-btn')) g('mobile-login-btn').style.display = 'inline-block';
+        if (g('mobile-user-block'))g('mobile-user-block').style.display= 'none';
+        if (g('user-name-contacts'))g('user-name-contacts').innerText  = 'Guest';
 
-        if (navLoginBtn)     navLoginBtn.style.display    = 'inline-block';
-        if (navUserBlock)    navUserBlock.style.display    = 'none';
-        if (mobileLoginBtn)  mobileLoginBtn.style.display  = 'inline-block';
-        if (mobileUserBlock) mobileUserBlock.style.display = 'none';
-        if (userNameContacts)userNameContacts.innerText    = 'Guest';
-
-        if (chatUnsubscribe)   { chatUnsubscribe(); chatUnsubscribe = null; }
-        if (telegramRespUnsub) { telegramRespUnsub(); telegramRespUnsub = null; }
+        if (chatUnsubscribe)   { chatUnsubscribe();   chatUnsubscribe   = null; }
+        if (tgRespUnsubscribe) { tgRespUnsubscribe(); tgRespUnsubscribe = null; }
     }
 }
 
-/* Единственная подписка. Faraday Core инициализируется один раз. */
+/* Единственная подписка. Faraday Core — один раз. */
 window.auth.onAuthStateChanged(function(user) {
     updateAuthUI(user);
     if (window._faradayCoreInited) return;
@@ -135,33 +137,31 @@ window.auth.onAuthStateChanged(function(user) {
 
 /* ── Вход ── */
 async function handleLogin() {
-    var email = document.getElementById('auth-email');
-    var pass  = document.getElementById('auth-pass');
-    if (email && pass) await _doLogin(email.value.trim(), pass.value);
+    var e = document.getElementById('auth-email');
+    var p = document.getElementById('auth-pass');
+    if (e && p) await _doLogin(e.value.trim(), p.value);
 }
 async function handleLoginModal() {
-    var email = document.getElementById('modal-auth-email');
-    var pass  = document.getElementById('modal-auth-pass');
-    if (email && pass) await _doLogin(email.value.trim(), pass.value);
+    var e = document.getElementById('modal-auth-email');
+    var p = document.getElementById('modal-auth-pass');
+    if (e && p) await _doLogin(e.value.trim(), p.value);
 }
 async function _doLogin(email, pass) {
     if (!email || !pass) return;
     try {
         await window.auth.signInWithEmailAndPassword(email, pass);
-    } catch (e) {
-        if (e.code === 'auth/user-not-found' ||
-            e.code === 'auth/invalid-credential' ||
-            e.code === 'auth/wrong-password') {
+    } catch (err) {
+        if (['auth/user-not-found','auth/invalid-credential','auth/wrong-password'].includes(err.code)) {
             try { await window.auth.createUserWithEmailAndPassword(email, pass); }
             catch (ce) { alert(ce.message); }
-        } else { alert(e.message); }
+        } else { alert(err.message); }
     }
 }
 
 /* ── Выход ── */
 function handleLogout() {
-    window.auth.signOut().catch(function(err) {
-        console.error('[Auth] Logout error:', err);
+    window.auth.signOut().catch(function(e) {
+        console.error('[Auth] Logout:', e);
     });
 }
 
@@ -182,8 +182,9 @@ function analyzeCurrentContext(projectId) {
             var tech   = Array.isArray(p.stack) ? p.stack.join(', ') : (p.stack || 'не указан');
             appendFaradayAIMsg(feed, 'Синхронизируюсь с манифестом проекта...');
             setTimeout(function() {
-                appendFaradayAIMsg(feed, 'Анализ «' + name + '» завершён. Статус: [' + status + ']. Стек: ' + tech + '.');
+                appendFaradayAIMsg(feed,
+                    'Анализ «' + name + '» завершён. Статус: [' + status + ']. Стек: ' + tech + '.');
             }, 2500);
         })
-        .catch(function(err) { console.error('[Faraday] analyzeCurrentContext:', err.message); });
+        .catch(function(e) { console.error('[Faraday] analyzeCurrentContext:', e.message); });
 }
