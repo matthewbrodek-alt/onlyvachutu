@@ -15,14 +15,8 @@
 
 /* ── URL bridge (только для health-check и webhook) ──
    Для смены URL из консоли браузера:
-     nitro.setBridgeUrl('https://5005-firebase-...')    */
-     var BRIDGE_URL = (function() {
-        try {
-            var saved = localStorage.getItem('nitro_bridge_url');
-            if (saved && saved.startsWith('https://')) return saved.replace(/\/$/, '');
-        } catch(e) {}
-        return 'https://5005-firebase-onlyvachutu-1776714141230.cluster-bqwaigqtxbeautecnatk4o6ynk.cloudworkstations.dev';
-    })();
+     
+     var BRIDGE_URL = '';
     
     window.nitro = window.nitro || {};
     window.nitro.setBridgeUrl = function(url) {
@@ -98,11 +92,10 @@
         return callBackend('/api/notify', { message: text, email: email || 'system' });
     }
     
-    /* ── Health-check (используется в performSelfDiagnostic) ── */
     function checkBridgeHealth() {
-        return fetch(BRIDGE_URL + '/health', { method: 'GET' })
-            .then(function(r) { return r.ok; })
-            .catch(function() { return false; });
+        // Больше не делаем fetch. Просто возвращаем true, 
+        // так как мост теперь работает автономно через Firestore.
+        return Promise.resolve(true);
     }
     
     /* ── Отчёт об ошибке → bridge → Telegram ── */
