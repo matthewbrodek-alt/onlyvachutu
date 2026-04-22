@@ -47,14 +47,17 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 
 # CORS — разрешаем GitHub Pages и localhost
-CORS(app, resources={r'/*': {'origins': [
-    'https://matthewbrodek-alt.github.io',
-    'http://localhost:3000',
-    'http://localhost:5500',
-    'http://127.0.0.1:5500',
-    'http://localhost:5000',
-    '*'  # можно убрать в продакшене
-]}})
+CORS(app, resources={r"/*": {
+    "origins": [
+        "https://matthewbrodek-alt.github.io",
+        "http://localhost:3000",
+        "http://localhost:5500",
+        "http://127.0.0.1:5500",
+        "*" 
+    ],
+    "methods": ["GET", "POST", "OPTIONS"],
+    "allow_headers": ["Content-Type", "Authorization"]
+}})
 
 @app.after_request
 def add_cors(response):
@@ -242,6 +245,6 @@ def notify():
 
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 5005))
     log.info(f'Bridge v8.4 → порт {port}')
     app.run(host='0.0.0.0', port=port, debug=False)
