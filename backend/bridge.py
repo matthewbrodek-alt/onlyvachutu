@@ -1,6 +1,6 @@
 """
-bridge.py — Nitro Hub Bridge v9.0
-Архитектура: Firestore Queue (без Flask, без Gunicorn)
+bridge.py — Nitro Hub Bridge v11.0 [Polling + Gemini AI]
+Архитектура: Firestore Queue + Telegram Polling (без портов, без Flask)
 
 ═══════════════════════════════════════════════════
  СХЕМА ДАННЫХ И ПОТОКОВ
@@ -8,27 +8,25 @@ bridge.py — Nitro Hub Bridge v9.0
 
  ПОЛЬЗОВАТЕЛЬ → TELEGRAM (исходящие):
    JS пишет в bridge_queue/{docId}
-     { content, uid, email, status:'pending', timestamp }
    ↓
-   on_snapshot ловит pending-документ
+   on_snapshot ловит pending-документ (проверяет chatType)
    ↓
-   Отправляем в Telegram владельцу
+   Если chatType == 'ai' → Запрос в Gemini → Запись в faraday_responses
+   ↓
+   Отправляем в Telegram владельцу (с меткой ID: {uid})
    ↓
    Обновляем status:'delivered'
-   ↓
-   Пишем в users/{uid}/messages (история чата)
 
  TELEGRAM → ПОЛЬЗОВАТЕЛЬ (входящие ответы):
    Владелец делает Reply в Telegram
    ↓
-   Telegram шлёт update на /api/telegram-webhook
+   bot.infinity_polling ловит ответ
+   ↓
+   Извлекает UID из цитаты (ID: {uid})
    ↓
    Пишем в users/{uid}/faraday_responses
    ↓
-   auth.js on_snapshot доставляет в чат на сайте
-
- HEALTH CHECK:
-   GET /health → {"status":"ok","firebase":true,"telegram":true,"mode":"queue"}
+   auth.js на сайте мгновенно показывает ответ
 
 ═══════════════════════════════════════════════════
  ЗАПУСК:
@@ -43,13 +41,13 @@ import json
 import signal
 import logging
 import threading
-import http.server
-import socketserver
+import time
 import requests
 
 import firebase_admin
 from firebase_admin import credentials, firestore
 from dotenv import load_dotenv
+import google.generativeai as genai  # ИИ Мозг
 
 # ── Загрузка переменных окружения ────────────────
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -65,17 +63,18 @@ logging.basicConfig(
 )
 log = logging.getLogger('bridge')
 
-# ── Telegram credentials ─────────────────────────
+# ── Telegram и Gemini credentials ────────────────
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
 TELEGRAM_CHAT_ID   = os.getenv('TELEGRAM_CHAT_ID', '')
-PORT               = int(os.getenv('PORT', 5005))
+GOOGLE_API_KEY     = os.getenv('GOOGLE_API_KEY', '')
 
-# ── Глобальные объекты Firebase ──────────────────
+# ── Глобальные объекты Firebase и AI ─────────────
 db       = None
-fs       = None   # модуль firestore (для SERVER_TIMESTAMP)
+fs       = None 
 
-# ── In-memory роутинг: telegram chat_id → uid ────
-user_routing: dict = {}
+if GOOGLE_API_KEY:
+    genai.configure(api_key=GOOGLE_API_KEY)
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 # ─────────────────────────────────────────────────
 #  FIREBASE INIT
@@ -99,16 +98,10 @@ def init_firebase():
         log.error(f'Firebase init error: {e}')
         sys.exit(1)
 
-
 # ─────────────────────────────────────────────────
-#  TELEGRAM HELPER
+#  TELEGRAM HELPER (OUTGOING)
 # ─────────────────────────────────────────────────
 def send_telegram(text: str, chat_id: str = None) -> bool:
-    """
-    Отправляет сообщение в Telegram.
-    Вызывается ТОЛЬКО при обработке bridge_queue.
-    Faraday AI эту функцию НИКОГДА не вызывает.
-    """
     target = chat_id or TELEGRAM_CHAT_ID
     if not TELEGRAM_BOT_TOKEN or not target:
         log.warning('Telegram: BOT_TOKEN или CHAT_ID не заданы в .env')
@@ -128,17 +121,10 @@ def send_telegram(text: str, chat_id: str = None) -> bool:
         log.error(f'Telegram error: {e}')
         return False
 
-
 # ─────────────────────────────────────────────────
 #  ДОСТАВКА ОТВЕТА НА САЙТ
 # ─────────────────────────────────────────────────
 def deliver_to_site(uid: str, text: str) -> bool:
-    """
-    Записывает ответ владельца в Firestore.
-    Путь: users/{uid}/faraday_responses
-    auth.js на фронте слушает эту коллекцию через onSnapshot
-    и мгновенно показывает сообщение в чате пользователя.
-    """
     if not db or not uid or not text:
         return False
     try:
@@ -154,59 +140,95 @@ def deliver_to_site(uid: str, text: str) -> bool:
         log.error(f'deliver_to_site error: {e}')
         return False
 
+# ─────────────────────────────────────────────────
+#  GEMINI AI ИНТЕГРАЦИЯ
+# ─────────────────────────────────────────────────
+FARADAY_SYSTEM_PROMPT = """
+Ты — Faraday AI, высокотехнологичный ИИ ассистент на личном сайте. 
+Твой стиль: лаконичный, футуристичный, вежливый. 
+Ты помогаешь посетителям узнать о проектах владельца и его навыках.
+Отвечай коротко, не более 2-3 предложений, если не просят подробностей.
+"""
+
+def get_gemini_response(uid: str, user_message: str) -> str:
+    """Генерация ответа через Gemini с учетом истории последних 5 сообщений."""
+    if not GOOGLE_API_KEY:
+        return "Ошибка: GOOGLE_API_KEY не настроен на сервере."
+    try:
+        history_ref = db.collection('users').document(uid).collection('messages')
+        history_docs = history_ref.order_by('timestamp', direction=firestore.Query.DESCENDING).limit(5).get()
+        
+        context_parts = [FARADAY_SYSTEM_PROMPT]
+        for d in reversed(history_docs):
+            m = d.to_dict()
+            role = "AI" if m.get('sender') == 'OWNER' else "User"
+            context_parts.append(f"{role}: {m.get('message', '')}")
+        
+        context_parts.append(f"User: {user_message}")
+        full_prompt = "\n".join(context_parts)
+
+        response = model.generate_content(full_prompt)
+        return response.text.strip()
+    except Exception as e:
+        log.error(f"Gemini Error: {e}")
+        return "Мои нейронные связи временно перегружены. Попробуйте чуть позже."
 
 # ─────────────────────────────────────────────────
 #  ОБРАБОТКА ОДНОГО ДОКУМЕНТА ИЗ bridge_queue
 # ─────────────────────────────────────────────────
 def process_queue_doc(doc):
-    """
-    Обрабатывает pending-документ из bridge_queue:
-    1. Атомарно меняем status: 'pending' → 'processing'
-       (защита от двойной отправки при нескольких репликах)
-    2. Отправляем сообщение в Telegram
-    3. Пишем в users/{uid}/messages (история)
-    4. Финальный статус: 'delivered' или 'error'
-    """
-    doc_id  = doc.id
-    data    = doc.to_dict() or {}
-    content = (data.get('content') or data.get('message', '')).strip()
-    uid     = data.get('uid', '').strip()
-    email   = data.get('email', 'anonymous')
+    doc_id    = doc.id
+    data      = doc.to_dict() or {}
+    content   = (data.get('content') or data.get('message', '')).strip()
+    uid       = data.get('uid', '').strip()
+    email     = data.get('email', 'anonymous')
+    chat_type = data.get('chatType', 'direct') # 'ai' или 'direct'
 
     if not content or not uid:
         log.warning(f'[{doc_id[:8]}] пустой content/uid — пропускаем')
         try:
             doc.reference.update({'status': 'error', 'error': 'empty content or uid'})
-        except Exception:
-            pass
+        except Exception: pass
         return
 
-    log.info(f'[{doc_id[:8]}] обрабатываем: {email} → "{content[:50]}"')
+    log.info(f'[{doc_id[:8]}] [{chat_type.upper()}] обрабатываем: {email} → "{content[:50]}"')
 
-    # ── Шаг 1: атомарная блокировка ──────────────
-    # Сразу меняем на 'processing', чтобы on_snapshot не
-    # подхватил этот же документ повторно
     try:
         doc.reference.update({'status': 'processing'})
     except Exception as e:
         log.error(f'[{doc_id[:8]}] не удалось заблокировать: {e}')
         return
 
-    # Запоминаем роутинг для обратного ответа из Telegram
-    if TELEGRAM_CHAT_ID:
-        user_routing[TELEGRAM_CHAT_ID] = uid
+    # Шаг 1.5: Если это запрос к ИИ, генерируем и отправляем ответ
+    if chat_type == 'ai':
+        ai_reply = get_gemini_response(uid, content)
+        
+        try:
+            db.collection('users').document(uid).collection('faraday_responses').add({
+                'text': ai_reply,
+                'sender': 'OWNER',
+                'timestamp': fs.SERVER_TIMESTAMP,
+                'isAI': True
+            })
+        except Exception as e:
+            log.error(f'[{doc_id[:8]}] Ошибка записи ответа ИИ в Firestore: {e}')
+        
+        # Уведомляем владельца в Telegram об ответе ИИ
+        ai_tg_text = f"🤖 <b>Faraday AI ответил {email}:</b>\n\n{ai_reply}"
+        send_telegram(ai_tg_text)
 
-    # ── Шаг 2: отправка в Telegram ───────────────
+    # Шаг 2: отправка оригинала в Telegram (метку ID: uid используем для Reply-логики)
     tg_text = (
-        f'💬 <b>Новое сообщение</b>\n'
+        f'💬 <b>Новое сообщение [{chat_type.upper()}]</b>\n'
         f'👤 {email}\n'
         f'🆔 <code>{uid}</code>\n\n'
         f'{content}\n\n'
-        f'<i>↩️ Reply на это сообщение чтобы ответить</i>'
+        f'<i>↩️ Reply на это сообщение чтобы ответить лично</i>\n'
+        f'---\nID: {uid}'
     )
     tg_ok = send_telegram(tg_text)
 
-    # ── Шаг 3: сохраняем в историю чата ─────────
+    # Шаг 3: сохраняем в историю чата
     if db:
         try:
             db.collection('users').document(uid) \
@@ -219,7 +241,7 @@ def process_queue_doc(doc):
         except Exception as e:
             log.warning(f'[{doc_id[:8]}] Firestore history error: {e}')
 
-    # ── Шаг 4: финальный статус ──────────────────
+    # Шаг 4: финальный статус
     final_status = 'delivered' if tg_ok else 'error'
     try:
         doc.reference.update({
@@ -231,188 +253,101 @@ def process_queue_doc(doc):
     except Exception as e:
         log.error(f'[{doc_id[:8]}] status update error: {e}')
 
-
 # ─────────────────────────────────────────────────
-#  СЛУШАТЕЛЬ bridge_queue
-# ─────────────────────────────────────────────────
-_queue_unsubscribe = None
+processing_ids = set()
 
 def start_queue_listener():
-    """
-    Подписывается на bridge_queue[status == 'pending'].
-    on_snapshot срабатывает при каждом новом добавлении/изменении.
-    Каждый документ обрабатывается в отдельном потоке.
-    """
-    global _queue_unsubscribe
-
     query = db.collection('bridge_queue').where('status', '==', 'pending')
 
     def on_snapshot(col_snapshot, changes, read_time):
         for change in changes:
-            if change.type.name not in ('ADDED', 'MODIFIED'):
-                continue
-            doc  = change.document
-            data = doc.to_dict() or {}
-            # Двойная проверка — защита от гонки
-            if data.get('status') != 'pending':
-                continue
-            t = threading.Thread(
-                target=process_queue_doc,
-                args=(doc,),
-                daemon=True,
-                name=f'queue-{doc.id[:8]}'
-            )
-            t.start()
+            # Нас интересуют только новые или измененные документы со статусом pending
+            if change.type.name in ('ADDED', 'MODIFIED'):
+                doc = change.document
+                data = doc.to_dict() or {}
+                doc_id = doc.id
 
-    _queue_unsubscribe = query.on_snapshot(on_snapshot)
-    log.info('bridge_queue listener: активен ✓')
-    log.info('Ожидаю документы со status="pending"...')
+                # Проверка: если статус не pending или мы УЖЕ обрабатываем этот ID — пропускаем
+                if data.get('status') != 'pending' or doc_id in processing_ids:
+                    continue
 
+                # Помечаем ID как занятый
+                processing_ids.add(doc_id)
+
+                def run_and_cleanup(d):
+                    try:
+                        process_queue_doc(d)
+                    finally:
+                        # После завершения удаляем из списка обработки (через небольшую паузу)
+                        time.sleep(2) 
+                        processing_ids.discard(d.id)
+
+                t = threading.Thread(
+                    target=run_and_cleanup,
+                    args=(doc,),
+                    daemon=True,
+                    name=f'queue-{doc_id[:8]}'
+                )
+                t.start()
+
+    query.on_snapshot(on_snapshot)
+    log.info('bridge_queue listener: активен ✓ (защита от дублей включена)')
 
 # ─────────────────────────────────────────────────
-#  WEBHOOK-СЕРВЕР (минимальный HTTP, без Flask)
-#  Принимает обратные ответы от Telegram-бота.
+#  TELEGRAM POLLING (INCOMING REPLIES)
 # ─────────────────────────────────────────────────
-class _WebhookHandler(http.server.BaseHTTPRequestHandler):
+def run_telegram_polling():
+    """
+    Заменяет Webhook-сервер. Постоянно опрашивает Telegram.
+    Для работы требуется pip install pyTelegramBotAPI
+    """
+    import telebot # Импорт внутри для минимизации зависимостей, если не используется
 
-    def log_message(self, fmt, *args):
-        pass  # отключаем стандартный лог werkzeug-style
+    bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 
-    # ── OPTIONS (CORS preflight) ──────────────────
-    def do_OPTIONS(self):
-        self._cors_headers(200)
-
-    # ── GET /health ───────────────────────────────
-    def do_GET(self):
-        if self.path.rstrip('/') == '/health':
-            body = json.dumps({
-                'status':   'ok',
-                'firebase': db is not None,
-                'telegram': bool(TELEGRAM_BOT_TOKEN),
-                'mode':     'queue',
-                'version':  '9.0'
-            }).encode()
-            self._cors_headers(200, 'application/json', len(body))
-            self.wfile.write(body)
-        else:
-            self.send_error(404)
-
-    # ── POST ──────────────────────────────────────
-    def do_POST(self):
-        if self.path.rstrip('/') == '/api/telegram-webhook':
-            self._handle_tg_webhook()
-        else:
-            self.send_error(404)
-
-    def _handle_tg_webhook(self):
-        try:
-            length = int(self.headers.get('Content-Length', 0))
-            body   = self.rfile.read(length)
-            data   = json.loads(body)
-        except Exception:
-            self.send_error(400)
+    @bot.message_handler(func=lambda m: str(m.chat.id) == str(TELEGRAM_CHAT_ID))
+    def on_reply(message):
+        text = message.text
+        if not text or not message.reply_to_message:
             return
 
-        # Сразу отвечаем Telegram 200 OK
-        resp = b'{"ok":true}'
-        self._cors_headers(200, 'application/json', len(resp))
-        self.wfile.write(resp)
-
-        # Обрабатываем в отдельном потоке
-        threading.Thread(
-            target=self._process_tg_update,
-            args=(data,),
-            daemon=True
-        ).start()
-
-    def _process_tg_update(self, data):
-        message    = data.get('message', {})
-        text       = message.get('text', '').strip()
-        chat_id    = str(message.get('chat', {}).get('id', ''))
-        reply_to   = message.get('reply_to_message', {})
-        reply_text = reply_to.get('text', '')
-
-        if not text or not chat_id:
-            return
-
-        # Извлекаем uid из текста исходного сообщения (тег 🆔)
+        reply_text = message.reply_to_message.text or ""
+        
+        # Извлекаем uid из метки ID: или из тега 🆔
         recipient_uid = None
-        m = re.search(r'🆔 ([a-zA-Z0-9]{20,})', reply_text)
+        m = re.search(r'ID: ([a-zA-Z0-9]{20,})', reply_text)
+        if not m:
+            m = re.search(r'🆔 ([a-zA-Z0-9]{20,})', reply_text)
+            
         if m:
-            recipient_uid = m.group(1)
-            user_routing[chat_id] = recipient_uid  # обновляем роутинг
-        else:
-            recipient_uid = user_routing.get(chat_id)
-
-        if recipient_uid:
+            recipient_uid = m.group(1).strip()
             ok = deliver_to_site(recipient_uid, text)
-            log.info(f'TG reply → {recipient_uid[:8]}… | {"OK" if ok else "FAIL"}')
+            if ok:
+                log.info(f'TG reply → {recipient_uid[:8]}… | OK')
+                bot.reply_to(message, "✅ Ответ доставлен")
+            else:
+                log.warning(f'TG reply → {recipient_uid[:8]}… | FAIL')
         else:
-            log.warning(f'TG webhook: uid не найден для chat_id={chat_id}')
-            send_telegram(
-                '⚠️ Не удалось определить получателя.\n'
-                'Используйте <b>Reply</b> на сообщение пользователя.',
-                chat_id
-            )
+            log.warning('TG polling: UID не найден в исходном сообщении')
 
-    def _cors_headers(self, code, content_type='application/json', length=0):
-        self.send_response(code)
-        self.send_header('Content-Type', content_type)
-        self.send_header('Content-Length', str(length))
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        self.end_headers()
-
-
-def start_webhook_server():
-    """Запускает лёгкий HTTP-сервер для Telegram webhook и health-check."""
-    socketserver.TCPServer.allow_reuse_address = True
-    server = socketserver.ThreadingTCPServer(('0.0.0.0', PORT), _WebhookHandler)
-    server.daemon_threads = True
-    t = threading.Thread(target=server.serve_forever, daemon=True, name='webhook-server')
-    t.start()
-    log.info(f'Webhook server: порт {PORT} ✓')
-    log.info(f'Health: http://localhost:{PORT}/health')
-    log.info(f'Webhook: http://localhost:{PORT}/api/telegram-webhook')
-    return server
-
-
-# ─────────────────────────────────────────────────
-#  GRACEFUL SHUTDOWN
-# ─────────────────────────────────────────────────
-_stop_event = threading.Event()
-
-def _on_signal(signum, frame):
-    log.info(f'Сигнал {signum} — завершаем работу...')
-    if _queue_unsubscribe:
-        try:
-            _queue_unsubscribe()
-            log.info('bridge_queue listener: отписан ✓')
-        except Exception:
-            pass
-    _stop_event.set()
-
-signal.signal(signal.SIGTERM, _on_signal)
-signal.signal(signal.SIGINT,  _on_signal)
-
+    log.info('Telegram Polling: активен ✓ (ожидаю Reply)')
+    bot.infinity_polling()
 
 # ─────────────────────────────────────────────────
 #  ТОЧКА ВХОДА
 # ─────────────────────────────────────────────────
 if __name__ == '__main__':
     log.info('══════════════════════════════════════')
-    log.info('  Nitro Hub Bridge v9.0  [Queue Mode] ')
+    log.info('  Nitro Hub Bridge v11.0 [Gemini Edition] ')
     log.info('══════════════════════════════════════')
-    log.info(f'Очередь: bridge_queue [status=pending]')
-    log.info(f'Flask/Gunicorn: отсутствуют')
 
     init_firebase()
     start_queue_listener()
-    start_webhook_server()
-
-    log.info('Bridge запущен. Ctrl+C для остановки.')
-
-    # Блокируем главный поток — всё остальное работает в демон-потоках
-    _stop_event.wait()
-    log.info('Bridge остановлен.')
+    
+    # Запускаем поллинг Telegram. Это блокирующая операция.
+    try:
+        run_telegram_polling()
+    except KeyboardInterrupt:
+        log.info('Bridge остановлен пользователем.')
+    except Exception as e:
+        log.error(f'Критическая ошибка: {e}')
