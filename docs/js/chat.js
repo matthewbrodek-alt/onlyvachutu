@@ -281,28 +281,56 @@ function sendFaradayMessage() {
     if (!text) return;
     input.value = '';
 
-    var feed   = document.getElementById('faraday-feed');
+    var feed = document.getElementById('faraday-feed');
     appendFaradayUserMsg(feed, text);
     var tid = appendFaradayTyping(feed);
 
+    // 1. Сначала проверяем, не системная ли это команда (цвет, звук и т.д.)
     var result = processFaradayCommand(text);
 
-    if (result && typeof result.then === 'function') {
+    if (result === null) {
+        // --- ЛОГИКА ДЛЯ GEMINI ---
+        // Если processFaradayCommand вернула null, отправляем запрос в Bridge
+        if (window.db) {
+            window.db.collection('bridge_queue').add({
+                uid: firebase.auth().currentUser ? firebase.auth().currentUser.uid : 'guest_session',
+                email: firebase.auth().currentUser ? firebase.auth().currentUser.email : 'anonymous',
+                content: text,
+                chatType: 'ai', // Метка для моста, что это запрос к ИИ
+                status: 'pending',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(function() {
+                // Мы не удаляем анимацию печати здесь, 
+                // так как ответ придет позже в faraday_responses (через Listener)
+                console.log('Запрос отправлен в ядро Gemini...');
+            }).catch(function(err) {
+                removeFaradayTyping(tid);
+                appendFaradayAIMsg(feed, 'Ошибка связи с ядром: ' + err.message);
+            });
+        } else {
+            removeFaradayTyping(tid);
+            appendFaradayAIMsg(feed, 'Критическая ошибка: База данных недоступна.');
+        }
+
+    } else if (result && typeof result.then === 'function') {
+        // (Оставим на случай, если остались асинхронные команды)
         result.then(function(answer) {
             removeFaradayTyping(tid);
-            appendFaradayAIMsg(feed, answer || 'Ничего не найдено.');
+            appendFaradayAIMsg(feed, answer || '...');
         }).catch(function() {
             removeFaradayTyping(tid);
-            appendFaradayAIMsg(feed, 'Ошибка поиска. Попробуйте ещё раз.');
+            appendFaradayAIMsg(feed, 'Ошибка обработки команды.');
         });
     } else {
+        // Локальная системная команда выполнена мгновенно
         setTimeout(function() {
             removeFaradayTyping(tid);
-            appendFaradayAIMsg(feed, result || '...');
-        }, 450 + Math.random() * 350);
+            appendFaradayAIMsg(feed, result || 'Система обработала запрос.');
+        }, 500);
     }
 }
 
+// Эту функцию оставляем как есть, она работает отлично
 function faradayQuick(cmd) {
     var input = document.getElementById('faraday-input');
     if (input) input.value = cmd;
@@ -311,13 +339,14 @@ function faradayQuick(cmd) {
 
 /* ── Движок команд ── */
 function processFaradayCommand(text) {
-    var t    = text.toLowerCase().trim();
-    var hudSt= document.getElementById('hud-status');
+    var t = text.toLowerCase().trim();
+    var hudSt = document.getElementById('hud-status');
     var pill = document.getElementById('faraday-hud-status-badge');
     var feed = document.getElementById('faraday-feed');
+    
     function setHUD(msg) { if (hudSt) hudSt.innerText = msg; }
 
-    /* TTS */
+    /* 1. УПРАВЛЕНИЕ ГОЛОСОМ (TTS) */
     if (t.includes('замолчи') || t.includes('тихо') || t.includes('mute')) {
         faradayTTSEnabled = false;
         window.speechSynthesis && window.speechSynthesis.cancel();
@@ -330,7 +359,7 @@ function processFaradayCommand(text) {
         return 'Голосовой вывод активирован.';
     }
 
-    /* Цвет акцента */
+    /* 2. ЦВЕТ АКЦЕНТА */
     var colorMap = {
         'синий':'#0077ff','blue':'#0077ff',
         'красный':'#ff4444','red':'#ff4444',
@@ -341,8 +370,8 @@ function processFaradayCommand(text) {
     if (t.includes('смени цвет') || t.includes('цвет на') || t.includes('change color')) {
         var color = '#00ff88';
         for (var k in colorMap) { if (t.includes(k)) { color = colorMap[k]; break; } }
-        document.documentElement.style.setProperty('--accent',        color);
-        document.documentElement.style.setProperty('--accent-dim',    color + '1a');
+        document.documentElement.style.setProperty('--accent', color);
+        document.documentElement.style.setProperty('--accent-dim', color + '1a');
         document.documentElement.style.setProperty('--border-accent', color + '38');
         window.db && window.db.collection('system_config').doc('faraday_protocol')
             .update({'ui_theme.accent': color}).catch(function(){});
@@ -350,149 +379,47 @@ function processFaradayCommand(text) {
         return 'Акцент изменён на ' + color + '.';
     }
 
-    /* Пауза */
+    /* 3. ПАУЗА / ЗАПУСК СИСТЕМ */
     if (t.includes('пауза') || t.includes('стоп') || t.includes('pause') || t.includes('stop')) {
         window.faradaySystemPaused = true;
         var v = document.getElementById('bg-video');
         if (v) v.pause();
         setHUD('SYSTEM: PAUSED');
         if (pill) pill.innerText = 'ПАУЗА';
-        window.db && window.db.collection('system_config').doc('faraday_protocol')
-            .update({safety_protocols:'paused'}).catch(function(){});
         return 'Системы приостановлены.';
     }
-
-    /* Запуск */
-    if (t.includes('активируй') || t.includes('пуск') || t.includes('запуск') ||
-        t.includes('start') || t.includes('activate') || t.includes('resume')) {
+    if (t.includes('активируй') || t.includes('пуск') || t.includes('запуск') || t.includes('start') || t.includes('resume')) {
         window.faradaySystemPaused = false;
         var v2 = document.getElementById('bg-video');
         if (v2) v2.play().catch(function(){});
         setHUD('SYSTEM: ACTIVE');
         if (pill) pill.innerText = 'АКТИВЕН';
-        window.db && window.db.collection('system_config').doc('faraday_protocol')
-            .update({safety_protocols:'active'}).catch(function(){});
         return 'Все системы запущены.';
     }
 
-    /* Синхронизация */
-    if (t.includes('синхронизация') || t.includes('sync') || t.includes('обнови')) {
-        setHUD('SYNCING...');
-        window.db && window.db.collection('system_config').doc('faraday_protocol').get()
-            .then(function(snap) {
-                if (!snap.exists) { setHUD('SYSTEM: STANDBY'); return; }
-                var cfg = snap.data();
-                if (cfg.ui_theme && cfg.ui_theme.accent)
-                    document.documentElement.style.setProperty('--accent', cfg.ui_theme.accent);
-                setHUD('SYSTEM: READY');
-                if (feed) appendFaradayAIMsg(feed,
-                    'Конфигурация загружена. Версия: ' + (cfg.version || '—'));
-            }).catch(function() { setHUD('SYNC ERROR'); });
-        return 'Запрашиваю Firestore...';
-    }
-
-    /* Статус */
+    /* 4. ДИАГНОСТИКА И СИНХРОНИЗАЦИЯ */
     if (t.includes('статус') || t.includes('status')) {
         return 'Система: ' + (window.faradaySystemPaused ? 'ПАУЗА' : 'АКТИВНА') +
-               '. Firebase: OK. TTS: ' + (faradayTTSEnabled ? 'ON' : 'OFF') +
-               '. ' + (typeof getFaradayMood === 'function' ? getFaradayMood() : '');
+               '. Firebase: OK. TTS: ' + (faradayTTSEnabled ? 'ON' : 'OFF') + '.';
     }
-
-    /* Диагностика */
     if (t.includes('диагностика') || t.includes('diagnostic') || t.includes('scan')) {
-        performSelfDiagnostic();
-        return 'Запуск диагностики... Результат через несколько секунд.';
+        if (typeof performSelfDiagnostic === 'function') performSelfDiagnostic();
+        return 'Запуск диагностики систем Bridge...';
     }
 
-    /* Self-evolution */
-    if (t.includes('эволюция') || t.includes('evolution') || t.includes('развитие')) {
-        runSelfEvolution().then(function(core) {
-            if (core && feed) appendFaradayAIMsg(feed,
-                'Анализ завершён. Уровень: ' + core.level +
-                ', индекс: ' + core.intelligence_index + '.');
-        });
-        return 'Запускаю анализ саморазвития...';
+    /* 5. ПОМОЩЬ */
+    if (t.includes('помощь') || t.includes('help') || t.includes('команды')) {
+        return '⚡ СИСТЕМНЫЕ КОМАНДЫ:\n' +
+               '• «смени цвет на [цвет]»\n' +
+               '• «пауза» / «запуск»\n' +
+               '• «статус» / «диагностика»\n' +
+               '• «замолчи» / «говори»\n' +
+               'Все остальные вопросы обрабатываются ИИ-ядром Gemini.';
     }
 
-    /* Запомни */
-    if (t.startsWith('запомни') || t.startsWith('remember') || t.startsWith('note')) {
-        var mem = text.replace(/^(запомни|remember|note)\s*/i, '').trim();
-        if (mem && window.db) {
-            window.db.collection('faraday_memory').add({
-                topic:     'user_note',
-                content:   mem,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(function() {
-                if (feed) appendFaradayAIMsg(feed, 'Запомнено: «' + mem + '»');
-            }).catch(function(e) {
-                if (feed) appendFaradayAIMsg(feed, 'Ошибка памяти: ' + e.message);
-            });
-            return 'Обращаюсь к ядру памяти...';
-        }
-        return 'Что запомнить? Напишите: «Запомни [текст]»';
-    }
-
-    /* Поиск */
-    var searchTriggers = ['найди ','что такое ','кто такой ','кто такая ','поищи ',
-                          'find ','search ','what is ','who is ','расскажи о ',
-                          'что значит ','объясни '];
-    var searchQuery = null;
-    for (var si = 0; si < searchTriggers.length; si++) {
-        if (t.startsWith(searchTriggers[si])) {
-            searchQuery = text.slice(searchTriggers[si].length).trim();
-            break;
-        }
-    }
-    if (searchQuery) {
-        setHUD('SEARCHING...');
-        var sq = searchQuery;
-        return searchWikipedia(sq, _ttsLang).then(function(result) {
-            setHUD('SYSTEM: ACTIVE');
-            if (result) return '🌐 Wikipedia: ' + result;
-            return searchDDG(sq).then(function(ddgResult) {
-                if (ddgResult) return '🌐 ' + ddgResult;
-                return 'По запросу «' + sq + '» ничего не найдено.';
-            });
-        });
-    }
-
-    /* Помощь */
-    if (t.includes('помощь') || t.includes('help') || t.includes('команды') || t.includes('что умеешь')) {
-        return '⚡ Команды ДЖАРВИС:\n' +
-               '• «смени цвет на [синий/золотой/красный/стандарт]»\n' +
-               '• «пауза» / «активируй»\n' +
-               '• «синхронизация» — конфиг\n' +
-               '• «статус» — состояние\n' +
-               '• «диагностика» — тест Bridge\n' +
-               '• «эволюция» — саморазвитие\n' +
-               '• «запомни [текст]» — память\n' +
-               '• «найди [тема]» — поиск Wikipedia\n' +
-               '• «замолчи» / «говори» — голос';
-    }
-
-    /* Приветствие */
-    if (t.includes('привет') || t.includes('hello') || t.includes('hi') || t.includes('hey')) {
-        return 'Приветствую. ' +
-               (typeof getFaradayMood === 'function' ? getFaradayMood() : '') +
-               ' Чем могу помочь?';
-    }
-
-    /* Вопрос → Wikipedia */
-    var isQ = t.endsWith('?') || t.startsWith('как ') || t.startsWith('почему ') ||
-              t.startsWith('где ') || t.startsWith('когда ') ||
-              t.startsWith('how ') || t.startsWith('why ') || t.startsWith('where ');
-    if (isQ) {
-        var fq = text.replace(/\?$/, '').trim();
-        setHUD('SEARCHING...');
-        return searchWikipedia(fq, _ttsLang).then(function(result) {
-            setHUD('SYSTEM: STANDBY');
-            if (result) return '🌐 ' + result;
-            return 'Команда не распознана. Попробуйте «найди [тема]».';
-        });
-    }
-
-    setHUD('SYSTEM: STANDBY');
-    return 'Команда не распознана. Попробуйте «помощь».';
+    /* ВАЖНО: Если это не команда — возвращаем null, чтобы сработал Gemini */
+    setHUD('SYSTEM: ACTIVE');
+    return null;
 }
 
 /* ── Рендер сообщений Faraday ── */
