@@ -502,6 +502,9 @@ function initAIModules() {
 ══════════════════════════════════════════════ */
 window.faradayListenerActive = false;
 
+/* ══════════════════════════════════════════════
+   СЛУШАТЕЛЬ ОТВЕТОВ AI (Groq/Bridge)
+══════════════════════════════════════════════ */
 function startFaradayResponseListener(uid) {
     if (!window.db || !uid) return;
     
@@ -510,25 +513,27 @@ function startFaradayResponseListener(uid) {
 
     var startTime = firebase.firestore.Timestamp.now();
 
-    // ИСПРАВЛЕНО: .doc(uid) вместо .document(uid)
     window.db.collection('users').doc(uid)
         .collection('faraday_responses')
         .where('timestamp', '>', startTime)
         .onSnapshot(function(snapshot) {
             snapshot.docChanges().forEach(function(change) {
                 if (change.type === 'added') {
-                    var data = change.document.data();
+                    // ИСПРАВЛЕНО: используем .doc вместо .document
+                    var data = change.doc.data(); 
                     var feed = document.getElementById('faraday-feed');
                     
+                    // Убираем анимацию "печатает..."
                     removeFaradayTyping(window.lastFaradayTypingId);
                     
+                    // Выводим ответ
                     var aiText = data.message || data.text || '...';
                     appendFaradayAIMsg(feed, aiText);
                     
-                    console.log('[Faraday] Ответ получен и отрисован.');
+                    console.log('[Faraday] Ответ успешно получен!');
                 }
             });
         }, function(error) {
-            console.error('[Faraday] Ошибка листенера:', error.message);
+            console.error('[Faraday] Ошибка доступа к базе:', error.message);
         });
 }
