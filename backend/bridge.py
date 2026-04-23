@@ -243,15 +243,28 @@ def process_queue_doc(doc):
     if chat_type == 'ai':
         ai_reply = get_groq_response(uid, content)
 
-        # Записываем ответ AI в Firestore → фронт покажет мгновенно
+        # Записываем ответ AI так, чтобы любой фронтенд его понял
         try:
+            # 1. Пишем в специальную коллекцию ответов
             db.collection('users').document(uid) \
               .collection('faraday_responses').add({
-                  'text':      ai_reply,
-                  'sender':    'OWNER',
+                  'message':   ai_reply,  # Для совместимости со старым кодом
+                  'text':      ai_reply,  # Для новых версий
+                  'sender':    'AI',       # Помечаем как AI для фронтенда
                   'isAI':      True,
                   'timestamp': fs.SERVER_TIMESTAMP
               })
+
+            # 2. ДУБЛИРУЕМ в общую историю сообщений (чтобы сайт точно увидел)
+            db.collection('users').document(uid) \
+              .collection('messages').add({
+                  'message':   ai_reply,
+                  'email':     'faraday@ai',
+                  'sender':    'AI',
+                  'isAI':      True,
+                  'timestamp': fs.SERVER_TIMESTAMP
+              })
+            log.info(f'[{doc_id[:8]}] Ответ AI успешно записан в Firestore.')
         except Exception as e:
             log.error(f'[{doc_id[:8]}] Ошибка записи ответа AI: {e}')
 
@@ -273,7 +286,7 @@ def process_queue_doc(doc):
     )
     tg_ok = send_telegram(tg_text)
 
-    # ── Шаг 3: сохраняем в историю чата ──────────
+    # ── Шаг 3: сохраняем вопрос пользователя в историю чата ──────────
     try:
         db.collection('users').document(uid) \
           .collection('messages').add({
@@ -285,7 +298,7 @@ def process_queue_doc(doc):
     except Exception as e:
         log.warning(f'[{doc_id[:8]}] history error: {e}')
 
-    # ── Шаг 4: финальный статус ───────────────────
+    # ── Шаг 4: финальный статус документа в очереди ───────────────────
     final_status = 'delivered' if tg_ok else 'error'
     try:
         doc.reference.update({
@@ -296,7 +309,6 @@ def process_queue_doc(doc):
         log.info(f'[{doc_id[:8]}] status → {final_status}')
     except Exception as e:
         log.error(f'[{doc_id[:8]}] status update error: {e}')
-
 
 # ─────────────────────────────────────────────────
 #  СЛУШАТЕЛЬ bridge_queue (Firestore on_snapshot)
