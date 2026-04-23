@@ -283,50 +283,34 @@ function sendFaradayMessage() {
 
     var feed = document.getElementById('faraday-feed');
     appendFaradayUserMsg(feed, text);
-    var tid = appendFaradayTyping(feed);
+    
+    // Создаем анимацию печати и сохраняем её ID глобально, чтобы листенер мог её удалить
+    window.lastFaradayTypingId = appendFaradayTyping(feed);
 
-    // 1. Сначала проверяем, не системная ли это команда (цвет, звук и т.д.)
-    var result = processFaradayCommand(text);
-
-    if (result === null) {
-        // --- ЛОГИКА ДЛЯ GEMINI ---
-        // Если processFaradayCommand вернула null, отправляем запрос в Bridge
+    if (processFaradayCommand(text) === null) {
         if (window.db) {
+            var user = firebase.auth().currentUser;
+            var uid = user ? user.uid : 'guest_session';
+
             window.db.collection('bridge_queue').add({
-                uid: firebase.auth().currentUser ? firebase.auth().currentUser.uid : 'guest_session',
-                email: firebase.auth().currentUser ? firebase.auth().currentUser.email : 'anonymous',
+                uid: uid,
+                email: user ? user.email : 'anonymous',
                 content: text,
-                chatType: 'ai', // Метка для моста, что это запрос к ИИ
+                chatType: 'ai', 
                 status: 'pending',
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(function() {
-                // Мы не удаляем анимацию печати здесь, 
-                // так как ответ придет позже в faraday_responses (через Listener)
-                console.log('Запрос отправлен в ядро Gemini...');
+                console.log('Запрос отправлен в ядро Groq (Llama 3)...');
+                
+                // ЗАПУСКАЕМ СЛУШАТЕЛЯ (если он еще не запущен)
+                if (!window.faradayListenerActive && uid !== 'guest_session') {
+                    startFaradayResponseListener(uid);
+                }
             }).catch(function(err) {
-                removeFaradayTyping(tid);
-                appendFaradayAIMsg(feed, 'Ошибка связи с ядром: ' + err.message);
+                removeFaradayTyping(window.lastFaradayTypingId);
+                appendFaradayAIMsg(feed, 'Ошибка связи: ' + err.message);
             });
-        } else {
-            removeFaradayTyping(tid);
-            appendFaradayAIMsg(feed, 'Критическая ошибка: База данных недоступна.');
         }
-
-    } else if (result && typeof result.then === 'function') {
-        // (Оставим на случай, если остались асинхронные команды)
-        result.then(function(answer) {
-            removeFaradayTyping(tid);
-            appendFaradayAIMsg(feed, answer || '...');
-        }).catch(function() {
-            removeFaradayTyping(tid);
-            appendFaradayAIMsg(feed, 'Ошибка обработки команды.');
-        });
-    } else {
-        // Локальная системная команда выполнена мгновенно
-        setTimeout(function() {
-            removeFaradayTyping(tid);
-            appendFaradayAIMsg(feed, result || 'Система обработала запрос.');
-        }, 500);
     }
 }
 
@@ -511,4 +495,43 @@ function initAIModules() {
             'animation:typingBlink 1.2s ease-in-out infinite;color:var(--accent);}';
         document.head.appendChild(style);
     }
+}
+
+/* ══════════════════════════════════════════════
+   СЛУШАТЕЛЬ ОТВЕТОВ AI (Groq/Bridge)
+══════════════════════════════════════════════ */
+window.faradayListenerActive = false;
+
+function startFaradayResponseListener(uid) {
+    if (!window.db || !uid) return;
+    
+    console.log('[Faraday] Активация прослушки ответов для:', uid.slice(0,5));
+    window.faradayListenerActive = true;
+
+    // Слушаем только новые ответы, созданные ПОСЛЕ запуска скрипта
+    var startTime = firebase.firestore.Timestamp.now();
+
+    window.db.collection('users').document(uid)
+        .collection('faraday_responses')
+        .where('timestamp', '>', startTime)
+        .onSnapshot(function(snapshot) {
+            snapshot.docChanges().forEach(function(change) {
+                if (change.type === 'added') {
+                    var data = change.document.data();
+                    var feed = document.getElementById('faraday-feed');
+                    
+                    // 1. Убираем анимацию "печатает..."
+                    removeFaradayTyping(window.lastFaradayTypingId);
+                    
+                    // 2. Выводим ответ (берем поле message или text)
+                    var aiText = data.message || data.text || '...';
+                    appendFaradayAIMsg(feed, aiText);
+                    
+                    console.log('[Faraday] Ответ получен и отрисован.');
+                }
+            });
+        }, function(error) {
+            console.error('[Faraday] Ошибка листенера:', error.message);
+            // Если видишь эту ошибку — значит правила Firestore всё еще блокируют доступ
+        });
 }
