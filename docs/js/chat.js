@@ -508,10 +508,10 @@ function startFaradayResponseListener(uid) {
     console.log('[Faraday] Активация прослушки ответов для:', uid.slice(0,5));
     window.faradayListenerActive = true;
 
-    // Слушаем только новые ответы, созданные ПОСЛЕ запуска скрипта
     var startTime = firebase.firestore.Timestamp.now();
 
-    window.db.collection('users').document(uid)
+    // ИСПРАВЛЕНО: .doc(uid) вместо .document(uid)
+    window.db.collection('users').doc(uid)
         .collection('faraday_responses')
         .where('timestamp', '>', startTime)
         .onSnapshot(function(snapshot) {
@@ -520,10 +520,8 @@ function startFaradayResponseListener(uid) {
                     var data = change.document.data();
                     var feed = document.getElementById('faraday-feed');
                     
-                    // 1. Убираем анимацию "печатает..."
                     removeFaradayTyping(window.lastFaradayTypingId);
                     
-                    // 2. Выводим ответ (берем поле message или text)
                     var aiText = data.message || data.text || '...';
                     appendFaradayAIMsg(feed, aiText);
                     
@@ -532,6 +530,5 @@ function startFaradayResponseListener(uid) {
             });
         }, function(error) {
             console.error('[Faraday] Ошибка листенера:', error.message);
-            // Если видишь эту ошибку — значит правила Firestore всё еще блокируют доступ
         });
 }
