@@ -1,5 +1,5 @@
 """
-bridge.py — Nitro Hub Bridge v11.0 [Polling + Gemini AI]
+bridge.py — Nitro Hub Bridge v11.1 [Polling + Groq AI]
 Архитектура: Firestore Queue + Telegram Polling (без портов, без Flask)
 
 ═══════════════════════════════════════════════════
@@ -11,7 +11,7 @@ bridge.py — Nitro Hub Bridge v11.0 [Polling + Gemini AI]
    ↓
    on_snapshot ловит pending-документ (проверяет chatType)
    ↓
-   Если chatType == 'ai' → Запрос в Gemini → Запись в faraday_responses
+   Если chatType == 'ai' → Запрос в Groq → Запись в faraday_responses
    ↓
    Отправляем в Telegram владельцу (с меткой ID: {uid})
    ↓
@@ -33,7 +33,6 @@ bridge.py — Nitro Hub Bridge v11.0 [Polling + Gemini AI]
    .venv/bin/python backend/bridge.py
 ═══════════════════════════════════════════════════
 """
-
 import os
 import sys
 import re
@@ -46,7 +45,7 @@ import requests
 import firebase_admin
 from firebase_admin import credentials, firestore
 from dotenv import load_dotenv
-from google import genai  # Новый ИИ Мозг (SDK v2)
+from groq import Groq
 
 # ── Загрузка переменных окружения ────────────────
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -62,22 +61,21 @@ logging.basicConfig(
 )
 log = logging.getLogger('bridge')
 
-# ── Telegram и Gemini credentials ────────────────
+# ── Telegram и Groq credentials ──────────────────
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
 TELEGRAM_CHAT_ID   = os.getenv('TELEGRAM_CHAT_ID', '')
-GOOGLE_API_KEY     = os.getenv('GOOGLE_API_KEY', '')
+GROQ_API_KEY       = os.getenv('GROQ_API_KEY', '')
 
-# ── Глобальные объекты Firebase и AI ─────────────
-db = None
-fs = None 
-client = None
+# ── Глобальные объекты Firebase и Groq ───────────
+db     = None
+fs     = None
+client = None   # Groq client
 
-if GOOGLE_API_KEY:
-    # Инициализация нового клиента Gemini
-    client = genai.Client(
-    api_key=GOOGLE_API_KEY,
-    http_options={'api_version': 'v1'} # Оставляем v1
-)
+if GROQ_API_KEY:
+    log.info(f'Groq: ключ загружен ({GROQ_API_KEY[:8]}…)')
+    client = Groq(api_key=GROQ_API_KEY)
+else:
+    log.warning('Groq: GROQ_API_KEY не задан — AI-ответы недоступны')
 
 # ─────────────────────────────────────────────────
 #  FIREBASE INIT
@@ -100,6 +98,7 @@ def init_firebase():
     except Exception as e:
         log.error(f'Firebase init error: {e}')
         sys.exit(1)
+
 
 # ─────────────────────────────────────────────────
 #  TELEGRAM HELPER (OUTGOING)
@@ -124,6 +123,7 @@ def send_telegram(text: str, chat_id: str = None) -> bool:
         log.error(f'Telegram error: {e}')
         return False
 
+
 # ─────────────────────────────────────────────────
 #  ДОСТАВКА ОТВЕТА НА САЙТ
 # ─────────────────────────────────────────────────
@@ -143,94 +143,126 @@ def deliver_to_site(uid: str, text: str) -> bool:
         log.error(f'deliver_to_site error: {e}')
         return False
 
-# ─────────────────────────────────────────────────
-#  GEMINI AI ИНТЕГРАЦИЯ
-# ─────────────────────────────────────────────────
-FARADAY_SYSTEM_PROMPT = """
-Ты — Faraday AI, высокотехнологичный ИИ ассистент на личном сайте. 
-ТВОИ ПРАВИЛА:
-1. Ты отвечаешь на любые вопросы пользователя, используя свои знания.
-2. НИКОГДА не предлагай пользователю "найти в Википедии" или "погуглить". Ты сам даешь ответы.
-3. Твой стиль: лаконичный, футуристичный, вежливый.
-4. Если тебя спрашивают о твоих командах, перечисли: смену цвета, диагностику, управление голосом и паузу систем.
-5. Ты помогаешь посетителям узнать о проектах владельца и его навыках. Если вопрос касается личных данных владельца, которых у тебя нет — отвечай уклончиво в стиле ИИ. 
-6. Отвечай коротко, не более 2-3 предложений, если не просят подробностей.
-"""
 
-def get_gemini_response(uid: str, user_message: str) -> str:
-    """Генерация ответа через Gemini с учетом истории последних 5 сообщений."""
+# ─────────────────────────────────────────────────
+#  GROQ AI ИНТЕГРАЦИЯ
+# ─────────────────────────────────────────────────
+GROQ_MODEL = 'llama-3.3-70b-versatile'   # меняй здесь при необходимости
+
+FARADAY_SYSTEM_PROMPT = (
+    "Ты — Faraday AI, высокотехнологичный ИИ-ассистент на личном сайте.\n"
+    "ТВОИ ПРАВИЛА:\n"
+    "1. Ты отвечаешь на любые вопросы пользователя, используя свои знания.\n"
+    "2. НИКОГДА не предлагай пользователю 'найти в Википедии' или 'погуглить'. "
+    "Ты сам даёшь ответы.\n"
+    "3. Твой стиль: лаконичный, футуристичный, вежливый.\n"
+    "4. Если тебя спрашивают о командах, перечисли: смену цвета, диагностику, "
+    "управление голосом и паузу систем.\n"
+    "5. Ты помогаешь посетителям узнать о проектах владельца и его навыках. "
+    "Если вопрос касается личных данных владельца, которых у тебя нет — "
+    "отвечай уклончиво в стиле ИИ.\n"
+    "6. Отвечай коротко, не более 2-3 предложений, если не просят подробностей."
+)
+
+
+def get_groq_response(uid: str, user_message: str) -> str:
+    """
+    Генерирует ответ через Groq Chat Completions API.
+    Учитывает последние 5 сообщений пользователя как контекст.
+    """
     if not client:
-        return "Ошибка: GOOGLE_API_KEY не настроен на сервере."
+        return 'Ошибка: GROQ_API_KEY не настроен на сервере.'
+
+    # ── Загружаем историю ────────────────────────
+    messages = [{'role': 'system', 'content': FARADAY_SYSTEM_PROMPT}]
     try:
-        history_ref = db.collection('users').document(uid).collection('messages')
-        history_docs = history_ref.order_by('timestamp', direction=firestore.Query.DESCENDING).limit(5).get()
-        
-        context_parts = [FARADAY_SYSTEM_PROMPT]
-        for d in reversed(history_docs):
-            m = d.to_dict()
-            role = "AI" if m.get('sender') == 'OWNER' else "User"
-            context_parts.append(f"{role}: {m.get('message', '')}")
-        
-        context_parts.append(f"User: {user_message}")
-        full_prompt = "\n".join(context_parts)
-
-        for m in client.models.list():
-            print(f"Доступная модель: {m.name}")
-       # Внутри get_gemini_response:
-        response = client.models.generate_content(
-            model="gemini-2.0-flash-lite", # Убедись, что здесь именно эта строка
-            contents=full_prompt
-            )
-        if response and response.text:
-            return response.text.strip()
-        else:
-            return "Я не смог сформулировать ответ. Попробуйте перефразировать вопрос."
+        history_docs = (
+            db.collection('users').document(uid)
+              .collection('messages')
+              .order_by('timestamp', direction=firestore.Query.DESCENDING)
+              .limit(5)
+              .get()
+        )
+        for doc in reversed(history_docs):
+            m    = doc.to_dict()
+            role = 'assistant' if m.get('sender') == 'OWNER' else 'user'
+            text = m.get('message', '').strip()
+            if text:
+                messages.append({'role': role, 'content': text})
     except Exception as e:
-        log.error(f"Gemini Error: {e}")
-        return "Мои нейронные связи временно перегружены. Попробуйте чуть позже."
+        log.warning(f'Groq: ошибка загрузки истории: {e}')
 
+    # ── Добавляем текущий вопрос ─────────────────
+    messages.append({'role': 'user', 'content': user_message})
+
+    # ── Запрос к Groq ────────────────────────────
+    try:
+        response = client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=messages,
+            temperature=0.7,
+            max_tokens=512,
+        )
+        answer = response.choices[0].message.content.strip()
+        log.info(f'Groq ✓ ({len(answer)} символов)')
+        return answer if answer else 'Я не смог сформулировать ответ. Попробуйте перефразировать вопрос.'
+    except Exception as e:
+        log.error(f'Groq error: {e}')
+        return 'Мои нейронные связи временно перегружены. Попробуйте чуть позже.'
+
+
+# ─────────────────────────────────────────────────
+#  ОБРАБОТКА ДОКУМЕНТА ИЗ bridge_queue
+# ─────────────────────────────────────────────────
 def process_queue_doc(doc):
     doc_id    = doc.id
     data      = doc.to_dict() or {}
     content   = (data.get('content') or data.get('message', '')).strip()
     uid       = data.get('uid', '').strip()
     email     = data.get('email', 'anonymous')
-    chat_type = data.get('chatType', 'direct') # 'ai' или 'direct'
+    chat_type = data.get('chatType', 'direct')  # 'ai' или 'direct'
 
     if not content or not uid:
         log.warning(f'[{doc_id[:8]}] пустой content/uid — пропускаем')
         try:
             doc.reference.update({'status': 'error', 'error': 'empty content or uid'})
-        except Exception: pass
+        except Exception:
+            pass
         return
 
-    log.info(f'[{doc_id[:8]}] [{chat_type.upper()}] обрабатываем: {email} → "{content[:50]}"')
+    log.info(f'[{doc_id[:8]}] [{chat_type.upper()}] {email} → "{content[:50]}"')
 
+    # Атомарная блокировка — защита от двойной отправки
     try:
         doc.reference.update({'status': 'processing'})
     except Exception as e:
         log.error(f'[{doc_id[:8]}] не удалось заблокировать: {e}')
         return
 
-    # Шаг 1.5: Если это запрос к ИИ, генерируем и отправляем ответ
+    # ── Шаг 1: если AI-чат → генерируем ответ через Groq ──
     if chat_type == 'ai':
-        ai_reply = get_gemini_response(uid, content)
-        
-        try:
-            db.collection('users').document(uid).collection('faraday_responses').add({
-                'text': ai_reply,
-                'sender': 'OWNER',
-                'timestamp': fs.SERVER_TIMESTAMP,
-                'isAI': True
-            })
-        except Exception as e:
-            log.error(f'[{doc_id[:8]}] Ошибка записи ответа ИИ в Firestore: {e}')
-        
-        # Уведомляем владельца в Telegram об ответе ИИ
-        ai_tg_text = f"🤖 <b>Faraday AI ответил {email}:</b>\n\n{ai_reply}"
-        send_telegram(ai_tg_text)
+        ai_reply = get_groq_response(uid, content)
 
-    # Шаг 2: отправка оригинала в Telegram
+        # Записываем ответ AI в Firestore → фронт покажет мгновенно
+        try:
+            db.collection('users').document(uid) \
+              .collection('faraday_responses').add({
+                  'text':      ai_reply,
+                  'sender':    'OWNER',
+                  'isAI':      True,
+                  'timestamp': fs.SERVER_TIMESTAMP
+              })
+        except Exception as e:
+            log.error(f'[{doc_id[:8]}] Ошибка записи ответа AI: {e}')
+
+        # Уведомляем владельца в Telegram о диалоге с AI
+        send_telegram(
+            f'🤖 <b>Faraday AI ответил {email}:</b>\n\n'
+            f'<b>Вопрос:</b> {content}\n'
+            f'<b>Ответ:</b> {ai_reply}'
+        )
+
+    # ── Шаг 2: отправляем оригинал в Telegram ────
     tg_text = (
         f'💬 <b>Новое сообщение [{chat_type.upper()}]</b>\n'
         f'👤 {email}\n'
@@ -241,20 +273,19 @@ def process_queue_doc(doc):
     )
     tg_ok = send_telegram(tg_text)
 
-    # Шаг 3: сохраняем в историю чата
-    if db:
-        try:
-            db.collection('users').document(uid) \
-              .collection('messages').add({
-                  'message':   content,
-                  'email':     email,
-                  'sender':    'user',
-                  'timestamp': fs.SERVER_TIMESTAMP
-              })
-        except Exception as e:
-            log.warning(f'[{doc_id[:8]}] Firestore history error: {e}')
+    # ── Шаг 3: сохраняем в историю чата ──────────
+    try:
+        db.collection('users').document(uid) \
+          .collection('messages').add({
+              'message':   content,
+              'email':     email,
+              'sender':    'user',
+              'timestamp': fs.SERVER_TIMESTAMP
+          })
+    except Exception as e:
+        log.warning(f'[{doc_id[:8]}] history error: {e}')
 
-    # Шаг 4: финальный статус
+    # ── Шаг 4: финальный статус ───────────────────
     final_status = 'delivered' if tg_ok else 'error'
     try:
         doc.reference.update({
@@ -266,90 +297,96 @@ def process_queue_doc(doc):
     except Exception as e:
         log.error(f'[{doc_id[:8]}] status update error: {e}')
 
+
 # ─────────────────────────────────────────────────
-processing_ids = set()
+#  СЛУШАТЕЛЬ bridge_queue (Firestore on_snapshot)
+# ─────────────────────────────────────────────────
+processing_ids: set = set()
 
 def start_queue_listener():
     query = db.collection('bridge_queue').where('status', '==', 'pending')
 
     def on_snapshot(col_snapshot, changes, read_time):
         for change in changes:
-            if change.type.name in ('ADDED', 'MODIFIED'):
-                doc = change.document
-                data = doc.to_dict() or {}
-                doc_id = doc.id
+            if change.type.name not in ('ADDED', 'MODIFIED'):
+                continue
+            doc    = change.document
+            data   = doc.to_dict() or {}
+            doc_id = doc.id
 
-                if data.get('status') != 'pending' or doc_id in processing_ids:
-                    continue
+            if data.get('status') != 'pending' or doc_id in processing_ids:
+                continue
 
-                processing_ids.add(doc_id)
+            processing_ids.add(doc_id)
 
-                def run_and_cleanup(d):
-                    try:
-                        process_queue_doc(d)
-                    finally:
-                        time.sleep(2) 
-                        processing_ids.discard(d.id)
+            def run_and_cleanup(d):
+                try:
+                    process_queue_doc(d)
+                finally:
+                    time.sleep(2)
+                    processing_ids.discard(d.id)
 
-                t = threading.Thread(
-                    target=run_and_cleanup,
-                    args=(doc,),
-                    daemon=True,
-                    name=f'queue-{doc_id[:8]}'
-                )
-                t.start()
+            threading.Thread(
+                target=run_and_cleanup,
+                args=(doc,),
+                daemon=True,
+                name=f'queue-{doc_id[:8]}'
+            ).start()
 
     query.on_snapshot(on_snapshot)
     log.info('bridge_queue listener: активен ✓ (защита от дублей включена)')
+
 
 # ─────────────────────────────────────────────────
 #  TELEGRAM POLLING (INCOMING REPLIES)
 # ─────────────────────────────────────────────────
 def run_telegram_polling():
-    import telebot 
+    import telebot
 
     bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 
     @bot.message_handler(func=lambda m: str(m.chat.id) == str(TELEGRAM_CHAT_ID))
     def on_reply(message):
-        text = message.text
-        if not text or not message.reply_to_message:
+        if not message.text or not message.reply_to_message:
             return
 
-        reply_text = message.reply_to_message.text or ""
-        
+        reply_text    = message.reply_to_message.text or ''
         recipient_uid = None
-        m = re.search(r'ID: ([a-zA-Z0-9]{20,})', reply_text)
-        if not m:
-            m = re.search(r'🆔 ([a-zA-Z0-9]{20,})', reply_text)
-            
-        if m:
-            recipient_uid = m.group(1).strip()
-            ok = deliver_to_site(recipient_uid, text)
+
+        # Ищем UID сначала по метке ID:, потом по эмодзи 🆔
+        for pattern in (r'ID: ([a-zA-Z0-9]{20,})', r'🆔 ([a-zA-Z0-9]{20,})'):
+            m = re.search(pattern, reply_text)
+            if m:
+                recipient_uid = m.group(1).strip()
+                break
+
+        if recipient_uid:
+            ok = deliver_to_site(recipient_uid, message.text)
+            log.info(f'TG reply → {recipient_uid[:8]}… | {"OK" if ok else "FAIL"}')
             if ok:
-                log.info(f'TG reply → {recipient_uid[:8]}… | OK')
-                bot.reply_to(message, "✅ Ответ доставлен")
-            else:
-                log.warning(f'TG reply → {recipient_uid[:8]}… | FAIL')
+                bot.reply_to(message, '✅ Ответ доставлен на сайт')
         else:
             log.warning('TG polling: UID не найден в исходном сообщении')
+            bot.reply_to(message, '⚠️ Используйте Reply на сообщение пользователя')
 
     log.info('Telegram Polling: активен ✓ (ожидаю Reply)')
-    bot.infinity_polling()
+    bot.infinity_polling(timeout=20, long_polling_timeout=15)
+
 
 # ─────────────────────────────────────────────────
 #  ТОЧКА ВХОДА
 # ─────────────────────────────────────────────────
 if __name__ == '__main__':
     log.info('══════════════════════════════════════')
-    log.info('  Nitro Hub Bridge v11.0 [Gemini Edition] ')
+    log.info('  Nitro Hub Bridge v11.1 [Groq Edition]')
+    log.info(f' Model: {GROQ_MODEL}')
     log.info('══════════════════════════════════════')
 
     init_firebase()
     start_queue_listener()
-    
+
     try:
-        run_telegram_polling()
+        run_telegram_polling()   # блокирует главный поток
     except KeyboardInterrupt:
         log.info('Bridge остановлен пользователем.')
     except Exception as e:
