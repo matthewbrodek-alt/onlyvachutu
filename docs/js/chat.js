@@ -24,16 +24,6 @@
    auth.js записывает в localStorage Firebase Anonymous UID.
    Эта функция читает его, либо возвращает fallback.
 ══════════════════════════════════════════════ */
-function getOrCreateGuestId() {
-    var key = 'faraday_guest_id';
-    var id  = null;
-    try { id = localStorage.getItem(key); } catch(e) {}
-    if (id) return id;
-    // Fallback: если Anonymous Auth не успел — генерируем временный ID
-    id = 'guest_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
-    try { localStorage.setItem(key, id); } catch(e) {}
-    return id;
-}
 
 /* ══════════════════════════════════════════════
    EMOJI — только для личного чата
@@ -300,10 +290,19 @@ function sendFaradayMessage() {
         if (window.db) {
             var user = window.auth && window.auth.currentUser;
 
-            // FIX: используем uid из Anonymous Auth (сохранён в localStorage)
-            // Больше не передаём 'guest_session' — у каждого гостя уникальный firebase uid
-            var uid   = user ? user.uid : getOrCreateGuestId();
-            var email = (user && !user.isAnonymous) ? user.email : 'guest';
+            // КРИТИЧЕСКИЙ FIX: Если Firebase еще не успел авторизовать гостя
+            if (!user) {
+                console.warn('[Faraday] Ожидание авторизации...');
+                setTimeout(function() {
+                    // Пробуем отправить еще раз через 500мс, если вход затянулся
+                    sendFaradayMessageDelayed(text);
+                }, 500);
+                return;
+            }
+
+            // Используем ТОЛЬКО настоящий UID (анонимный или email)
+            var uid   = user.uid;
+            var email = (!user.isAnonymous) ? user.email : 'guest';
 
             window.db.collection('bridge_queue').add({
                 uid:       uid,
@@ -313,8 +312,7 @@ function sendFaradayMessage() {
                 status:    'pending',
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(function() {
-                console.log('[Faraday] Запрос отправлен в ядро Groq (Llama 3)…');
-                // FIX: запускаем слушатель для гостей тоже (убрана проверка !== 'guest_session')
+                console.log('[Faraday] Запрос отправлен. UID:', uid.slice(0, 8));
                 if (!window.faradayListenerActive) {
                     startFaradayResponseListener(uid);
                 }
@@ -323,6 +321,15 @@ function sendFaradayMessage() {
                 appendFaradayAIMsg(feed, 'Ошибка связи: ' + err.message);
             });
         }
+    }
+}
+
+// Вспомогательная функция, чтобы не терять сообщение при лаге авторизации
+function sendFaradayMessageDelayed(text) {
+    var input = document.getElementById('faraday-input');
+    if (input) {
+        input.value = text;
+        sendFaradayMessage();
     }
 }
 
