@@ -275,6 +275,9 @@ window.onerror = function(message, source, lineno) {
    FARADAY AI ЧАТ
    FIX: работает для гостей (Anonymous Auth uid) и авторизованных
 ══════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════
+   ОТПРАВКА СООБЩЕНИЯ (v11.2 Optimized)
+════════════════════════════════════════════════ */
 function sendFaradayMessage() {
     var input = document.getElementById('faraday-input');
     if (!input) return;
@@ -290,17 +293,15 @@ function sendFaradayMessage() {
         if (window.db) {
             var user = window.auth && window.auth.currentUser;
 
-            // КРИТИЧЕСКИЙ FIX: Если Firebase еще не успел авторизовать гостя
+            // Если Firebase еще не выдал UID (анонимный вход в процессе)
             if (!user) {
                 console.warn('[Faraday] Ожидание авторизации...');
                 setTimeout(function() {
-                    // Пробуем отправить еще раз через 500мс, если вход затянулся
                     sendFaradayMessageDelayed(text);
                 }, 500);
                 return;
             }
 
-            // Используем ТОЛЬКО настоящий UID (анонимный или email)
             var uid   = user.uid;
             var email = (!user.isAnonymous) ? user.email : 'guest';
 
@@ -313,6 +314,9 @@ function sendFaradayMessage() {
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(function() {
                 console.log('[Faraday] Запрос отправлен. UID:', uid.slice(0, 8));
+                
+                /* ВАЖНО: Мы запускаем слушатель только если его нет. 
+                   Если UID изменится, auth.js сам его перезапустит. */
                 if (!window.faradayListenerActive) {
                     startFaradayResponseListener(uid);
                 }
@@ -321,6 +325,15 @@ function sendFaradayMessage() {
                 appendFaradayAIMsg(feed, 'Ошибка связи: ' + err.message);
             });
         }
+    }
+}
+
+/* Вспомогательная функция, чтобы сообщение не пропадало при лаге входа */
+function sendFaradayMessageDelayed(text) {
+    var input = document.getElementById('faraday-input');
+    if (input) {
+        input.value = text;
+        sendFaradayMessage();
     }
 }
 
@@ -514,38 +527,58 @@ function initAIModules() {
    FIX: работает для гостей (anonymous uid) и авторизованных
    FIX: повторный вызов не создаёт дублирующий слушатель
 ══════════════════════════════════════════════ */
-window.faradayListenerActive = false;
+// Эти переменные должны быть объявлены в самом верху chat.js или перед функцией
+var faradayListenerActive = false;
+var faradayUnsubscribe = null; 
 
 function startFaradayResponseListener(uid) {
     if (!window.db || !uid) return;
-    if (window.faradayListenerActive) return;
 
-    console.log('[Faraday] Listener → faraday_history:', uid.slice(0, 8));
+    // ШАГ 1: Если кто-то уже слушает (например, гость), закрываем старое соединение
+    if (typeof faradayUnsubscribe === 'function') {
+        console.log('[Faraday] Остановка предыдущего слушателя...');
+        faradayUnsubscribe();
+        faradayUnsubscribe = null;
+    }
+
+    console.log('[Faraday] Запуск слушателя → faraday_history:', uid.slice(0, 8));
     window.faradayListenerActive = true;
 
     var startTime = firebase.firestore.Timestamp.now();
 
-    // FIX: слушает faraday_history — новый путь для AI-диалогов
-    window.db.collection('users').doc(uid)
+    // ШАГ 2: Создаем новую подписку и сохраняем её в faradayUnsubscribe
+    faradayUnsubscribe = window.db.collection('users').doc(uid)
         .collection('faraday_history')
         .where('timestamp', '>', startTime)
         .onSnapshot(function(snapshot) {
             snapshot.docChanges().forEach(function(change) {
+                // Нас интересуют только новые документы
                 if (change.type !== 'added') return;
+                
                 var data = change.doc.data();
-                // Показываем только AI-ответы (не эхо вопросов пользователя)
+                
+                // Проверяем, что это ответ от нейросети, а не наш вопрос
                 if (data.sender !== 'AI') return;
 
                 var feed = document.getElementById('faraday-feed');
-                removeFaradayTyping(window.lastFaradayTypingId);
+                
+                // Убираем анимацию "печатает..."
+                if (typeof removeFaradayTyping === 'function') {
+                    removeFaradayTyping(window.lastFaradayTypingId);
+                }
 
                 var aiText = data.message || data.text || '...';
-                appendFaradayAIMsg(feed, aiText);
+                
+                // Выводим сообщение в чат
+                if (typeof appendFaradayAIMsg === 'function') {
+                    appendFaradayAIMsg(feed, aiText);
+                }
 
-                console.log('[Faraday] Ответ получен из faraday_history');
+                console.log('[Faraday] Ответ успешно получен из Firestore');
             });
         }, function(error) {
-            console.error('[Faraday] Ошибка доступа к faraday_history:', error.message);
+            // Если возникла ошибка (например, разлогинились), сбрасываем флаг
+            console.error('[Faraday] Ошибка слушателя:', error.message);
             window.faradayListenerActive = false;
         });
 }

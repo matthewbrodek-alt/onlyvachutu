@@ -184,34 +184,46 @@ function updateAuthUI(user) {
    AUTH STATE OBSERVER
    FIX: анонимный вход для гостей Faraday AI
 ════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════
+   AUTH STATE OBSERVER (v11.2 Optimized)
+════════════════════════════════════════════════ */
 window.auth.onAuthStateChanged(function(user) {
     if (!user) {
-        /* Нет пользователя — автоматически входим анонимно.
-           Это даёт гостю реальный Firebase UID без email/пароля.
-           onAuthStateChanged сработает снова с anonymous user. */
+        // Сбрасываем флаги при выходе, чтобы при следующем входе всё запустилось чисто
+        window.faradayListenerActive = false;
+        window.currentFaradayUid = null; 
+        
         window.auth.signInAnonymously().catch(function(e) {
             console.warn('[Auth] Anonymous sign-in failed:', e.code);
         });
         return;
     }
 
+    // 1. Управление ID и UI
     if (user.isAnonymous) {
-        /* Гость Faraday AI: сохраняем uid в localStorage как guest_id.
-           Personal Support UI не показываем. */
         try { localStorage.setItem('faraday_guest_id', user.uid); } catch(e) {}
-        updateAuthUI(null);  // nav показывает "не вошли"
+        updateAuthUI(null); 
     } else {
-        /* Полноценный пользователь — Personal Support доступен */
         try { localStorage.removeItem('faraday_guest_id'); } catch(e) {}
         updateAuthUI(user);
     }
 
-    /* Faraday AI слушатель запускается для ВСЕХ (гость и авторизованный).
-       Реализован в chat.js через startFaradayResponseListener(). */
-    if (!window.faradayListenerActive && typeof startFaradayResponseListener === 'function') {
+    // 2. ПЕРЕЗАПУСК СЛУШАТЕЛЯ (Ничего не теряем)
+    // Проверяем: либо слушатель не запущен, либо UID пользователя изменился (вошли в профиль)
+    var isNewUser = (window.currentFaradayUid !== user.uid);
+    var canStart  = (typeof startFaradayResponseListener === 'function');
+
+    if ((!window.faradayListenerActive || isNewUser) && canStart) {
+        console.log('[Auth] Запуск слушателя для UID:', user.uid.slice(0, 5));
+        
+        // Запоминаем текущий UID, чтобы не плодить лишних слушателей
+        window.currentFaradayUid = user.uid;
+        window.faradayListenerActive = true;
+        
         startFaradayResponseListener(user.uid);
     }
 
+    // 3. Инициализация ядра (однократно)
     if (window._faradayCoreInited) return;
     window._faradayCoreInited = true;
     if (typeof initFaradayCore === 'function') initFaradayCore();
@@ -284,30 +296,7 @@ function handleLogout() {
     });
 }
 
-/* ════════════════════════════════════════════════
-   СМЕНА EMAIL С ВЕРИФИКАЦИЕЙ
-════════════════════════════════════════════════ */
-async function changeUserEmail(newEmail) {
-    var user = window.auth.currentUser;
 
-    if (!user || user.isAnonymous) {
-        alert("Только зарегистрированные пользователи могут менять email.");
-        return;
-    }
-
-    try {
-        // Отправляем письмо на новый адрес
-        await user.verifyBeforeUpdateEmail(newEmail);
-        alert("Запрос отправлен! Проверьте почту " + newEmail + " для подтверждения.");
-    } catch (err) {
-        console.error("Ошибка смены email:", err.code);
-        if (err.code === 'auth/requires-recent-login') {
-            alert("Для защиты аккаунта нужно перезайти в систему перед сменой email.");
-        } else {
-            alert(err.message);
-        }
-    }
-}
 
 /* ── analyzeCurrentContext ── */
 function analyzeCurrentContext(projectId) {
