@@ -233,31 +233,44 @@ async function handleLoginModal() {
 
 async function _doLogin(email, pass) {
     if (!email || !pass) return;
-    var currentUser = window.auth.currentUser;
-    var credential  = firebase.auth.EmailAuthProvider.credential(email, pass);
+
+    var auth = window.auth;
+    var currentUser = auth.currentUser;
+    var credential = firebase.auth.EmailAuthProvider.credential(email, pass);
 
     try {
-        if (currentUser && currentUser.isAnonymous) {
-            /* FIX: linkWithCredential сохраняет uid анонимного пользователя.
-               Вся история faraday_history гостя остаётся доступной. */
-            await currentUser.linkWithCredential(credential);
-        } else {
-            await window.auth.signInWithEmailAndPassword(email, pass);
-        }
-    } catch(err) {
-        if (err.code === 'auth/email-already-in-use') {
-            /* Аккаунт с этим email уже существует — просто входим.
-               История анонимного гостя останется в его uid (не мержится). */
-            try { await window.auth.signInWithEmailAndPassword(email, pass); }
-            catch(ce) { alert(ce.message); }
-        } else {
-            var CODES = ['auth/user-not-found', 'auth/invalid-credential', 'auth/wrong-password'];
-            if (CODES.includes(err.code)) {
-                try { await window.auth.createUserWithEmailAndPassword(email, pass); }
-                catch(ce) { alert(ce.message); }
-            } else {
-                alert(err.message);
+        /* ШАГ 1: Сначала пробуем просто войти. 
+           Если аккаунт уже есть, это самый быстрый способ. */
+        await auth.signInWithEmailAndPassword(email, pass);
+        console.log('[Auth] Вход выполнен. Сессия обновлена.');
+
+    } catch (err) {
+        /* ШАГ 2: Если вход не удался, проверяем причину.
+           Если пользователя нет — значит, это регистрация. */
+        var isNotFound = (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential');
+
+        if (isNotFound) {
+            try {
+                if (currentUser && currentUser.isAnonymous) {
+                    /* Пытаемся превратить анонимного гостя в постоянного пользователя.
+                       Это сохранит его UID и историю переписки с Фарадеем. */
+                    await currentUser.linkWithCredential(credential);
+                    console.log('[Auth] Гость успешно привязан к email.');
+                } else {
+                    /* Если анонимного сеанса нет, просто создаем новый аккаунт. */
+                    await auth.createUserWithEmailAndPassword(email, pass);
+                }
+            } catch (createErr) {
+                /* Если пока мы пытались, email уже кто-то занял (редкий случай) */
+                if (createErr.code === 'auth/email-already-in-use') {
+                    await auth.signInWithEmailAndPassword(email, pass);
+                } else {
+                    alert("Ошибка при создании: " + createErr.message);
+                }
             }
+        } else {
+            /* Ошибка пароля или блокировка — выводим сообщение пользователю */
+            alert("Ошибка: " + err.message);
         }
     }
 }
@@ -269,6 +282,31 @@ function handleLogout() {
     window.auth.signOut().catch(function(e) {
         console.error('[Auth] Logout:', e);
     });
+}
+
+/* ════════════════════════════════════════════════
+   СМЕНА EMAIL С ВЕРИФИКАЦИЕЙ
+════════════════════════════════════════════════ */
+async function changeUserEmail(newEmail) {
+    var user = window.auth.currentUser;
+
+    if (!user || user.isAnonymous) {
+        alert("Только зарегистрированные пользователи могут менять email.");
+        return;
+    }
+
+    try {
+        // Отправляем письмо на новый адрес
+        await user.verifyBeforeUpdateEmail(newEmail);
+        alert("Запрос отправлен! Проверьте почту " + newEmail + " для подтверждения.");
+    } catch (err) {
+        console.error("Ошибка смены email:", err.code);
+        if (err.code === 'auth/requires-recent-login') {
+            alert("Для защиты аккаунта нужно перезайти в систему перед сменой email.");
+        } else {
+            alert(err.message);
+        }
+    }
 }
 
 /* ── analyzeCurrentContext ── */
