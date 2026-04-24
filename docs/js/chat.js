@@ -1,27 +1,39 @@
 /* ════════════════════════════════════════════════
-   chat.js — Два независимых чата. v9.0 Queue Mode
+   chat.js — Два независимых чата. v11.2 Hybrid Mode
 
-   ┌─ ЛИЧНЫЙ ЧАТ ────────────────────────────────┐
-   │  sendPersonalMessage()                        │
-   │  → bridge_queue (Firestore, status:pending)  │  ← НОВЫЙ путь
-   │  bridge.py подхватывает через on_snapshot    │
-   │  → Telegram (уведомление владельцу)          │
-   │  → users/{uid}/messages (история)            │
-   │                                               │
-   │  Ответ из Telegram:                           │
-   │  /api/telegram-webhook → bridge.py           │
-   │  → users/{uid}/faraday_responses             │
-   │  → auth.js on_snapshot → chat-window         │
+   ┌─ FARADAY AI (публичный) ────────────────────┐
+   │  sendFaradayMessage()                         │
+   │  Гости: getOrCreateGuestId() → guest uid     │  ← FIX: не guest_session
+   │  → bridge_queue (chatType: 'ai')             │
+   │  bridge.py → Groq → faraday_history          │
+   │  startFaradayResponseListener(uid)           │  ← слушает faraday_history
    └─────────────────────────────────────────────┘
 
-   ┌─ FARADAY AI ────────────────────────────────┐
-   │  sendFaradayMessage()                         │
-   │  → processFaradayCommand() — только локально│
-   │  → Wikipedia / DDG поиск                     │
-   │  → TTS                                       │
-   │  Telegram НЕ задействован.                   │
+   ┌─ PERSONAL SUPPORT (приватный) ──────────────┐
+   │  sendPersonalMessage()                        │
+   │  → bridge_queue (chatType: 'direct')         │  ← FIX: явная метка
+   │  bridge.py → Telegram → ручной ответ         │
+   │  → users/{uid}/faraday_responses             │
+   │  → auth.js onSnapshot → chat-window          │
    └─────────────────────────────────────────────┘
 ════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════
+   GUEST ID — генерация и хранение в localStorage
+   FIX: заменяет 'guest_session' — у каждого гостя уникальный ID.
+   auth.js записывает в localStorage Firebase Anonymous UID.
+   Эта функция читает его, либо возвращает fallback.
+══════════════════════════════════════════════ */
+function getOrCreateGuestId() {
+    var key = 'faraday_guest_id';
+    var id  = null;
+    try { id = localStorage.getItem(key); } catch(e) {}
+    if (id) return id;
+    // Fallback: если Anonymous Auth не успел — генерируем временный ID
+    id = 'guest_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+    try { localStorage.setItem(key, id); } catch(e) {}
+    return id;
+}
 
 /* ══════════════════════════════════════════════
    EMOJI — только для личного чата
@@ -32,10 +44,9 @@ function addEmoji(inputId, emoji) {
 }
 
 /* ══════════════════════════════════════════════
-   ЛИЧНЫЙ МЕССЕНДЖЕР
-   v9.0: пишем в bridge_queue (Firestore).
-   bridge.py подхватит через on_snapshot.
-   Без fetch, без HTTP, без CORS-проблем.
+   ЛИЧНЫЙ МЕССЕНДЖЕР (Personal Support)
+   FIX: добавлена явная метка chatType: 'direct'
+   bridge.py использует её для разделения потоков
 ══════════════════════════════════════════════ */
 function sendPersonalMessage(inputId, windowId) {
     var input  = document.getElementById(inputId  || 'chat-msg');
@@ -44,29 +55,30 @@ function sendPersonalMessage(inputId, windowId) {
     var text = input.value.trim();
     if (!text) return;
 
-    if (!window.auth || !window.auth.currentUser) {
+    if (!window.auth || !window.auth.currentUser || window.auth.currentUser.isAnonymous) {
         alert('Сначала войдите в систему');
         return;
     }
-    var user  = window.auth.currentUser;
+    var user = window.auth.currentUser;
     input.value = '';
 
-    /* Оптимистичный рендер — сразу показываем */
     appendMessage(feedEl, text, 'sent');
 
-    /* Пишем в bridge_queue — bridge.py заберёт через on_snapshot */
     if (!window.db) {
         console.error('[Chat] Firestore не инициализирован');
         return;
     }
+
+    // FIX: chatType: 'direct' — bridge.py направит только в Telegram, без Groq
     window.db.collection('bridge_queue').add({
         content:   text,
         uid:       user.uid,
         email:     user.email || 'anonymous',
+        chatType:  'direct',
         status:    'pending',
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
     }).then(function(ref) {
-        console.log('[Queue] Добавлено:', ref.id.slice(0, 8) + '…');
+        console.log('[Queue] Personal:', ref.id.slice(0, 8) + '…');
     }).catch(function(err) {
         console.error('[Queue] Ошибка записи:', err.message);
         appendMessage(feedEl, '⚠️ Ошибка отправки. Проверьте подключение.', 'received');
@@ -229,7 +241,7 @@ function runSelfEvolution() {
                 experience_points:  exp,
                 last_sync:          new Date().toLocaleString()
             };
-            var saveRef = user
+            var saveRef = (user && !user.isAnonymous)
                 ? window.db.collection('users').doc(user.uid)
                            .collection('faraday_core').doc('state')
                 : null;
@@ -271,8 +283,7 @@ window.onerror = function(message, source, lineno) {
 
 /* ══════════════════════════════════════════════
    FARADAY AI ЧАТ
-   Изолирован от Telegram и личного мессенджера.
-   Стикеры убраны из поля ввода.
+   FIX: работает для гостей (Anonymous Auth uid) и авторизованных
 ══════════════════════════════════════════════ */
 function sendFaradayMessage() {
     var input = document.getElementById('faraday-input');
@@ -283,27 +294,28 @@ function sendFaradayMessage() {
 
     var feed = document.getElementById('faraday-feed');
     appendFaradayUserMsg(feed, text);
-    
-    // Создаем анимацию печати и сохраняем её ID глобально, чтобы листенер мог её удалить
     window.lastFaradayTypingId = appendFaradayTyping(feed);
 
     if (processFaradayCommand(text) === null) {
         if (window.db) {
-            var user = firebase.auth().currentUser;
-            var uid = user ? user.uid : 'guest_session';
+            var user = window.auth && window.auth.currentUser;
+
+            // FIX: используем uid из Anonymous Auth (сохранён в localStorage)
+            // Больше не передаём 'guest_session' — у каждого гостя уникальный firebase uid
+            var uid   = user ? user.uid : getOrCreateGuestId();
+            var email = (user && !user.isAnonymous) ? user.email : 'guest';
 
             window.db.collection('bridge_queue').add({
-                uid: uid,
-                email: user ? user.email : 'anonymous',
-                content: text,
-                chatType: 'ai', 
-                status: 'pending',
+                uid:       uid,
+                email:     email,
+                content:   text,
+                chatType:  'ai',
+                status:    'pending',
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(function() {
-                console.log('Запрос отправлен в ядро Groq (Llama 3)...');
-                
-                // ЗАПУСКАЕМ СЛУШАТЕЛЯ (если он еще не запущен)
-                if (!window.faradayListenerActive && uid !== 'guest_session') {
+                console.log('[Faraday] Запрос отправлен в ядро Groq (Llama 3)…');
+                // FIX: запускаем слушатель для гостей тоже (убрана проверка !== 'guest_session')
+                if (!window.faradayListenerActive) {
                     startFaradayResponseListener(uid);
                 }
             }).catch(function(err) {
@@ -314,7 +326,6 @@ function sendFaradayMessage() {
     }
 }
 
-// Эту функцию оставляем как есть, она работает отлично
 function faradayQuick(cmd) {
     var input = document.getElementById('faraday-input');
     if (input) input.value = cmd;
@@ -327,10 +338,9 @@ function processFaradayCommand(text) {
     var hudSt = document.getElementById('hud-status');
     var pill = document.getElementById('faraday-hud-status-badge');
     var feed = document.getElementById('faraday-feed');
-    
+
     function setHUD(msg) { if (hudSt) hudSt.innerText = msg; }
 
-    /* 1. УПРАВЛЕНИЕ ГОЛОСОМ (TTS) */
     if (t.includes('замолчи') || t.includes('тихо') || t.includes('mute')) {
         faradayTTSEnabled = false;
         window.speechSynthesis && window.speechSynthesis.cancel();
@@ -343,7 +353,6 @@ function processFaradayCommand(text) {
         return 'Голосовой вывод активирован.';
     }
 
-    /* 2. ЦВЕТ АКЦЕНТА */
     var colorMap = {
         'синий':'#0077ff','blue':'#0077ff',
         'красный':'#ff4444','red':'#ff4444',
@@ -363,7 +372,6 @@ function processFaradayCommand(text) {
         return 'Акцент изменён на ' + color + '.';
     }
 
-    /* 3. ПАУЗА / ЗАПУСК СИСТЕМ */
     if (t.includes('пауза') || t.includes('стоп') || t.includes('pause') || t.includes('stop')) {
         window.faradaySystemPaused = true;
         var v = document.getElementById('bg-video');
@@ -381,7 +389,6 @@ function processFaradayCommand(text) {
         return 'Все системы запущены.';
     }
 
-    /* 4. ДИАГНОСТИКА И СИНХРОНИЗАЦИЯ */
     if (t.includes('статус') || t.includes('status')) {
         return 'Система: ' + (window.faradaySystemPaused ? 'ПАУЗА' : 'АКТИВНА') +
                '. Firebase: OK. TTS: ' + (faradayTTSEnabled ? 'ON' : 'OFF') + '.';
@@ -391,17 +398,15 @@ function processFaradayCommand(text) {
         return 'Запуск диагностики систем Bridge...';
     }
 
-    /* 5. ПОМОЩЬ */
     if (t.includes('помощь') || t.includes('help') || t.includes('команды')) {
         return '⚡ СИСТЕМНЫЕ КОМАНДЫ:\n' +
                '• «смени цвет на [цвет]»\n' +
                '• «пауза» / «запуск»\n' +
                '• «статус» / «диагностика»\n' +
                '• «замолчи» / «говори»\n' +
-               'Все остальные вопросы обрабатываются ИИ-ядром Gemini.';
+               'Все остальные вопросы обрабатываются ИИ-ядром.';
     }
 
-    /* ВАЖНО: Если это не команда — возвращаем null, чтобы сработал Gemini */
     setHUD('SYSTEM: ACTIVE');
     return null;
 }
@@ -479,7 +484,6 @@ function startVoiceCommand() {
 
 /* ══════════════════════════════════════════════
    ЗАПУСК AI-МОДУЛЕЙ
-   Вызывается из app.js → initFaradayCore()
 ══════════════════════════════════════════════ */
 function initAIModules() {
     if (window.speechSynthesis) window.speechSynthesis.getVoices();
@@ -498,42 +502,43 @@ function initAIModules() {
 }
 
 /* ══════════════════════════════════════════════
-   СЛУШАТЕЛЬ ОТВЕТОВ AI (Groq/Bridge)
+   СЛУШАТЕЛЬ ОТВЕТОВ AI — Faraday AI
+   FIX: слушает faraday_history (не faraday_responses)
+   FIX: работает для гостей (anonymous uid) и авторизованных
+   FIX: повторный вызов не создаёт дублирующий слушатель
 ══════════════════════════════════════════════ */
 window.faradayListenerActive = false;
 
-/* ══════════════════════════════════════════════
-   СЛУШАТЕЛЬ ОТВЕТОВ AI (Groq/Bridge)
-══════════════════════════════════════════════ */
 function startFaradayResponseListener(uid) {
     if (!window.db || !uid) return;
-    
-    console.log('[Faraday] Активация прослушки ответов для:', uid.slice(0,5));
+    if (window.faradayListenerActive) return;
+
+    console.log('[Faraday] Listener → faraday_history:', uid.slice(0, 8));
     window.faradayListenerActive = true;
 
     var startTime = firebase.firestore.Timestamp.now();
 
+    // FIX: слушает faraday_history — новый путь для AI-диалогов
     window.db.collection('users').doc(uid)
-        .collection('faraday_responses')
+        .collection('faraday_history')
         .where('timestamp', '>', startTime)
         .onSnapshot(function(snapshot) {
             snapshot.docChanges().forEach(function(change) {
-                if (change.type === 'added') {
-                    // ИСПРАВЛЕНО: используем .doc вместо .document
-                    var data = change.doc.data(); 
-                    var feed = document.getElementById('faraday-feed');
-                    
-                    // Убираем анимацию "печатает..."
-                    removeFaradayTyping(window.lastFaradayTypingId);
-                    
-                    // Выводим ответ
-                    var aiText = data.message || data.text || '...';
-                    appendFaradayAIMsg(feed, aiText);
-                    
-                    console.log('[Faraday] Ответ успешно получен!');
-                }
+                if (change.type !== 'added') return;
+                var data = change.doc.data();
+                // Показываем только AI-ответы (не эхо вопросов пользователя)
+                if (data.sender !== 'AI') return;
+
+                var feed = document.getElementById('faraday-feed');
+                removeFaradayTyping(window.lastFaradayTypingId);
+
+                var aiText = data.message || data.text || '...';
+                appendFaradayAIMsg(feed, aiText);
+
+                console.log('[Faraday] Ответ получен из faraday_history');
             });
         }, function(error) {
-            console.error('[Faraday] Ошибка доступа к базе:', error.message);
+            console.error('[Faraday] Ошибка доступа к faraday_history:', error.message);
+            window.faradayListenerActive = false;
         });
 }

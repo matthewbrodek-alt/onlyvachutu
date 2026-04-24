@@ -1,0 +1,88 @@
+// firestore.rules — Nitro Hub v11.2 (Hybrid Chat)
+// ══════════════════════════════════════════════════════
+// СХЕМА ДОСТУПА:
+//
+// Faraday AI (публичный):
+//   Гости = Firebase Anonymous Auth (автоматический вход)
+//   users/{uid}/faraday_history — чтение для auth (включая anon)
+//   bridge_queue — запись для auth (включая anon)
+//
+// Personal Support (приватный):
+//   Только email/password авторизованные (не isAnonymous)
+//   users/{uid}/messages — read/write
+//   users/{uid}/faraday_responses — read (запись через Admin SDK)
+//
+// CRM leads — только Admin SDK (bridge.py)
+// ══════════════════════════════════════════════════════
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Faraday AI History (публичный AI-чат) ──────────────────────────
+    // Читает: любой авторизованный (включая anonymous / гостей)
+    // Пишет: только Admin SDK (bridge.py через get_groq_response)
+    match /users/{userId}/faraday_history/{doc} {
+      allow read: if request.auth != null
+                  && request.auth.uid == userId;
+      allow write: if false;  // только Admin SDK
+    }
+
+    // ── Personal Support: история исходящих сообщений ──────────────────
+    // Только полноценные пользователи (не anonymous)
+    match /users/{userId}/messages/{doc} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == userId
+                         && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    // ── Personal Support: ответы владельца из Telegram ─────────────────
+    // Читает: полноценный пользователь (не anonymous)
+    // Пишет: только Admin SDK (bridge.py → deliver_to_site)
+    match /users/{userId}/faraday_responses/{doc} {
+      allow read: if request.auth != null
+                  && request.auth.uid == userId
+                  && request.auth.token.firebase.sign_in_provider != 'anonymous';
+      allow write: if false;  // только Admin SDK
+    }
+
+    // ── Прочие подколлекции пользователя ───────────────────────────────
+    match /users/{userId}/faraday_core/{doc} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == userId;
+    }
+
+    // ── Очередь сообщений bridge_queue ─────────────────────────────────
+    // Создаёт: любой авторизованный (гость anonymous или email/password)
+    // Читает и обновляет: только Admin SDK (bridge.py)
+    match /bridge_queue/{docId} {
+      allow create: if request.auth != null;
+      allow read, update, delete: if false;
+    }
+
+    // ── CRM Лиды ───────────────────────────────────────────────────────
+    // Только Admin SDK (bridge.py → log_crm_lead)
+    match /leads/{docId} {
+      allow read, write: if false;
+    }
+
+    // ── Системные конфиги (ui_theme, протоколы) ────────────────────────
+    match /system_config/{docId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+                   && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    // ── Faraday Memory (саморазвитие, память) ──────────────────────────
+    match /faraday_memory/{docId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // ── Манифесты проектов ─────────────────────────────────────────────
+    match /project_manifests/{docId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+                   && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+  }
+}

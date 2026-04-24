@@ -1,0 +1,11 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "faraday_history",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    }
+  ]
+}
