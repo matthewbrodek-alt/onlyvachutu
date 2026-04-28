@@ -231,48 +231,53 @@
             <h2 class="nitro-glow" data-lang="nav_projects">Мои проекты</h2>
         </div>
         <div class="projects-grid">
-            <div class="projects-grid">
-                <div class="card project-card">
-                    <a href="https://animated-capybara-7712ab.netlify.app" target="_blank" rel="noopener noreferrer" class="project-preview-link">
-                        <div class="project-screenshot-container">
-                            <iframe src="https://animated-capybara-7712ab.netlify.app" 
-                                    style="width: 400%; height: 960px; transform: scale(0.25); transform-origin: 0 0; pointer-events: none;">
-                            </iframe>
-                            
-                            <div class="project-screenshot-overlay">
-                                <span data-lang="open_site">Открыть сайт ➔</span>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            
-                <div class="card project-card">
-                    <a href="https://matthewbrodek-alt.github.io/new-project/#team" target="_blank" rel="noopener noreferrer" class="project-preview-link">
-                        <div class="project-screenshot-container">
-                            <iframe src="https://matthewbrodek-alt.github.io/new-project/#team" 
-                                    loading="lazy"
-                                    style="width: 400%; height: 960px; transform: scale(0.25); transform-origin: 0 0; pointer-events: none;">
-                            </iframe>
-                            
-                            <div class="project-screenshot-overlay">
-                                <span data-lang="open_site">Открыть сайт ➔</span>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-    
+
+            <!-- Проект 1: iframe-превью -->
             <div class="card project-card">
-                <a href="https://kotokafe-kotiki-i-lyudi.webflow.io/career"
-                   target="_blank" rel="noopener noreferrer" class="project-preview-link">
-                    <div class="project-screenshot-container" style="background-image:url('assets/career_preview.jpg');">
-                        <div class="project-screenshot-overlay">
-                            <span data-lang="open_site">Открыть сайт ➔</span>
-                        </div>
-                    </div>
-                </a>
+              <a href="https://animated-capybara-7712ab.netlify.app"
+                 target="_blank" rel="noopener noreferrer" class="project-preview-link">
+                <div class="project-screenshot-container">
+                  <div class="preview-frame">
+                    <iframe src="https://animated-capybara-7712ab.netlify.app"
+                            loading="lazy" scrolling="no" tabindex="-1"></iframe>
+                  </div>
+                  <div class="project-screenshot-overlay">
+                    <span data-lang="open_site">Открыть сайт ➔</span>
+                  </div>
+                </div>
+              </a>
             </div>
-        </div>
+          
+            <!-- Проект 2: iframe-превью -->
+            <div class="card project-card">
+              <a href="https://matthewbrodek-alt.github.io/new-project/#team"
+                 target="_blank" rel="noopener noreferrer" class="project-preview-link">
+                <div class="project-screenshot-container">
+                  <div class="preview-frame">
+                    <iframe src="https://matthewbrodek-alt.github.io/new-project/#team"
+                            loading="lazy" scrolling="no" tabindex="-1"></iframe>
+                  </div>
+                  <div class="project-screenshot-overlay">
+                    <span data-lang="open_site">Открыть сайт ➔</span>
+                  </div>
+                </div>
+              </a>
+            </div>
+          
+            <!-- Проект 3: статичное изображение-превью -->
+            <div class="card project-card">
+              <a href="https://kotokafe-kotiki-i-lyudi.webflow.io/career"
+                 target="_blank" rel="noopener noreferrer" class="project-preview-link">
+                <div class="project-screenshot-container project-screenshot-container--image"
+                     style="background-image:url('assets/career_preview.jpg');">
+                  <div class="project-screenshot-overlay">
+                    <span data-lang="open_site">Открыть сайт ➔</span>
+                  </div>
+                </div>
+              </a>
+            </div>
+          
+          </div>
 
     <!-- ─── О НАС ─── -->
     <div id="about-page" class="page inner-page">
