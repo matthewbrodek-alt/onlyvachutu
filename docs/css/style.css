@@ -537,7 +537,7 @@ button { font-family: var(--font-b); }
     border-radius: 12px; color: #fff; outline: none;
     font-family: var(--font-b); font-size: 14px;
     transition: border-color 0.2s;
-    appearance: none;
+    -webkit-appearance: none; appearance: none;
 }
 .n-input:focus { border-color: rgba(0,255,136,0.45); }
 .n-input::placeholder { color: rgba(255,255,255,0.28); }
