@@ -319,44 +319,40 @@ function initCarousel() {
         var W = scene.offsetWidth  || 900;
         var H = scene.offsetHeight || 280;
         var mob = window.innerWidth < 600;
-
-        /* ── Точки A (левый низ) и B (правый низ) ──
-           A = (paddingX, H - paddingY)
-           B = (W - paddingX, H - paddingY)
-           Центр полуокружности = середина AB, на той же высоте.
-           Радиус по X = (B.x - A.x) / 2
-           Радиус по Y = flatness * RX  (эллипс, не круг)
-           Карточки идут от θ=π (левый край) до θ=0 (правый край)
-           через верх (θ=π/2 → верхняя точка дуги).
-        ── */
-        var padX = mob ? 20  : 60;   /* отступ от краёв по X   */
-        var padY = mob ? 10  : 20;   /* отступ от низа по Y    */
-        var flat = mob ? 0.55 : 0.45; /* приплюснутость эллипса */
-
-        var ax = padX;
-        var bx = W - padX;
-        var cy = H - padY;           /* Y центра эллипса = линия AB */
-        var cx = (ax + bx) / 2;      /* X центра = середина AB      */
-        var RX = (bx - ax) / 2;
+    
+        var padX = mob ? 15  : 80;
+        var padY = mob ? 5   : 8;
+        var flat = mob ? 0.50 : 0.42;
+    
+        /* Центр эллипса строго по центру контейнера по X,
+           и чуть ниже нижнего края по Y — чтобы дуга шла сверху */
+        var RX = W / 2 - padX;
         var RY = RX * flat;
-
+        var cx = W / 2;              /* строго по центру */
+        var cy = H - padY;           /* нижний край stage */
+    
+        /* Карточки распределяются по верхней полудуге π..0 */
+        /* Добавляем spacing — растягиваем дугу на чуть меньше π
+           чтобы крайние карточки не уходили за углы            */
+        var ARC  = Math.PI * 0.88;   /* угол дуги (меньше π = зазоры по краям) */
+        var startAngle = Math.PI / 2 + ARC / 2;   /* левый конец дуги  */
+        var endAngle   = Math.PI / 2 - ARC / 2;   /* правый конец дуги */
+    
         els.forEach(function(el, i) {
-            /* Равномерно распределяем N карточек по дуге π..0
-               (слева направо по верхней полуокружности)        */
-            var t     = (i / N + angle) % 1;          /* 0..1 */
-            var theta = Math.PI - t * Math.PI;        /* π → 0 */
-
+            var t     = ((i / N) + angle) % 1;
+            /* theta идёт от startAngle до endAngle */
+            var theta = startAngle - t * ARC;      /* убываем от лево к право */
+    
             var x = cx + RX * Math.cos(theta) - CARD_W / 2;
             var y = cy - RY * Math.sin(theta)  - CARD_H / 2;
-            /* sin(theta) на верхней дуге: 0 по краям, 1 в центре */
-
-            /* Масштаб и прозрачность: максимум в центре вверху,
-               минимум у краёв (A и B) где карточки "ныряют"     */
-            var life = Math.sin(theta);               /* 0..1    */
+    
+            /* sin(theta): максимум=1 в верхней точке (θ=π/2), 
+               минимум~0 у краёв                               */
+            var life = Math.sin(theta);
             var s    = 0.45 + 0.55 * life;
-            var o    = 0.15 + 0.85 * life;
-            var rot  = Math.cos(theta) * -12;         /* наклон  */
-
+            var o    = 0.10 + 0.90 * life;
+            var rot  = Math.cos(theta) * -14;
+    
             el.style.left      = x.toFixed(1) + 'px';
             el.style.top       = y.toFixed(1) + 'px';
             el.style.transform = 'scale(' + s.toFixed(3) + ') rotate(' + rot.toFixed(1) + 'deg)';
