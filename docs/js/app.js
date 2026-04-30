@@ -323,7 +323,7 @@ function initCarousel() {
         var cw = mob ? 75  : 120;
         var ch = mob ? 94  : 150;
     
-        var padX = mob ? 8  : 30;
+        var padX = 0;
     
         /* Горизонтальная полуось — от края до края */
         var RX = W / 2 - padX;
@@ -366,7 +366,7 @@ function initCarousel() {
 
     function loop(ts) {
         if (!last) last = ts;
-        if (!paused && !window.faradaySystemPaused) angle = (angle + (ts - last) / 1000 * 1) % 1;
+        if (!paused && !window.faradaySystemPaused) angle = (angle + (ts - last) / 1000 * 0.05) % 1;
         last = ts; render(); requestAnimationFrame(loop);
     }
     requestAnimationFrame(loop);
