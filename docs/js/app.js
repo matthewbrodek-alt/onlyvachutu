@@ -318,37 +318,38 @@ function initCarousel() {
         var W   = scene.offsetWidth  || window.innerWidth;
         var H   = scene.offsetHeight || 280;
         var mob = window.innerWidth < 600;
-
-        var cw = mob ? 75  : 120;
-        var ch = mob ? 94  : 150;
-
-        var RX = W / 2;
-        var RY = mob ? H - ch / 2 - 15 : H - ch / 2 - 5;
-
-        /* ── Фиксированный сдвиг в px вместо W*0.3 ──
-           Замерь console.log(window.innerWidth * 0.3) на своём экране
-           и вставь это число сюда                                     */
-        var shiftX = mob ? 0 : 324.9;
-        var shiftY = mob ? 0 : H * 0.55;
-
-        var cx = W / 2 + shiftX;
-        var cy = H + shiftY;
-
+    
+        var cw = mob ? 75 : 120;
+        var ch = mob ? 94 : 150;
+    
+        /* Центр всегда строго посередине — никаких сдвигов */
+        var cx = W / 2;
+        var cy = H;   /* центр эллипса на нижнем краю stage */
+    
+        /* Полуоси */
+        var RX = W / 2 - (mob ? 0 : 20);  /* чуть не доходим до краёв */
+        var RY = mob ? H * 0.75 : H * 0.85; /* высота дуги = % от высоты контейнера */
+    
+        /* Угол дуги — не полный π, а чуть меньше:
+           крайние карточки не упираются в углы и между ними есть воздух */
+        var ARC        = mob ? Math.PI * 0.85 : Math.PI * 0.90;
+        var startTheta = Math.PI / 2 + ARC / 2;  /* симметрично от верхней точки */
+    
         els.forEach(function(el, i) {
             el.style.width  = cw + 'px';
             el.style.height = ch + 'px';
-
+    
             var t     = ((i / N) + angle) % 1;
-            var theta = Math.PI - t * Math.PI;
-
+            var theta = startTheta - t * ARC;
+    
             var x = cx + RX * Math.cos(theta) - cw / 2;
             var y = cy - RY * Math.sin(theta)  - ch / 2;
-
+    
             var life = Math.sin(theta);
             var s    = 0.50 + 0.50 * life;
             var o    = 0.15 + 0.85 * life;
             var rot  = Math.cos(theta) * -20;
-
+    
             el.style.left      = x.toFixed(1) + 'px';
             el.style.top       = y.toFixed(1) + 'px';
             el.style.transform = 'scale(' + s.toFixed(3) + ') rotate(' + rot.toFixed(1) + 'deg)';
