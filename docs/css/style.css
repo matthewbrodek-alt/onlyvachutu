@@ -364,6 +364,9 @@ button { font-family: var(--font-b); }
 /* ════════════════════════════════════════════════
    КАРУСЕЛЬ
 ════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════
+   КАРУСЕЛЬ
+════════════════════════════════════════════════ */
 .carousel-section { padding: 48px var(--page-px) 64px; }
 .section-label { font-size: 10px; letter-spacing: 4px; font-weight: 800; text-align: center; margin-bottom: 20px; display: block; }
 
@@ -373,20 +376,22 @@ button { font-family: var(--font-b); }
     background: var(--card-bg); backdrop-filter: blur(30px);
     overflow: hidden;
 }
+
+/* Сцена теперь полностью совпадает с размером stage */
 .carousel-scene {
-    position: absolute; left: 50%; top: -190px;
-    transform: translateX(-50%);
-    width: 600px; height: 1000px; pointer-events: none;
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
 }
 
-/* ── Мобильная карусель: выше и левее ── */
+/* ── Мобильная карусель ── */
 @media (max-width: 599px) {
     .carousel-section { padding: 32px var(--page-px) 48px; }
-    .carousel-scene {
-        top: -220px;
-        transform: translateX(-56%);
-    }
+    .carousel-stage   { height: 220px; }
+    /* .carousel-scene наследует 100%/100% — ничего дополнительного не нужно */
 }
+
 .c-card {
     position: absolute; width: 120px; height: 150px;
     border-radius: 14px; overflow: visible;

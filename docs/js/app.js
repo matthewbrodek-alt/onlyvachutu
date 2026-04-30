@@ -287,9 +287,7 @@ function initCarousel() {
     var scene = document.getElementById('carousel-scene');
     if (!scene) return;
     tooltip = document.getElementById('c-tooltip');
-    var N  = TEAM.length;
-    var RX = Math.min(460, (scene.offsetWidth || 600) * 0.46);
-    var CX = 500, CY = 500;
+    var N   = TEAM.length;
     var els = [];
 
     TEAM.forEach(function(m, idx) {
@@ -308,30 +306,93 @@ function initCarousel() {
         div.addEventListener('mouseleave', hideTooltip);
         div.addEventListener('touchstart', function() { showTooltip(idx, div); }, { passive: true });
     });
+
     if (tooltip) {
         tooltip.addEventListener('mouseenter', function() { if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; } });
         tooltip.addEventListener('mouseleave', hideTooltip);
     }
+
+    var CARD_W = 120, CARD_H = 150;
+    var isMobile = window.innerWidth < 600;
+
+    /* ── Параметры эллипса ──────────────────────────────────────
+       Эллипс вписан в stage. Центр эллипса смещён ВНИЗ за нижний
+       край stage, так что видна только верхняя дуга — как на макете.
+
+       W  = ширина сцены
+       H  = высота сцены (220px моб / 280px декстоп)
+
+       RX = горизонтальная полуось  ≈ W/2 − небольшой отступ
+       RY = вертикальная полуось    = RX * flatness
+            flatness < 1 → эллипс приплюснут (как на макете)
+
+       CX = W/2  (горизонтальный центр)
+       CY = H + RY * peek
+            peek = доля RY, на которую верхушка эллипса
+                   поднимается ВЫШЕ нижнего края stage.
+            Чем меньше peek — тем выше карточки.
+    ─────────────────────────────────────────────────────────── */
+    function getParams() {
+        var W  = scene.offsetWidth  || (isMobile ? 360 : 900);
+        var H  = scene.offsetHeight || (isMobile ? 220 : 280);
+        var RX, RY, CX, CY, flatness, peek;
+
+        if (window.innerWidth < 600) {
+            /* МОБИЛЬНАЯ версия */
+            flatness = 0.38;          /* степень приплюснутости */
+            peek     = 0.18;          /* как высоко торчат карточки над низом */
+            RX = W * 0.52;
+            RY = RX * flatness;
+            CX = W / 2;
+            CY = H + RY * (1 - peek);
+        } else {
+            /* ДЕСКТОП */
+            flatness = 0.32;
+            peek     = 0.20;
+            RX = W * 0.48;
+            RY = RX * flatness;
+            CX = W / 2;
+            CY = H + RY * (1 - peek);
+        }
+        return { RX: RX, RY: RY, CX: CX, CY: CY };
+    }
+
     var angle = 0, paused = false, last = null;
+
     function render() {
+        var p = getParams();
         els.forEach(function(el, i) {
+            /* θ=0 → правый край; двигаемся против часовой — верхняя дуга */
             var theta = angle + (i / N) * Math.PI * 2;
-            var x = CX + RX * Math.cos(theta) - 60;
-            var y = CY + RX * 0.36 * Math.sin(theta) - 75;
-            var s = 0.5 + 0.5 * ((Math.sin(theta) + 1) / 2);
-            el.style.left      = x + 'px';
-            el.style.top       = y + 'px';
-            el.style.transform = 'scale(' + s.toFixed(3) + ') rotate(' + (Math.cos(theta) * -8).toFixed(1) + 'deg)';
+            var x = p.CX + p.RX * Math.cos(theta) - CARD_W / 2;
+            var y = p.CY + p.RY * Math.sin(theta)  - CARD_H / 2;
+
+            /* sin(theta): −1 = верхняя точка, +1 = нижняя.
+               Карточки сверху (sin≈−1) — крупные и непрозрачные,
+               снизу (sin≈+1) — мелкие и прозрачные (скрыты за низом stage) */
+            var t = (-Math.sin(theta) + 1) / 2;   /* 0..1, 1 = верх */
+            var s = 0.55 + 0.45 * t;
+            var o = 0.35 + 0.65 * t;
+            var rot = Math.cos(theta) * -10;
+
+            el.style.left      = x.toFixed(1) + 'px';
+            el.style.top       = y.toFixed(1) + 'px';
+            el.style.transform = 'scale(' + s.toFixed(3) + ') rotate(' + rot.toFixed(1) + 'deg)';
             el.style.zIndex    = Math.round(s * 100);
-            el.style.opacity   = (0.4 + 0.6 * ((Math.sin(theta) + 1) / 2)).toFixed(3);
+            el.style.opacity   = o.toFixed(3);
         });
     }
+
     function loop(ts) {
         if (!last) last = ts;
         if (!paused && !window.faradaySystemPaused) angle -= (ts - last) / 1000 * 0.4;
         last = ts; render(); requestAnimationFrame(loop);
     }
     requestAnimationFrame(loop);
+
+    /* Пересчёт при ресайзе */
+    window.addEventListener('resize', function() { isMobile = window.innerWidth < 600; });
+
     var pb = document.getElementById('car-pause');
     var pv = document.getElementById('car-prev');
     var nx = document.getElementById('car-next');
