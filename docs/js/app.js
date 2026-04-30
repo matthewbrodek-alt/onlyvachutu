@@ -336,8 +336,8 @@ function initCarousel() {
         var RY = mob ? H - ch / 2 - 15 : H - ch / 2 - 10;
     
         /* Центр эллипса — нижний край stage, строго по центру */
-        var cx = W / 2 + (mob ? 0 : W * 0.08);  /* сдвиг вправо */
-        var cy = H + (mob ? 0 : H * 0.15);       /* сдвиг вниз   */
+        var cx = W / 2 + (mob ? 0 : W * 0.3);  /* сдвиг вправо */
+        var cy = H + (mob ? 0 : H * 0.45);       /* сдвиг вниз   */
     
         els.forEach(function(el, i) {
             el.style.width  = cw + 'px';
