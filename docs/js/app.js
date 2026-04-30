@@ -333,11 +333,11 @@ function initCarousel() {
            Верхняя точка дуги = H - RY.
            Хотим чтобы верхняя точка была у верхнего края + отступ:
            H - RY = ch/2 + 10  →  RY = H - ch/2 - 10             */
-        var RY = mob ? H - ch / 2 - 15 : H - ch / 2 - 10;
+        var RY = mob ? H - ch / 2 - 15 : H - ch / 2 - 5;
     
         /* Центр эллипса — нижний край stage, строго по центру */
         var cx = W / 2 + (mob ? 0 : W * 0.3);  /* сдвиг вправо */
-        var cy = H + (mob ? 0 : H * 0.45);       /* сдвиг вниз   */
+        var cy = H + (mob ? 0 : H * 0.55);       /* сдвиг вниз   */
     
         els.forEach(function(el, i) {
             el.style.width  = cw + 'px';
@@ -366,7 +366,7 @@ function initCarousel() {
 
     function loop(ts) {
         if (!last) last = ts;
-        if (!paused && !window.faradaySystemPaused) angle = (angle + (ts - last) / 1000 * 0.08) % 1;
+        if (!paused && !window.faradaySystemPaused) angle = (angle + (ts - last) / 1000 * 1) % 1;
         last = ts; render(); requestAnimationFrame(loop);
     }
     requestAnimationFrame(loop);
