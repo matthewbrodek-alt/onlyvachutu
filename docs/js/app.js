@@ -312,50 +312,43 @@ function initCarousel() {
         tooltip.addEventListener('mouseleave', hideTooltip);
     }
 
-    var CARD_W = 120, CARD_H = 150;
     var angle = 0, paused = false, last = null;
 
     function render() {
-        var W = scene.offsetWidth  || 900;
-        var H = scene.offsetHeight || 280;
+        var W   = scene.offsetWidth  || window.innerWidth;
+        var H   = scene.offsetHeight || 280;
         var mob = window.innerWidth < 600;
-    
+
         var cw = mob ? 75  : 120;
         var ch = mob ? 94  : 150;
-    
-        var padX = 0;
-    
-        /* Горизонтальная полуось — от края до края */
-        var RX = W / 2 - padX;
-    
-        /* Вертикальная полуось — высота дуги.
-           Центр эллипса сидит НА нижнем краю stage (cy = H).
-           Верхняя точка дуги = H - RY.
-           Хотим чтобы верхняя точка была у верхнего края + отступ:
-           H - RY = ch/2 + 10  →  RY = H - ch/2 - 10             */
+
+        var RX = W / 2;
         var RY = mob ? H - ch / 2 - 15 : H - ch / 2 - 5;
-    
-        /* Центр эллипса — нижний край stage, строго по центру */
-        var cx = W / 2 + (mob ? 0 : W * 0.3);  /* сдвиг вправо */
-        var cy = H + (mob ? 0 : H * 0.55);       /* сдвиг вниз   */
-    
+
+        /* ── Фиксированный сдвиг в px вместо W*0.3 ──
+           Замерь console.log(window.innerWidth * 0.3) на своём экране
+           и вставь это число сюда                                     */
+        var shiftX = mob ? 0 : 324.9;
+        var shiftY = mob ? 0 : H * 0.55;
+
+        var cx = W / 2 + shiftX;
+        var cy = H + shiftY;
+
         els.forEach(function(el, i) {
             el.style.width  = cw + 'px';
             el.style.height = ch + 'px';
-    
+
             var t     = ((i / N) + angle) % 1;
-            /* θ от π (левый край) до 0 (правый край) через верх */
             var theta = Math.PI - t * Math.PI;
-    
-            /* Координата центра карточки */
+
             var x = cx + RX * Math.cos(theta) - cw / 2;
             var y = cy - RY * Math.sin(theta)  - ch / 2;
-    
-            var life = Math.sin(theta);          /* 0 у краёв, 1 вверху */
+
+            var life = Math.sin(theta);
             var s    = 0.50 + 0.50 * life;
             var o    = 0.15 + 0.85 * life;
             var rot  = Math.cos(theta) * -20;
-    
+
             el.style.left      = x.toFixed(1) + 'px';
             el.style.top       = y.toFixed(1) + 'px';
             el.style.transform = 'scale(' + s.toFixed(3) + ') rotate(' + rot.toFixed(1) + 'deg)';
