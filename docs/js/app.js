@@ -323,19 +323,23 @@ function initCarousel() {
         var cw = mob ? 80  : 130;
         var ch = mob ? 100 : 162;
     
-        /* Эллипс большой — карточки по бокам выходят за stage */
-        var RX   = mob ? W * 0.72 : W * 0.62;
-        var flat = mob ? 0.50     : 0.48;
-        var RY   = RX * flat;
+        var RX, RY, cx, cy, ARC, startAngle;
     
-        /* Центр эллипса — ниже нижнего края stage,
-           чтобы дуга красиво поднималась вверх         */
-        var cx = W / 2;
-        var cy = mob ? H + RY * 0.10 : H + RY * 0.05;
+        if (mob) {
+            RX  = W * 0.72;
+            RY  = RX * 0.50;
+            cx  = W / 2;
+            cy  = H + RY * 0.10;
+            ARC = Math.PI * 1.05;
+        } else {
+            RX  = W * 0.58;          /* горизонтальный радиус          */
+            RY  = RX * 0.55;         /* вертикальный — выше дуга       */
+            cx  = W / 2;             /* строго по центру               */
+            cy  = H + RY * 0.72;     /* центр далеко внизу → видна только верхушка */
+            ARC = Math.PI * 0.90;    /* дуга чуть меньше π → симметрично */
+        }
     
-        /* Дуга чуть больше π — крайние карточки уходят вниз за край */
-        var ARC        = Math.PI * 1.05;
-        var startAngle = Math.PI / 2 + ARC / 2;
+        startAngle = Math.PI / 2 + ARC / 2;
     
         els.forEach(function(el, i) {
             el.style.width  = cw + 'px';
@@ -347,7 +351,6 @@ function initCarousel() {
             var x = cx + RX * Math.cos(theta) - cw / 2;
             var y = cy - RY * Math.sin(theta)  - ch / 2;
     
-            /* sin(theta): 1 = верхняя точка, ~0 = края */
             var life = Math.max(0, Math.sin(theta));
             var s    = 0.55 + 0.45 * life;
             var o    = 0.20 + 0.80 * life;
