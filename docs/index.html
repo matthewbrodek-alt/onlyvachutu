@@ -200,27 +200,57 @@
         </section>
 
         <!-- КАРУСЕЛЬ -->
-        <section class="carousel-section" aria-label="Наша команда">
-            <h2 class="section-label nitro-glow" data-lang="carousel_title">НАШИ СОТРУДНИКИ</h2>
-            <div class="carousel-stage">
-                <div class="carousel-scene" id="carousel-scene"></div>
+        <section class="carousel-section">
+            <div id="carousel-scene">
+              <!-- Контейнер карточек -->
+              <div id="carousel-orbit"></div>
+          
+              <!-- Сюда можно положить ваш центральный визуал (логотип/фото/3D-модель) -->
+              <div class="carousel-center">
+                <img src="hero.png" alt="">
+              </div>
+          
+              <!-- Тултип -->
+              <div id="c-tooltip"></div>
+          
+              <!-- Управление -->
+              <div class="carousel-controls">
+                <button id="car-prev"  class="carousel-btn"        aria-label="Previous">‹</button>
+                <button id="car-pause" class="carousel-btn carousel-btn-pause" aria-label="Pause">❚❚</button>
+                <button id="car-next"  class="carousel-btn"        aria-label="Next">›</button>
+              </div>
             </div>
-            <div class="carousel-controls">
-                <button class="carousel-btn" id="car-prev" aria-label="Предыдущий">&#8592;</button>
-                <button class="carousel-btn carousel-btn-pause" id="car-pause" aria-label="Пауза">&#9646;&#9646;</button>
-                <button class="carousel-btn" id="car-next" aria-label="Следующий">&#8594;</button>
-            </div>
-            <!-- Тултип карусели -->
-            <div class="c-tooltip" id="c-tooltip" role="tooltip" aria-live="polite">
-                <div class="ctt-avatar" id="ctt-avatar">👤</div>
-                <div class="ctt-info">
-                    <div class="ctt-name" id="ctt-name">Name</div>
-                    <div class="ctt-role nitro-glow" id="ctt-role">Role</div>
-                    <div class="ctt-status" id="ctt-status">В СЕТИ</div>
-                    <div class="ctt-tags" id="ctt-tags"></div>
-                </div>
-            </div>
-        </section>
+          </section>
+          
+          <style>
+            .carousel-center {
+              position: absolute;
+              top: 50%; left: 50%;
+              transform: translate(-50%, -50%);
+              width: 50%;
+              max-width: 480px;
+              pointer-events: none;
+              z-index: 50;
+            }
+            .carousel-center img { width: 100%; height: auto; display: block; }
+          </style>
+          
+          <script>
+            // Опционально: свои данные карточек
+            window.TEAM_DATA = [
+              { name: 'Анна',   role: 'CEO',       icon: '◆' },
+              { name: 'Игорь',  role: 'CTO',       icon: '✦' },
+              { name: 'Маша',   role: 'Designer',  icon: '✧' },
+              { name: 'Дима',   role: 'Backend',   icon: '❖' },
+              { name: 'Лена',   role: 'Frontend',  icon: '✺' },
+              { name: 'Олег',   role: 'DevOps',    icon: '✸' },
+              { name: 'Юля',    role: 'PM',        icon: '❉' },
+              { name: 'Костя',  role: 'QA',        icon: '✹' },
+            ];
+          </script>
+          
+          <link rel="stylesheet" href="overlay-carousel.css">
+          <script src="overlay-carousel.js" defer></script>
 
     </div><!-- /#home -->
 

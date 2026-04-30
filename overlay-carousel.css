@@ -1,0 +1,126 @@
+/* =========================================================
+   Overlay-style Orbital Carousel — стили
+   ========================================================= */
+
+:root {
+  --accent: #00ff88;
+  --orbit-line: rgba(255,255,255,0.12);
+  --tooltip-bg: rgba(20,20,28,0.92);
+}
+
+/* Сцена */
+#carousel-scene {
+  position: relative;
+  width: 100%;
+  height: clamp(480px, 70vh, 820px);
+  overflow: hidden;
+  user-select: none;
+  cursor: grab;
+  /* Эллиптическая орбита-обводка (как у overlay) */
+  background:
+    radial-gradient(ellipse 46% 38% at 50% 50%,
+      transparent 0,
+      transparent calc(100% - 1.5px),
+      var(--orbit-line) calc(100% - 1.5px),
+      var(--orbit-line) 100%,
+      transparent 100%);
+}
+#carousel-scene.is-grabbing { cursor: grabbing; }
+
+/* Контейнер орбиты (карточки позиционируются абсолютно) */
+#carousel-orbit {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Карточка на орбите */
+.orbit-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 56px;
+  height: 56px;
+  pointer-events: auto;
+  will-change: transform, opacity;
+  transition: filter 0.25s ease;
+}
+.orbit-card:hover { filter: drop-shadow(0 0 18px rgba(0,255,136,0.55)); }
+
+.orbit-card__inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20,20,28,0.85);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 50%;
+  backdrop-filter: blur(6px);
+  transition: border-color 0.25s ease, background 0.25s ease;
+}
+.orbit-card:hover .orbit-card__inner {
+  border-color: var(--accent);
+  background: rgba(0,255,136,0.12);
+}
+
+.orbit-card__icon {
+  font-size: 22px;
+  color: #fff;
+  line-height: 1;
+}
+
+/* Тултип */
+#c-tooltip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  background: var(--tooltip-bg);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 9999;
+  white-space: nowrap;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+#c-tooltip.is-visible { opacity: 1; }
+#c-tooltip strong { display: block; font-weight: 700; }
+#c-tooltip span   { display: block; opacity: 0.65; font-size: 11px; margin-top: 2px; }
+
+/* Кнопки управления */
+.carousel-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  z-index: 100;
+}
+.carousel-btn {
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  color: var(--accent);
+  font-size: 14px;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.carousel-btn:hover { background: rgba(0,255,136,0.12); }
+.carousel-btn-pause { width: 48px; height: 48px; font-size: 15px; }
+
+/* Адаптив */
+@media (max-width: 640px) {
+  .orbit-card        { width: 44px; height: 44px; }
+  .orbit-card__icon  { font-size: 18px; }
+  #carousel-scene    { height: clamp(380px, 60vh, 560px); }
+}
