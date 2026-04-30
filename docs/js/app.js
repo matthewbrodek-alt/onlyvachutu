@@ -315,25 +315,23 @@ function initCarousel() {
     var angle = 0, paused = false, last = null;
 
     function render() {
-        var W   = scene.offsetWidth  || window.innerWidth;
-        var H   = scene.offsetHeight || 280;
-        var mob = window.innerWidth < 600;
+        /* Берём размеры именно контейнера — всегда актуальные */
+        var W   = scene.clientWidth;
+        var H   = scene.clientHeight;
+        var mob = W < 600;
     
         var cw = mob ? 75 : 120;
         var ch = mob ? 94 : 150;
     
-        /* Центр всегда строго посередине — никаких сдвигов */
-        var cx = W * 0.85;      /* 50% = центр, 60% = чуть правее */
-        var cy = H * 1.70;      /* 100% = нижний край, 140% = ниже края */
+        /* Всё считается от W и H контейнера — никаких px */
+        var cx = W * 0.85;
+        var cy = H * 1.70;
     
-        /* Полуоси */
-        var RX = W / 2 - (mob ? 0 : 20);  /* чуть не доходим до краёв */
-        var RY = mob ? H * 0.75 : H * 0.85; /* высота дуги = % от высоты контейнера */
+        var RX = W * 0.50;
+        var RY = H * 0.85;
     
-        /* Угол дуги — не полный π, а чуть меньше:
-           крайние карточки не упираются в углы и между ними есть воздух */
-        var ARC        = mob ? Math.PI * 0.85 : Math.PI * 0.90;
-        var startTheta = Math.PI / 2 + ARC / 2;  /* симметрично от верхней точки */
+        var ARC        = Math.PI * 0.90;
+        var startTheta = Math.PI / 2 + ARC / 2;
     
         els.forEach(function(el, i) {
             el.style.width  = cw + 'px';
@@ -357,6 +355,10 @@ function initCarousel() {
             el.style.opacity   = o.toFixed(3);
         });
     }
+    
+    /* ResizeObserver следит за самим контейнером */
+    var ro = new ResizeObserver(function() { render(); });
+    ro.observe(scene);
 
     function loop(ts) {
         if (!last) last = ts;
