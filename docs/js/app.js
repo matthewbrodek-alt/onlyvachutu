@@ -320,41 +320,54 @@ function initCarousel() {
         var H = scene.offsetHeight || 280;
         var mob = window.innerWidth < 600;
     
-        var cw = mob ? 80  : 130;
-        var ch = mob ? 100 : 162;
+        var cw = mob ? 75  : 120;
+        var ch = mob ? 94  : 150;
     
-        var RX, RY, cx, cy, ARC, startAngle;
+        el.style.width  = cw + 'px';
+        el.style.height = ch + 'px';
     
-        if (mob) {
-            RX  = W * 0.72;
-            RY  = RX * 0.50;
-            cx  = W / 2;
-            cy  = H + RY * 0.10;
-            ARC = Math.PI * 1.05;
-        } else {
-            RX  = W * 0.58;          /* горизонтальный радиус          */
-            RY  = RX * 0.55;         /* вертикальный — выше дуга       */
-            cx  = W / 2;             /* строго по центру               */
-            cy  = H + RY * 0.72;     /* центр далеко внизу → видна только верхушка */
-            ARC = Math.PI * 0.90;    /* дуга чуть меньше π → симметрично */
-        }
+        /* ── Точки A и B — нижние углы stage ── */
+        var padX = mob ? 10 : 40;
+        var AX = padX;               /* левый  нижний угол */
+        var BX = W - padX;           /* правый нижний угол */
+        var ABY = H - (mob ? 5 : 15); /* высота точек A и B */
     
-        startAngle = Math.PI / 2 + ARC / 2;
+        /* Центр эллипса — середина AB */
+        var cx = (AX + BX) / 2;     /* = W/2 */
+    
+        /* Горизонтальная полуось = расстояние от центра до A/B */
+        var RX = (BX - AX) / 2;
+    
+        /* Вертикальная полуось — насколько высоко поднимается дуга.
+           Чем больше RY, тем выше арка.                            */
+        var RY = mob ? H * 0.80 : H * 0.95;
+    
+        /* Центр по Y: A и B лежат на эллипсе при θ=π и θ=0.
+           При θ=π: y = cy + RY*sin(π) = cy → cy = ABY
+           Т.е. центр эллипса ровно на линии AB.
+           Верхняя точка дуги: cy - RY = ABY - RY              */
+        var cy = ABY;
+    
+        /* Дуга строго от π до 0 (верхняя полуокружность) */
+        var ARC = Math.PI;
     
         els.forEach(function(el, i) {
             el.style.width  = cw + 'px';
             el.style.height = ch + 'px';
     
+            /* angle движется 0→1, карточки идут слева направо */
             var t     = ((i / N) + angle) % 1;
-            var theta = startAngle - t * ARC;
+            /* θ: от π (точка A, слева) до 0 (точка B, справа) */
+            var theta = Math.PI - t * ARC;
     
             var x = cx + RX * Math.cos(theta) - cw / 2;
-            var y = cy - RY * Math.sin(theta)  - ch / 2;
+            var y = cy - RY * Math.sin(theta) - ch / 2;
+            /* sin(theta) = 0 у краёв (A,B), = 1 в верхней точке */
     
-            var life = Math.max(0, Math.sin(theta));
-            var s    = 0.55 + 0.45 * life;
-            var o    = 0.20 + 0.80 * life;
-            var rot  = Math.cos(theta) * -18;
+            var life = Math.sin(theta);                 /* 0..1    */
+            var s    = 0.50 + 0.50 * life;
+            var o    = 0.15 + 0.85 * life;
+            var rot  = Math.cos(theta) * -20;           /* наклон  */
     
             el.style.left      = x.toFixed(1) + 'px';
             el.style.top       = y.toFixed(1) + 'px';
