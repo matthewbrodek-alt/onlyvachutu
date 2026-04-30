@@ -287,7 +287,7 @@ function initCarousel() {
     var scene = document.getElementById('carousel-scene');
     if (!scene) return;
     tooltip = document.getElementById('c-tooltip');
-    var N   = TEAM.length;
+    var N = TEAM.length;
     var els = [];
 
     TEAM.forEach(function(m, idx) {
@@ -313,67 +313,49 @@ function initCarousel() {
     }
 
     var CARD_W = 120, CARD_H = 150;
-    var isMobile = window.innerWidth < 600;
-
-    /* ── Параметры эллипса ──────────────────────────────────────
-       Эллипс вписан в stage. Центр эллипса смещён ВНИЗ за нижний
-       край stage, так что видна только верхняя дуга — как на макете.
-
-       W  = ширина сцены
-       H  = высота сцены (220px моб / 280px декстоп)
-
-       RX = горизонтальная полуось  ≈ W/2 − небольшой отступ
-       RY = вертикальная полуось    = RX * flatness
-            flatness < 1 → эллипс приплюснут (как на макете)
-
-       CX = W/2  (горизонтальный центр)
-       CY = H + RY * peek
-            peek = доля RY, на которую верхушка эллипса
-                   поднимается ВЫШЕ нижнего края stage.
-            Чем меньше peek — тем выше карточки.
-    ─────────────────────────────────────────────────────────── */
-    function getParams() {
-        var W  = scene.offsetWidth  || (isMobile ? 360 : 900);
-        var H  = scene.offsetHeight || (isMobile ? 220 : 280);
-        var RX, RY, CX, CY, flatness, peek;
-
-        if (window.innerWidth < 600) {
-            /* МОБИЛЬНАЯ версия */
-            flatness = 0.38;          /* степень приплюснутости */
-            peek     = 0.18;          /* как высоко торчат карточки над низом */
-            RX = W * 0.52;
-            RY = RX * flatness;
-            CX = W / 2;
-            CY = H + RY * (1 - peek);
-        } else {
-            /* ДЕСКТОП */
-            flatness = 0.32;
-            peek     = 0.20;
-            RX = W * 0.48;
-            RY = RX * flatness;
-            CX = W / 2;
-            CY = H + RY * (1 - peek);
-        }
-        return { RX: RX, RY: RY, CX: CX, CY: CY };
-    }
-
     var angle = 0, paused = false, last = null;
 
     function render() {
-        var p = getParams();
-        els.forEach(function(el, i) {
-            /* θ=0 → правый край; двигаемся против часовой — верхняя дуга */
-            var theta = angle + (i / N) * Math.PI * 2;
-            var x = p.CX + p.RX * Math.cos(theta) - CARD_W / 2;
-            var y = p.CY + p.RY * Math.sin(theta)  - CARD_H / 2;
+        var W = scene.offsetWidth  || 900;
+        var H = scene.offsetHeight || 280;
+        var mob = window.innerWidth < 600;
 
-            /* sin(theta): −1 = верхняя точка, +1 = нижняя.
-               Карточки сверху (sin≈−1) — крупные и непрозрачные,
-               снизу (sin≈+1) — мелкие и прозрачные (скрыты за низом stage) */
-            var t = (-Math.sin(theta) + 1) / 2;   /* 0..1, 1 = верх */
-            var s = 0.55 + 0.45 * t;
-            var o = 0.35 + 0.65 * t;
-            var rot = Math.cos(theta) * -10;
+        /* ── Точки A (левый низ) и B (правый низ) ──
+           A = (paddingX, H - paddingY)
+           B = (W - paddingX, H - paddingY)
+           Центр полуокружности = середина AB, на той же высоте.
+           Радиус по X = (B.x - A.x) / 2
+           Радиус по Y = flatness * RX  (эллипс, не круг)
+           Карточки идут от θ=π (левый край) до θ=0 (правый край)
+           через верх (θ=π/2 → верхняя точка дуги).
+        ── */
+        var padX = mob ? 20  : 60;   /* отступ от краёв по X   */
+        var padY = mob ? 10  : 20;   /* отступ от низа по Y    */
+        var flat = mob ? 0.55 : 0.45; /* приплюснутость эллипса */
+
+        var ax = padX;
+        var bx = W - padX;
+        var cy = H - padY;           /* Y центра эллипса = линия AB */
+        var cx = (ax + bx) / 2;      /* X центра = середина AB      */
+        var RX = (bx - ax) / 2;
+        var RY = RX * flat;
+
+        els.forEach(function(el, i) {
+            /* Равномерно распределяем N карточек по дуге π..0
+               (слева направо по верхней полуокружности)        */
+            var t     = (i / N + angle) % 1;          /* 0..1 */
+            var theta = Math.PI - t * Math.PI;        /* π → 0 */
+
+            var x = cx + RX * Math.cos(theta) - CARD_W / 2;
+            var y = cy - RY * Math.sin(theta)  - CARD_H / 2;
+            /* sin(theta) на верхней дуге: 0 по краям, 1 в центре */
+
+            /* Масштаб и прозрачность: максимум в центре вверху,
+               минимум у краёв (A и B) где карточки "ныряют"     */
+            var life = Math.sin(theta);               /* 0..1    */
+            var s    = 0.45 + 0.55 * life;
+            var o    = 0.15 + 0.85 * life;
+            var rot  = Math.cos(theta) * -12;         /* наклон  */
 
             el.style.left      = x.toFixed(1) + 'px';
             el.style.top       = y.toFixed(1) + 'px';
@@ -385,20 +367,19 @@ function initCarousel() {
 
     function loop(ts) {
         if (!last) last = ts;
-        if (!paused && !window.faradaySystemPaused) angle -= (ts - last) / 1000 * 0.4;
+        if (!paused && !window.faradaySystemPaused) angle = (angle + (ts - last) / 1000 * 0.08) % 1;
         last = ts; render(); requestAnimationFrame(loop);
     }
     requestAnimationFrame(loop);
 
-    /* Пересчёт при ресайзе */
-    window.addEventListener('resize', function() { isMobile = window.innerWidth < 600; });
+    window.addEventListener('resize', render);
 
     var pb = document.getElementById('car-pause');
     var pv = document.getElementById('car-prev');
     var nx = document.getElementById('car-next');
     if (pb) pb.addEventListener('click', function() { paused = !paused; this.innerHTML = paused ? '&#9654;' : '&#9646;&#9646;'; });
-    if (pv) pv.addEventListener('click', function() { angle += (2 * Math.PI / N); });
-    if (nx) nx.addEventListener('click', function() { angle -= (2 * Math.PI / N); });
+    if (pv) pv.addEventListener('click', function() { angle = (angle - 1 / N + 1) % 1; });
+    if (nx) nx.addEventListener('click', function() { angle = (angle + 1 / N) % 1; });
 }
 
 /* ════════════════════════════════════════════════
