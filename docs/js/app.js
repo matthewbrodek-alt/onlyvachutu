@@ -284,134 +284,167 @@ function hideTooltip() {
 }
 
 function initCarousel() {
-    var scene = document.getElementById('carousel-scene');
+    const scene = document.getElementById('carousel-scene');
     if (!scene) return;
-    
-    // Добавил var, чтобы не засорять глобальную область видимости
-    var tooltip = document.getElementById('c-tooltip'); 
-    var N = TEAM.length;
-    var els = [];
-
-    TEAM.forEach(function(m, idx) {
-        var div   = document.createElement('div'); 
-        div.className = 'c-card';
-        
-        // ВАЖНО: для translate3d начальная позиция должна быть 0,0
-        div.style.left = '0px';
-        div.style.top = '0px';
-        
-        var inner = document.createElement('div'); 
-        inner.className = 'c-card-inner';
-        
-        var img   = new Image();
-        img.alt   = m.name;
-        
-        img.onload  = function() { 
-            inner.innerHTML = ''; 
-            inner.appendChild(img); 
-        };
-        
-        img.onerror = function() {
-            inner.innerHTML = `
-                <div class="c-card-placeholder">
-                    <div class="c-avatar">${m.emoji}</div>
-                    <div class="c-pname">${m.name}</div>
-                </div>`;
-        };
-        
-        img.src = 'assets/gallery/photo' + (idx + 1) + '.jpg';
-        
-        div.appendChild(inner); 
-        scene.appendChild(div); 
-        els.push(div);
-        
-        div.addEventListener('mouseenter', function() { showTooltip(idx, div); });
-        div.addEventListener('mouseleave', hideTooltip);
-        div.addEventListener('touchstart', function() { showTooltip(idx, div); }, { passive: true });
+  
+    const tooltip = document.getElementById('c-tooltip');
+    const N = TEAM.length;
+    const els = [];
+  
+    // ── Создание карточек ──
+    TEAM.forEach((m, idx) => {
+      const div = document.createElement('div');
+      div.className = 'c-card';
+      div.style.left = '0px';
+      div.style.top  = '0px';
+  
+      const inner = document.createElement('div');
+      inner.className = 'c-card-inner';
+  
+      const img = new Image();
+      img.alt = m.name;
+      img.loading = 'lazy';
+      img.decoding = 'async';
+  
+      img.onload = () => {
+        inner.innerHTML = '';
+        inner.appendChild(img);
+      };
+      img.onerror = () => {
+        inner.innerHTML = `
+          <div class="c-card-placeholder">
+            <div class="c-avatar">${m.emoji}</div>
+            <div class="c-pname">${m.name}</div>
+          </div>`;
+      };
+      img.src = 'assets/gallery/photo' + (idx + 1) + '.jpg';
+  
+      div.appendChild(inner);
+      scene.appendChild(div);
+      els.push(div);
+  
+      div.addEventListener('mouseenter', () => showTooltip(idx, div));
+      div.addEventListener('mouseleave', hideTooltip);
+      div.addEventListener('touchstart', () => showTooltip(idx, div), { passive: true });
     });
-
+  
     if (tooltip) {
-        tooltip.addEventListener('mouseenter', function() { 
-            if (window.hideTimer) { 
-                clearTimeout(window.hideTimer); 
-                window.hideTimer = null; 
-            } 
-        });
-        tooltip.addEventListener('mouseleave', hideTooltip);
+      tooltip.addEventListener('mouseenter', () => {
+        if (window.hideTimer) { clearTimeout(window.hideTimer); window.hideTimer = null; }
+      });
+      tooltip.addEventListener('mouseleave', hideTooltip);
     }
-
-    var angle = 0, paused = false, last = null;
-
+  
+    // ── Состояние ──
+    let angle = 0;
+    let paused = false;
+    let last = null;
+  
+    // Уважаем prefers-reduced-motion
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const SPEED = reduceMotion ? 0 : 0.05; // оборотов в секунду
+  
+    // ── Брейкпоинты ──
+    function getMetrics() {
+      const W = scene.clientWidth  || window.innerWidth;
+      const H = scene.clientHeight || 280;
+      const vw = window.innerWidth;
+  
+      let cw, ch;
+      if (vw < 600)       { cw = 70;  ch = 90;  }   // mobile
+      else if (vw < 1024) { cw = 100; ch = 128; }   // tablet
+      else                { cw = 120; ch = 150; }   // desktop
+  
+      // Центр сцены — строго по горизонтали
+      const cx = W / 2;
+      // Карточки «стоят» на нижней линии сцены
+      const cy = H - ch * 0.15;
+  
+      // Радиусы с запасом, чтобы карточки не вылетали за края сцены
+      const RX = Math.max(60, (W / 2) - cw / 2 - 8);
+      const RY = Math.max(60, H - ch - 8);
+  
+      return { W, H, cw, ch, cx, cy, RX, RY };
+    }
+  
     function render() {
-        var W   = scene.offsetWidth  || window.innerWidth;
-        var H   = scene.offsetHeight || 280;
-        var mob = window.innerWidth < 600;
-    
-        var cw = mob ? 75  : 120;
-        var ch = mob ? 94  : 150;
-    
-        // Центр по горизонтали — строго середина сцены
-        var cx = W / 1.5;
-        
-        // Центр по вертикали — прижимаем к нижней границе сцены
-        // Если на десктопе слишком высоко, увеличиваем это число (например, H + 20)
-        var cy = H+180; 
-    
-        // ОГРАНИЧЕНИЕ РАДИУСА ДЛЯ ДЕСКТОПА
-        // Чтобы карточки не уходили вправо/влево на 3см, ограничиваем RX
-        var RX = mob ? (W / 1.5) : Math.min(W / 2, 400); 
-        
-        // Высота дуги (насколько высоко поднимаются карточки)
-        // Если они «выше на 5см», значит RY слишком большой. Уменьши это число.
-        var RY = mob ? (H - ch / 2 - 5) : (H * 0.6); 
-    
-        els.forEach(function(el, i) {
-            var t     = ((i / N) + angle) % 1;
-            var theta = Math.PI - t * Math.PI;
-    
-            var x = cx + RX * Math.cos(theta) - cw / 2;
-            var y = cy - RY * Math.sin(theta) - ch / 2;
-    
-            var life = Math.sin(theta);
-            var s    = 0.50 + 0.50 * life;
-            var o    = 0.15 + 0.85 * life;
-            var rot  = Math.cos(theta) * -20;
-    
-            el.style.width  = cw + 'px';
-            el.style.height = ch + 'px';
-            el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) scale(${s.toFixed(3)}) rotate(${rot.toFixed(1)}deg)`;
-            el.style.zIndex    = Math.round(s * 100);
-            el.style.opacity   = o.toFixed(3);
-        });
+      const { cw, ch, cx, cy, RX, RY } = getMetrics();
+  
+      for (let i = 0; i < N; i++) {
+        const t     = ((i / N) + angle) % 1;
+        const theta = Math.PI - t * Math.PI; // полукруг сверху
+  
+        const x = cx + RX * Math.cos(theta) - cw / 2;
+        const y = cy - RY * Math.sin(theta) - ch / 2;
+  
+        const life = Math.sin(theta);          // 0..1
+        const s    = 0.50 + 0.50 * life;
+        const o    = 0.15 + 0.85 * life;
+        const rot  = Math.cos(theta) * -20;
+  
+        const el = els[i];
+        el.style.width  = cw + 'px';
+        el.style.height = ch + 'px';
+        el.style.transform =
+          `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) ` +
+          `scale(${s.toFixed(3)}) rotate(${rot.toFixed(1)}deg)`;
+        el.style.zIndex  = Math.round(s * 100);
+        el.style.opacity = o.toFixed(3);
+      }
     }
-
+  
     function loop(ts) {
-        if (!last) last = ts;
-        if (!paused && !window.faradaySystemPaused) {
-            angle = (angle + (ts - last) / 1000 * 0.05) % 1;
-        }
-        last = ts; 
-        render(); 
-        requestAnimationFrame(loop);
+      if (last == null) last = ts;
+      if (!paused && !window.faradaySystemPaused && SPEED > 0) {
+        angle = (angle + (ts - last) / 1000 * SPEED) % 1;
+      }
+      last = ts;
+      render();
+      requestAnimationFrame(loop);
     }
-    
     requestAnimationFrame(loop);
+  
+    // ── Реакция на изменение размеров ──
     window.addEventListener('resize', render);
-
-    var pb = document.getElementById('car-pause');
-    var pv = document.getElementById('car-prev');
-    var nx = document.getElementById('car-next');
-    
-    if (pb) {
-        pb.addEventListener('click', function() { 
-            paused = !paused; 
-            this.innerHTML = paused ? '&#9654;' : '&#9646;&#9646;'; 
-        });
+    if ('ResizeObserver' in window) {
+      new ResizeObserver(render).observe(scene);
     }
-    if (pv) pv.addEventListener('click', function() { angle = (angle - 1 / N + 1) % 1; });
-    if (nx) nx.addEventListener('click', function() { angle = (angle + 1 / N) % 1; });
-}
-
+  
+    // ── Кнопки управления ──
+    const pb = document.getElementById('car-pause');
+    const pv = document.getElementById('car-prev');
+    const nx = document.getElementById('car-next');
+  
+    if (pb) {
+      pb.addEventListener('click', function () {
+        paused = !paused;
+        this.innerHTML = paused ? '&#9654;' : '&#9646;&#9646;';
+        this.setAttribute('aria-pressed', String(paused));
+      });
+    }
+    if (pv) pv.addEventListener('click', () => { angle = (angle - 1 / N + 1) % 1; });
+    if (nx) nx.addEventListener('click', () => { angle = (angle + 1 / N) % 1; });
+  
+    // ── Свайпы (touch) ──
+    let touchX = null;
+    scene.addEventListener('touchstart', (e) => {
+      touchX = e.touches[0].clientX;
+    }, { passive: true });
+    scene.addEventListener('touchend', (e) => {
+      if (touchX == null) return;
+      const dx = e.changedTouches[0].clientX - touchX;
+      if (Math.abs(dx) > 40) {
+        angle = (angle + (dx < 0 ? 1 : -1) / N + 1) % 1;
+      }
+      touchX = null;
+    }, { passive: true });
+  
+    // Пауза при уходе из вкладки — экономим CPU/батарею
+    document.addEventListener('visibilitychange', () => {
+      paused = document.hidden ? true : paused;
+    });
+  }
+  
 /* ════════════════════════════════════════════════
    FARADAY CORE
    FIX: permission-denied на faraday_protocol

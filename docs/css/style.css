@@ -362,220 +362,137 @@ button { font-family: var(--font-b); }
 .nb-mlabel { font-size: 11px; color: var(--text-muted); font-weight: 600; letter-spacing: 0.3px; }
 
 /* ════════════════════════════════════════════════
-   КАРУСЕЛЬ
+   КАРУСЕЛЬ (адаптив: mobile / tablet / desktop)
 ════════════════════════════════════════════════ */
-/* ════════════════════════════════════════════════
-   КАРУСЕЛЬ (Optimized)
-════════════════════════════════════════════════ */
+.carousel-section { padding: 48px var(--page-px) 64px; }
 
-.carousel-section { 
-    padding: 48px var(--page-px) 64px; 
-}
-
-.section-label { 
-    display: block; 
-    margin-bottom: 20px; 
-    font-size: 10px; 
-    font-weight: 800; 
-    letter-spacing: 4px; 
-    text-align: center; 
+.section-label {
+  display: block;
+  margin-bottom: 20px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  text-align: center;
 }
 
 .carousel-stage {
-    position: relative;
-    width: 100%; 
-    height: 280px; 
-    overflow: visible;
-    background: var(--card-bg); 
-    border: 1px solid var(--border);
-    border-radius: var(--radius); 
-    backdrop-filter: blur(30px);
+  position: relative;
+  width: 100%;
+  height: 320px;                 /* desktop по умолчанию */
+  max-width: 1100px;
+  margin: 0 auto;
+  overflow: hidden;              /* было visible — карточки не вылетают за рамку */
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(30px);
 }
 
 .carousel-scene {
-    position: absolute;
-    top: 0; 
-    left: 0;
-    width: 100%; 
-    height: 100%;
-    pointer-events: none;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  touch-action: pan-y;           /* свайп карусели не ломает вертикальный скролл */
 }
 
-/* ── Мобильная карусель ── */
+/* ── Tablet ── */
+@media (max-width: 1023px) {
+  .carousel-stage { height: 260px; }
+}
+
+/* ── Mobile ── */
 @media (max-width: 599px) {
-    .carousel-section { padding: 32px var(--page-px) 48px; }
-    .carousel-stage   { height: 200px; }
+  .carousel-section { padding: 32px var(--page-px) 48px; }
+  .carousel-stage   { height: 200px; border-radius: 12px; }
 }
 
 .c-card {
-    position: absolute; 
-    width: 120px; 
-    height: 150px;
-    overflow: visible;
-    pointer-events: auto; 
-    cursor: pointer;
-    border: 1px solid rgba(0, 255, 136, 0.15);
-    border-radius: 14px; 
-    transition: border-color 0.2s ease-out;
-    will-change: border-color;
+  position: absolute;
+  width: 120px;
+  height: 150px;
+  overflow: hidden;
+  pointer-events: auto;
+  cursor: pointer;
+  border: 1px solid rgba(0, 255, 136, 0.15);
+  border-radius: 14px;
+  transition: border-color .2s ease-out;
+  will-change: transform, opacity;
+  transform-origin: center center;
 }
+.c-card:hover { border-color: rgba(0, 255, 136, 0.65); }
 
-.c-card:hover { 
-    border-color: rgba(0, 255, 136, 0.65); 
-}
-
-.c-card-inner { 
-    width: 100%; 
-    height: 100%; 
-    overflow: hidden; 
-    border-radius: 14px; 
-}
-
-.c-card img { 
-    display: block; 
-    width: 100%; 
-    height: 100%; 
-    object-fit: cover; 
-}
+.c-card-inner { width: 100%; height: 100%; overflow: hidden; border-radius: 14px; }
+.c-card img   { display: block; width: 100%; height: 100%; object-fit: cover; }
 
 .c-card-placeholder {
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    justify-content: center; 
-    gap: 8px;
-    width: 100%; 
-    height: 100%;
-    background: rgba(0, 255, 136, 0.05); 
-    border-radius: 14px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; height: 100%;
+  background: rgba(0, 255, 136, 0.05);
+  border-radius: 14px;
+}
+.c-card-placeholder .c-avatar { font-size: 28px; }
+.c-card-placeholder .c-pname  {
+  padding: 0 4px; color: rgba(255,255,255,.65);
+  font-size: 8px; font-weight: 800; letter-spacing: 1px; text-align: center;
 }
 
-.c-card-placeholder .c-avatar { 
-    font-size: 28px; 
-}
-
-.c-card-placeholder .c-pname { 
-    padding: 0 4px; 
-    color: rgba(255, 255, 255, 0.65); 
-    font-size: 8px; 
-    font-weight: 800; 
-    letter-spacing: 1px; 
-    text-align: center; 
-}
-
+/* Tooltip */
 .c-tooltip {
-    position: fixed; 
-    z-index: 9999;
-    min-width: 180px;
-    pointer-events: none; 
-    opacity: 0;
-    transform: translateY(6px);
-    transition: opacity 0.18s ease-out, transform 0.18s ease-out;
-    will-change: transform, opacity;
+  position: fixed; z-index: 9999;
+  min-width: 180px; max-width: 240px;
+  pointer-events: none; opacity: 0;
+  transform: translateY(6px);
+  transition: opacity .18s ease-out, transform .18s ease-out;
+  will-change: transform, opacity;
 }
+.c-tooltip.visible { pointer-events: auto; opacity: 1; transform: translateY(0); }
 
-.c-tooltip.visible { 
-    pointer-events: auto; 
-    opacity: 1; 
-    transform: translateY(0); 
-}
-
-.ctt-avatar { 
-    margin-bottom: 8px; 
-    font-size: 30px; 
-    text-align: center; 
-}
-
+.ctt-avatar { margin-bottom: 8px; font-size: 30px; text-align: center; }
 .ctt-info {
-    padding: 12px 14px;
-    background: rgba(8, 18, 11, 0.96);
-    border: 1px solid var(--border-accent);
-    border-radius: 14px; 
-    backdrop-filter: blur(30px);
+  padding: 12px 14px;
+  background: rgba(8,18,11,.96);
+  border: 1px solid var(--border-accent);
+  border-radius: 14px;
+  backdrop-filter: blur(30px);
 }
-
-.ctt-name { 
-    margin-bottom: 3px; 
-    font-family: var(--font-d); 
-    font-size: 12px; 
-    font-weight: 900; 
-}
-
-.ctt-role { 
-    display: block; 
-    margin-bottom: 8px; 
-    font-size: 9px; 
-    font-weight: 800; 
-    letter-spacing: 1.5px; 
-}
-
+.ctt-name { margin-bottom: 3px; font-family: var(--font-d); font-size: 12px; font-weight: 900; }
+.ctt-role { display: block; margin-bottom: 8px; font-size: 9px; font-weight: 800; letter-spacing: 1.5px; }
 .ctt-status {
-    display: inline-block; 
-    padding: 3px 10px; 
-    margin-bottom: 8px;
-    color: var(--accent); 
-    background: var(--accent-dim);
-    border: 1px solid var(--accent); 
-    border-radius: 30px;
-    font-size: 8px; 
-    font-weight: 800; 
-    letter-spacing: 2px;
+  display: inline-block; padding: 3px 10px; margin-bottom: 8px;
+  color: var(--accent); background: var(--accent-dim);
+  border: 1px solid var(--accent); border-radius: 30px;
+  font-size: 8px; font-weight: 800; letter-spacing: 2px;
+}
+.ctt-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.ctt-tags span {
+  padding: 2px 8px; color: var(--accent);
+  background: var(--accent-dim); border: 1px solid var(--border-accent);
+  border-radius: 20px; font-size: 8px; font-weight: 700;
 }
 
-.ctt-tags { 
-    display: flex; 
-    flex-wrap: wrap; 
-    gap: 4px; 
-}
-
-.ctt-tags span { 
-    padding: 2px 8px; 
-    color: var(--accent); 
-    background: var(--accent-dim); 
-    border: 1px solid var(--border-accent); 
-    border-radius: 20px; 
-    font-size: 8px; 
-    font-weight: 700; 
-}
-
-.carousel-controls { 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    gap: 12px; 
-    margin-top: 16px; 
-}
-
+/* Контролы */
+.carousel-controls { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 16px; }
 .carousel-btn {
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
-    width: 40px; 
-    height: 40px; 
-    color: var(--accent);
-    background: transparent; 
-    border: 1px solid var(--accent); 
-    border-radius: 50%;
-    font-size: 14px; 
-    cursor: pointer;
-    touch-action: manipulation;
-    transition: background 0.2s ease-out;
+  display: flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px;
+  color: var(--accent);
+  background: transparent;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  font-size: 14px; cursor: pointer;
+  touch-action: manipulation;
+  transition: background .2s ease-out, transform .15s ease-out;
+}
+.carousel-btn:hover { background: rgba(0,255,136,.12); }
+.carousel-btn:active { transform: scale(.94); }
+.carousel-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.carousel-btn-pause { width: 48px; height: 48px; font-size: 15px; }
+
+/* Уважение к prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .c-card { transition: none; }
 }
 
-.carousel-btn:hover { 
-    background: rgba(0, 255, 136, 0.12); 
-}
-
-.carousel-btn:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-}
-
-.carousel-btn-pause { 
-    width: 48px; 
-    height: 48px; 
-    font-size: 15px; 
-}
 
 /* ════════════════════════════════════════════════
    ВНУТРЕННИЕ СТРАНИЦЫ
