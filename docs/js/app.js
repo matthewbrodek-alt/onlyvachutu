@@ -320,38 +320,38 @@ function initCarousel() {
         var H = scene.offsetHeight || 280;
         var mob = window.innerWidth < 600;
     
-        var padX = mob ? 15  : 80;
-        var padY = mob ? 5   : 8;
-        var flat = mob ? 0.50 : 0.42;
+        var cw = mob ? 80  : 130;
+        var ch = mob ? 100 : 162;
     
-        /* Центр эллипса строго по центру контейнера по X,
-           и чуть ниже нижнего края по Y — чтобы дуга шла сверху */
-        var RX = W / 2 - padX;
-        var RY = RX * flat;
-        var cx = W / 2;              /* строго по центру */
-        var cy = H - padY;           /* нижний край stage */
+        /* Эллипс большой — карточки по бокам выходят за stage */
+        var RX   = mob ? W * 0.72 : W * 0.62;
+        var flat = mob ? 0.50     : 0.48;
+        var RY   = RX * flat;
     
-        /* Карточки распределяются по верхней полудуге π..0 */
-        /* Добавляем spacing — растягиваем дугу на чуть меньше π
-           чтобы крайние карточки не уходили за углы            */
-        var ARC  = Math.PI * 0.88;   /* угол дуги (меньше π = зазоры по краям) */
-        var startAngle = Math.PI / 2 + ARC / 2;   /* левый конец дуги  */
-        var endAngle   = Math.PI / 2 - ARC / 2;   /* правый конец дуги */
+        /* Центр эллипса — ниже нижнего края stage,
+           чтобы дуга красиво поднималась вверх         */
+        var cx = W / 2;
+        var cy = mob ? H + RY * 0.10 : H + RY * 0.05;
+    
+        /* Дуга чуть больше π — крайние карточки уходят вниз за край */
+        var ARC        = Math.PI * 1.05;
+        var startAngle = Math.PI / 2 + ARC / 2;
     
         els.forEach(function(el, i) {
+            el.style.width  = cw + 'px';
+            el.style.height = ch + 'px';
+    
             var t     = ((i / N) + angle) % 1;
-            /* theta идёт от startAngle до endAngle */
-            var theta = startAngle - t * ARC;      /* убываем от лево к право */
+            var theta = startAngle - t * ARC;
     
-            var x = cx + RX * Math.cos(theta) - CARD_W / 2;
-            var y = cy - RY * Math.sin(theta)  - CARD_H / 2;
+            var x = cx + RX * Math.cos(theta) - cw / 2;
+            var y = cy - RY * Math.sin(theta)  - ch / 2;
     
-            /* sin(theta): максимум=1 в верхней точке (θ=π/2), 
-               минимум~0 у краёв                               */
-            var life = Math.sin(theta);
-            var s    = 0.45 + 0.55 * life;
-            var o    = 0.10 + 0.90 * life;
-            var rot  = Math.cos(theta) * -14;
+            /* sin(theta): 1 = верхняя точка, ~0 = края */
+            var life = Math.max(0, Math.sin(theta));
+            var s    = 0.55 + 0.45 * life;
+            var o    = 0.20 + 0.80 * life;
+            var rot  = Math.cos(theta) * -18;
     
             el.style.left      = x.toFixed(1) + 'px';
             el.style.top       = y.toFixed(1) + 'px';
