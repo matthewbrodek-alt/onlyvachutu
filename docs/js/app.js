@@ -286,29 +286,57 @@ function hideTooltip() {
 function initCarousel() {
     var scene = document.getElementById('carousel-scene');
     if (!scene) return;
-    tooltip = document.getElementById('c-tooltip');
+    
+    // Добавил var, чтобы не засорять глобальную область видимости
+    var tooltip = document.getElementById('c-tooltip'); 
     var N = TEAM.length;
     var els = [];
 
     TEAM.forEach(function(m, idx) {
-        var div   = document.createElement('div'); div.className = 'c-card';
-        var inner = document.createElement('div'); inner.className = 'c-card-inner';
+        var div   = document.createElement('div'); 
+        div.className = 'c-card';
+        
+        // ВАЖНО: для translate3d начальная позиция должна быть 0,0
+        div.style.left = '0px';
+        div.style.top = '0px';
+        
+        var inner = document.createElement('div'); 
+        inner.className = 'c-card-inner';
+        
         var img   = new Image();
-        img.alt     = m.name;
-        img.onload  = function() { inner.innerHTML = ''; inner.appendChild(img); };
-        img.onerror = function() {
-            inner.innerHTML = '<div class="c-card-placeholder"><div class="c-avatar">' +
-                m.emoji + '</div><div class="c-pname">' + m.name + '</div></div>';
+        img.alt   = m.name;
+        
+        img.onload  = function() { 
+            inner.innerHTML = ''; 
+            inner.appendChild(img); 
         };
+        
+        img.onerror = function() {
+            inner.innerHTML = `
+                <div class="c-card-placeholder">
+                    <div class="c-avatar">${m.emoji}</div>
+                    <div class="c-pname">${m.name}</div>
+                </div>`;
+        };
+        
         img.src = 'assets/gallery/photo' + (idx + 1) + '.jpg';
-        div.appendChild(inner); scene.appendChild(div); els.push(div);
+        
+        div.appendChild(inner); 
+        scene.appendChild(div); 
+        els.push(div);
+        
         div.addEventListener('mouseenter', function() { showTooltip(idx, div); });
         div.addEventListener('mouseleave', hideTooltip);
         div.addEventListener('touchstart', function() { showTooltip(idx, div); }, { passive: true });
     });
 
     if (tooltip) {
-        tooltip.addEventListener('mouseenter', function() { if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; } });
+        tooltip.addEventListener('mouseenter', function() { 
+            if (window.hideTimer) { 
+                clearTimeout(window.hideTimer); 
+                window.hideTimer = null; 
+            } 
+        });
         tooltip.addEventListener('mouseleave', hideTooltip);
     }
 
@@ -322,36 +350,35 @@ function initCarousel() {
         var cw = mob ? 75  : 120;
         var ch = mob ? 94  : 150;
 
-        var RX = W / 2;
+        // Радиусы эллипса
+        var RX = W / 2; 
         var RY = mob ? H - ch / 2 - 15 : H - ch / 2 - 5;
 
-        /* ── Фиксированный сдвиг в px вместо W*0.3 ──
-           Замерь console.log(window.innerWidth * 0.3) на своём экране
-           и вставь это число сюда                                     */
-        var shiftX = mob ? 0 : 270;
-        var shiftY = mob ? 0 : H * 0.55;
-
-        var cx = W / 1.8 + shiftX;
-        var cy = H + shiftY;
+        // ИДЕАЛЬНЫЙ ЦЕНТР:
+        // Теперь x = W/2 (строго по центру контейнера)
+        // y = H (ось эллипса лежит на нижней границе контейнера)
+        var cx = W / 2;
+        var cy = H;
 
         els.forEach(function(el, i) {
             el.style.width  = cw + 'px';
             el.style.height = ch + 'px';
 
             var t     = ((i / N) + angle) % 1;
+            // theta идет от PI до 0 (рисует верхнюю дугу)
             var theta = Math.PI - t * Math.PI;
 
+            // Вычисляем координаты относительно центра cx, cy
             var x = cx + RX * Math.cos(theta) - cw / 2;
-            var y = cy - RY * Math.sin(theta)  - ch / 2;
+            var y = cy - RY * Math.sin(theta) - ch / 2;
 
             var life = Math.sin(theta);
             var s    = 0.50 + 0.50 * life;
             var o    = 0.15 + 0.85 * life;
             var rot  = Math.cos(theta) * -20;
 
-            el.style.left      = x.toFixed(1) + 'px';
-            el.style.top       = y.toFixed(1) + 'px';
-            el.style.transform = 'scale(' + s.toFixed(3) + ') rotate(' + rot.toFixed(1) + 'deg)';
+            // Аппаратное ускорение: перенесли x и y из left/top в translate3d
+            el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) scale(${s.toFixed(3)}) rotate(${rot.toFixed(1)}deg)`;
             el.style.zIndex    = Math.round(s * 100);
             el.style.opacity   = o.toFixed(3);
         });
@@ -359,17 +386,27 @@ function initCarousel() {
 
     function loop(ts) {
         if (!last) last = ts;
-        if (!paused && !window.faradaySystemPaused) angle = (angle + (ts - last) / 1000 * 0.05) % 1;
-        last = ts; render(); requestAnimationFrame(loop);
+        if (!paused && !window.faradaySystemPaused) {
+            angle = (angle + (ts - last) / 1000 * 0.05) % 1;
+        }
+        last = ts; 
+        render(); 
+        requestAnimationFrame(loop);
     }
+    
     requestAnimationFrame(loop);
-
     window.addEventListener('resize', render);
 
     var pb = document.getElementById('car-pause');
     var pv = document.getElementById('car-prev');
     var nx = document.getElementById('car-next');
-    if (pb) pb.addEventListener('click', function() { paused = !paused; this.innerHTML = paused ? '&#9654;' : '&#9646;&#9646;'; });
+    
+    if (pb) {
+        pb.addEventListener('click', function() { 
+            paused = !paused; 
+            this.innerHTML = paused ? '&#9654;' : '&#9646;&#9646;'; 
+        });
+    }
     if (pv) pv.addEventListener('click', function() { angle = (angle - 1 / N + 1) % 1; });
     if (nx) nx.addEventListener('click', function() { angle = (angle + 1 / N) % 1; });
 }
