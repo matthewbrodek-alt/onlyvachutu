@@ -346,38 +346,39 @@ function initCarousel() {
         var W   = scene.offsetWidth  || window.innerWidth;
         var H   = scene.offsetHeight || 280;
         var mob = window.innerWidth < 600;
-
+    
         var cw = mob ? 75  : 120;
         var ch = mob ? 94  : 150;
-
-        // Радиусы эллипса
-        var RX = W / 2; 
-        var RY = mob ? H - ch / 2 - 15 : H - ch / 2 - 5;
-
-        // ИДЕАЛЬНЫЙ ЦЕНТР:
-        // Теперь x = W/2 (строго по центру контейнера)
-        // y = H (ось эллипса лежит на нижней границе контейнера)
+    
+        // Центр по горизонтали — строго середина сцены
         var cx = W / 2;
-        var cy = H;
-
+        
+        // Центр по вертикали — прижимаем к нижней границе сцены
+        // Если на десктопе слишком высоко, увеличиваем это число (например, H + 20)
+        var cy = H; 
+    
+        // ОГРАНИЧЕНИЕ РАДИУСА ДЛЯ ДЕСКТОПА
+        // Чтобы карточки не уходили вправо/влево на 3см, ограничиваем RX
+        var RX = mob ? (W / 2) : Math.min(W / 2, 400); 
+        
+        // Высота дуги (насколько высоко поднимаются карточки)
+        // Если они «выше на 5см», значит RY слишком большой. Уменьши это число.
+        var RY = mob ? (H - ch / 2 - 15) : (H * 0.6); 
+    
         els.forEach(function(el, i) {
-            el.style.width  = cw + 'px';
-            el.style.height = ch + 'px';
-
             var t     = ((i / N) + angle) % 1;
-            // theta идет от PI до 0 (рисует верхнюю дугу)
             var theta = Math.PI - t * Math.PI;
-
-            // Вычисляем координаты относительно центра cx, cy
+    
             var x = cx + RX * Math.cos(theta) - cw / 2;
             var y = cy - RY * Math.sin(theta) - ch / 2;
-
+    
             var life = Math.sin(theta);
             var s    = 0.50 + 0.50 * life;
             var o    = 0.15 + 0.85 * life;
             var rot  = Math.cos(theta) * -20;
-
-            // Аппаратное ускорение: перенесли x и y из left/top в translate3d
+    
+            el.style.width  = cw + 'px';
+            el.style.height = ch + 'px';
             el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) scale(${s.toFixed(3)}) rotate(${rot.toFixed(1)}deg)`;
             el.style.zIndex    = Math.round(s * 100);
             el.style.opacity   = o.toFixed(3);
