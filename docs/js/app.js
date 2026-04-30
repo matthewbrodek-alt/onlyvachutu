@@ -331,7 +331,7 @@ function initCarousel() {
         var shiftX = mob ? 0 : 270;
         var shiftY = mob ? 0 : H * 0.55;
 
-        var cx = W / 2 + shiftX;
+        var cx = W / 1.8 + shiftX;
         var cy = H + shiftY;
 
         els.forEach(function(el, i) {
