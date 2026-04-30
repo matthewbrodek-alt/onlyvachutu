@@ -315,53 +315,32 @@ function initCarousel() {
     var angle = 0, paused = false, last = null;
 
     function render() {
-        var W   = scene.clientWidth;
-        var H   = scene.clientHeight;
-        var mob = W < 600;  /* теперь от ширины контейнера — правильно */
-    
-        var cw = mob ? 70  : 120;
-        var ch = mob ? 88  : 150;
-    
-        /* Центр и полуоси — всё в долях от W и H */
-        var cx, cy, RX, RY;
-    
-        if (mob) {
-            cx = W * 0.50;   /* строго по центру */
-            cy = H * 1.20;   /* чуть ниже нижнего края */
-            RX = W * 0.52;
-            RY = H * 0.65;
-        } else {
-            cx = W * 0.60;
-            cy = H * 1.40;
-            RX = W * 0.50;
-            RY = H * 0.85;
-        }
-    
-        var ARC        = Math.PI * 0.90;
-        var startTheta = Math.PI / 2 + ARC / 2;
-    
         els.forEach(function(el, i) {
-            el.style.width  = cw + 'px';
-            el.style.height = ch + 'px';
-    
-            var t     = ((i / N) + angle) % 1;
-            var theta = startTheta - t * ARC;
-    
-            var x = cx + RX * Math.cos(theta) - cw / 2;
-            var y = cy - RY * Math.sin(theta)  - ch / 2;
-    
-            var life = Math.sin(theta);
-            var s    = 0.50 + 0.50 * life;
-            var o    = 0.15 + 0.85 * life;
-            var rot  = Math.cos(theta) * -20;
-    
-            el.style.left      = x.toFixed(1) + 'px';
-            el.style.top       = y.toFixed(1) + 'px';
-            el.style.transform = 'scale(' + s.toFixed(3) + ') rotate(' + rot.toFixed(1) + 'deg)';
+            var theta = angle + (i / N) * Math.PI * 2;
+            var x = CX + RX * Math.cos(theta) - 60;
+            var y = CY + RX * 0.36 * Math.sin(theta) - 75;
+            var s = 0.5 + 0.5 * ((Math.sin(theta) + 1) / 2);
+            el.style.left      = x + 'px';
+            el.style.top       = y + 'px';
+            el.style.transform = 'scale(' + s.toFixed(3) + ') rotate(' + (Math.cos(theta) * -8).toFixed(1) + 'deg)';
             el.style.zIndex    = Math.round(s * 100);
-            el.style.opacity   = o.toFixed(3);
+            el.style.opacity   = (0.4 + 0.6 * ((Math.sin(theta) + 1) / 2)).toFixed(3);
         });
     }
+    function loop(ts) {
+        if (!last) last = ts;
+        if (!paused && !window.faradaySystemPaused) angle -= (ts - last) / 1000 * 0.4;
+        last = ts; render(); requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+    var pb = document.getElementById('car-pause');
+    var pv = document.getElementById('car-prev');
+    var nx = document.getElementById('car-next');
+    if (pb) pb.addEventListener('click', function() { paused = !paused; this.innerHTML = paused ? '&#9654;' : '&#9646;&#9646;'; });
+    if (pv) pv.addEventListener('click', function() { angle += (2 * Math.PI / N); });
+    if (nx) nx.addEventListener('click', function() { angle -= (2 * Math.PI / N); });
+
+
     
     /* ResizeObserver следит за самим контейнером */
     var ro = new ResizeObserver(function() { render(); });
