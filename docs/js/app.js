@@ -315,20 +315,27 @@ function initCarousel() {
     var angle = 0, paused = false, last = null;
 
     function render() {
-        /* Берём размеры именно контейнера — всегда актуальные */
         var W   = scene.clientWidth;
         var H   = scene.clientHeight;
-        var mob = W < 600;
+        var mob = W < 600;  /* теперь от ширины контейнера — правильно */
     
-        var cw = mob ? 75 : 120;
-        var ch = mob ? 94 : 150;
+        var cw = mob ? 70  : 120;
+        var ch = mob ? 88  : 150;
     
-        /* Всё считается от W и H контейнера — никаких px */
-        var cx = W * 0.85;
-        var cy = H * 1.70;
+        /* Центр и полуоси — всё в долях от W и H */
+        var cx, cy, RX, RY;
     
-        var RX = W * 0.50;
-        var RY = H * 0.85;
+        if (mob) {
+            cx = W * 0.50;   /* строго по центру */
+            cy = H * 1.20;   /* чуть ниже нижнего края */
+            RX = W * 0.52;
+            RY = H * 0.65;
+        } else {
+            cx = W * 0.60;
+            cy = H * 1.40;
+            RX = W * 0.50;
+            RY = H * 0.85;
+        }
     
         var ARC        = Math.PI * 0.90;
         var startTheta = Math.PI / 2 + ARC / 2;
