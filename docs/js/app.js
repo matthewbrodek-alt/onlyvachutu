@@ -43,6 +43,7 @@ var T = {
         chatTitle:'Личный мессенджер', chatPlaceholder:'Написать сообщение...',
         email_ph:'Email', pass_ph:'Пароль', loginBtn:'Авторизоваться',
         login_required:'Пожалуйста, войдите в аккаунт',
+        review_btn: 'Отправить отзыв', review_success: '✓ Спасибо! Отзыв отправлен.', review_error: 'Ошибка отправки. Попробуйте ещё раз.', review_empty: 'Пожалуйста, заполните имя и текст отзыва.',
     },
     en: {
         nav_projects:'My Projects', nav_about:'About', nav_services:'Services', nav_contacts:'Contacts',
@@ -82,6 +83,7 @@ var T = {
         chatTitle:'Personal Messenger', chatPlaceholder:'Type a message...',
         email_ph:'Email', pass_ph:'Password', loginBtn:'Authorize',
         login_required:'Please log in first',
+        review_btn: 'Submit review', review_success: '✓ Thank you! Review submitted.', review_error: 'Sending error. Please try again.', review_empty: 'Please fill in your name and review text.',
     }
 };
 
@@ -547,13 +549,12 @@ function submitReview() {
     var text = textEl.value.trim();
 
     if (!name || !text) {
-        if (note) { note.style.display = 'block'; note.style.color = '#ff6666'; note.textContent = 'Пожалуйста, заполните имя и текст отзыва.'; }
+        if (note) { note.style.display = 'block'; note.style.color = '#ff6666'; note.textContent = T[currentLang].review_empty; }
         return;
     }
 
     var content = '[ОТЗЫВ НА МОДЕРАЦИЮ]\nИмя: ' + name + '\nОтзыв: ' + text;
 
-    /* Отправляем через bridge_queue — тот же канал что и личный мессенджер */
     if (window.db) {
         window.db.collection('bridge_queue').add({
             content:   content,
@@ -565,17 +566,16 @@ function submitReview() {
         }).then(function() {
             nameEl.value = '';
             textEl.value = '';
-            if (note) { note.style.display = 'block'; note.style.color = 'var(--accent)'; note.textContent = '✓ Спасибо! Отзыв отправлен на модерацию.'; }
+            if (note) { note.style.display = 'block'; note.style.color = 'var(--accent)'; note.textContent = T[currentLang].review_success; }
         }).catch(function(err) {
-            if (note) { note.style.display = 'block'; note.style.color = '#ff6666'; note.textContent = 'Ошибка отправки. Попробуйте ещё раз.'; }
+            if (note) { note.style.display = 'block'; note.style.color = '#ff6666'; note.textContent = T[currentLang].review_error; }
             console.error('[Review]', err.message);
         });
     } else {
-        /* Fallback — прямой POST если Firestore недоступен */
         sendTelegramMessage(content, 'review@nitro-hub');
         nameEl.value = '';
         textEl.value = '';
-        if (note) { note.style.display = 'block'; note.style.color = 'var(--accent)'; note.textContent = '✓ Отзыв отправлен!'; }
+        if (note) { note.style.display = 'block'; note.style.color = 'var(--accent)'; note.textContent = T[currentLang].review_success; }
     }
 }
 
