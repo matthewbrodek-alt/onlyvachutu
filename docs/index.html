@@ -178,29 +178,99 @@
                 <div class="nb-badge nitro-glow" aria-hidden="true">⚡ NITRO BOOST</div>
                 <h2 class="nb-title" data-lang="nb_title">НАШИ ПОКАЗАТЕЛИ</h2>
                 <div class="nb-metrics">
-                    <div class="nb-metric" data-val="98">
-                        <div class="nb-meter" role="progressbar" aria-valuenow="98" aria-valuemax="100"><div class="nb-fill"></div></div>
-                        <div class="nb-num"><span class="nb-count">0</span><span class="nb-suffix">%</span></div>
-                        <div class="nb-mlabel" data-lang="nb_m1">Довольных клиентов</div>
+                    <div class="nb-metric" data-val="9">
+                        <div class="nb-meter" role="progressbar" aria-valuenow="9" aria-valuemax="10"><div class="nb-fill"></div></div>
+                        <div class="nb-num"><span class="nb-count">0</span><span class="nb-suffix">/10</span></div>
+                        <div class="nb-mlabel" data-lang="nb_m1">Клиентов возвращаются</div>
                     </div>
-                    <div class="nb-metric" data-val="150">
-                        <div class="nb-meter" role="progressbar" aria-valuenow="150" aria-valuemax="150"><div class="nb-fill"></div></div>
+                    <div class="nb-metric" data-val="45">
+                        <div class="nb-meter" role="progressbar" aria-valuenow="45" aria-valuemax="45"><div class="nb-fill"></div></div>
                         <div class="nb-num"><span class="nb-count">0</span><span class="nb-suffix">+</span></div>
-                        <div class="nb-mlabel" data-lang="nb_m2">Завершённых проектов</div>
+                        <div class="nb-mlabel" data-lang="nb_m2">Индивидуальных решений</div>
                     </div>
-                    <div class="nb-metric" data-val="7">
-                        <div class="nb-meter" role="progressbar" aria-valuenow="7" aria-valuemax="10"><div class="nb-fill"></div></div>
-                        <div class="nb-num"><span class="nb-count">0</span><span class="nb-suffix" data-lang="nb_years"> лет</span></div>
-                        <div class="nb-mlabel" data-lang="nb_m3">Лет опыта</div>
+                    <div class="nb-metric" data-val="3">
+                        <div class="nb-meter" role="progressbar" aria-valuenow="3" aria-valuemax="5"><div class="nb-fill"></div></div>
+                        <div class="nb-num"><span class="nb-count">0</span><span class="nb-suffix" data-lang="nb_years"> года</span></div>
+                        <div class="nb-mlabel" data-lang="nb_m3">В High-End разработке</div>
                     </div>
                     <div class="nb-metric" data-val="24">
                         <div class="nb-meter" role="progressbar" aria-valuenow="24" aria-valuemax="24"><div class="nb-fill"></div></div>
                         <div class="nb-num"><span class="nb-count">0</span><span class="nb-suffix">/7</span></div>
-                        <div class="nb-mlabel" data-lang="nb_m4">Поддержка клиентов</div>
+                        <div class="nb-mlabel" data-lang="nb_m4">LTV-сопровождение</div>
                     </div>
                 </div>
             </div>
         </section>
+
+<!-- ══════════════════════════════════════
+     ОТЗЫВЫ
+══════════════════════════════════════ -->
+<section class="reviews-section" id="reviews-section">
+    <div class="reviews-inner">
+        <p class="hero-eyebrow nitro-glow" style="text-align:center;margin-bottom:12px;">SOCIAL PROOF</p>
+        <h2 class="reviews-title">Что говорят клиенты</h2>
+
+        <div class="reviews-grid">
+
+            <div class="review-card card">
+                <div class="review-stars">★★★★★</div>
+                <blockquote class="review-text">
+                    «Задача была запустить MVP за 3 недели. Артём сделал за 18 дней. Код чистый, Firebase настроен идеально. Редкий случай, когда разработчик понимает бизнес-задачи с полуслова. Работаем дальше.»
+                </blockquote>
+                <div class="review-author">
+                    <div class="review-avatar">А</div>
+                    <div>
+                        <div class="review-name">Александр В.</div>
+                        <div class="review-role">CEO, FinTech стартап</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="review-card card">
+                <div class="review-stars">★★★★★</div>
+                <blockquote class="review-text">
+                    «Искали того, кто реализует сложную анимацию без потери скорости сайта. Результат превзошёл ожидания — наши интерфейсы теперь выглядят как искусство. Рекомендую как топ-специалиста.»
+                </blockquote>
+                <div class="review-author">
+                    <div class="review-avatar">E</div>
+                    <div>
+                        <div class="review-name">Elena K.</div>
+                        <div class="review-role">Design Studio, founder</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="review-card card">
+                <div class="review-stars">★★★★★</div>
+                <blockquote class="review-text">
+                    «Автоматизация процессов высвободила 50+ часов в месяц. n8n-сценарии работают без сбоев уже полгода. Это не просто код — это системное мышление.»
+                </blockquote>
+                <div class="review-author">
+                    <div class="review-avatar">М</div>
+                    <div>
+                        <div class="review-name">Михаил Р.</div>
+                        <div class="review-role">COO, e-commerce платформа</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Форма отзыва -->
+        <div class="review-form-wrap card" id="review-form-wrap">
+            <h3 class="review-form-title">Оставить отзыв</h3>
+            <p class="review-form-sub">Отзыв появится после модерации</p>
+            <div class="review-form-fields">
+                <input type="text"  id="review-name-input"  class="n-input" placeholder="Ваше имя и должность">
+                <textarea           id="review-text-input"  class="n-input review-textarea" placeholder="Ваш отзыв..." rows="3"></textarea>
+                <button class="btn-primary" onclick="submitReview()" style="width:100%;">
+                    <span class="pulse-dot" aria-hidden="true"></span> Отправить на модерацию
+                </button>
+                <p class="review-form-note" id="review-form-note" style="display:none;color:var(--accent);font-size:12px;text-align:center;margin-top:8px;"></p>
+            </div>
+        </div>
+    </div>
+</section>
 
         <!-- КАРУСЕЛЬ -->
         <section class="carousel-section">
@@ -334,15 +404,35 @@
         <div class="about-content card">
             <div class="about-avatar" aria-hidden="true">🐱</div>
             <div class="about-text">
-                <h3 data-lang="about_name">Михаил «Faraday» Романов</h3>
+                <h3 data-lang="about_name">Artem Lee</h3>
                 <p class="about-role nitro-glow" data-lang="about_role">Full-Stack Dev · Digital Alchemist · Cat Enthusiast</p>
-                <p data-lang="about_bio1">Привет. Я тот самый человек, который в 3 часа ночи спорит с компилятором, держа на коленях кота. Победитель в этом споре всегда кот — но код в итоге работает.</p>
-                <p data-lang="about_bio2">Более 7 лет я превращаю хаос требований в элегантные цифровые решения: от микросервисных архитектур до анимаций, от которых у дизайнеров перехватывает дыхание. Мой стек — React, Firebase, Python, Node.js и бесконечная любовь к деталям.</p>
-                <p data-lang="about_bio3">Я верю, что каждый интерфейс должен быть живым — как хороший котик: тёплым, отзывчивым и немного непредсказуемым. Если ваш проект скучный, я его починю. Если он уже хорош — я сделаю его незабываемым.</p>
+                <p data-lang="about_bio1">Привет. Я тот самый человек, который в 3 часа ночи спорит с компилятором, держа на коленях кота.</p>
+                <p data-lang="about_bio2">Более 3 лет я строю High-End решения: от микросервисных архитектур до анимаций, от которых у дизайнеров перехватывает дыхание.</p>
+                <p data-lang="about_bio3">Я верю, что каждый интерфейс должен быть живым — как хороший котик: тёплым, отзывчивым и немного непредсказуемым.</p>
                 <div class="about-quote" data-lang="about_quote">«Ничто не слишком прекрасно, чтобы быть истинным» — Майкл Фарадей.</div>
-                <div class="tech-tags" style="margin-top:25px;">
+    
+                <!-- Стек -->
+                <div class="about-stack">
+                    <p class="about-stack-label">Стек с обоснованием</p>
+                    <div class="stack-items">
+                        <div class="stack-item"><span class="stack-icon">⚛️</span><div><strong>React</strong><span>Скорость рендера и переиспользуемые компоненты</span></div></div>
+                        <div class="stack-item"><span class="stack-icon">🟢</span><div><strong>Node.js</strong><span>Единый язык на фронте и бэке — меньше накладных расходов</span></div></div>
+                        <div class="stack-item"><span class="stack-icon">🔥</span><div><strong>Firebase</strong><span>Надёжность данных в реальном времени без своего сервера</span></div></div>
+                        <div class="stack-item"><span class="stack-icon">🐳</span><div><strong>Docker</strong><span>Одинаковое окружение на dev и prod — никаких сюрпризов</span></div></div>
+                    </div>
+                </div>
+    
+                <!-- Мини-кейсы -->
+                <div class="about-cases">
+                    <p class="about-stack-label">Последние кейсы</p>
+                    <div class="case-card"><div class="case-num">×3</div><div><strong>Снижение нагрузки на сервер</strong><p>Оптимизация архитектуры Firebase + кэширование запросов. Время ответа API сократилось с 1200мс до 380мс.</p></div></div>
+                    <div class="case-card"><div class="case-num">18д</div><div><strong>MVP FinTech платформы</strong><p>Полный цикл: от дизайн-системы до деплоя на продакшн. Клиент получил рабочий продукт за 18 дней вместо 45.</p></div></div>
+                    <div class="case-card"><div class="case-num">50ч</div><div><strong>Автоматизация e-commerce</strong><p>n8n-сценарии закрыли рутину: обработка заказов, уведомления, отчёты. 50+ часов в месяц — команде на стратегию.</p></div></div>
+                </div>
+    
+                <div class="tech-tags" style="margin-top:20px;">
                     <span>React</span><span>Firebase</span><span>Python</span>
-                    <span>Node.js</span><span>TypeScript</span><span>Docker</span>
+                    <span>Node.js</span><span>TypeScript</span><span>Docker</span><span>n8n</span>
                 </div>
             </div>
         </div>

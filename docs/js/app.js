@@ -7,33 +7,38 @@ var T = {
     ru: {
         nav_projects:'Мои проекты', nav_about:'О нас', nav_services:'Услуги', nav_contacts:'Контакты',
         back:'Назад', btn_contact_short:'Связаться', nav_login:'Войти', nav_logout:'Выйти',
-        hero_eyebrow:'ПРЕМИАЛЬНЫЕ ИНТЕРФЕЙСЫ И АРХИТЕКТУРА',
-        hero_title:'НОВЫЙ СТАНДАРТ ЦИФРОВОГО ОПЫТА',
-        hero_sub:'Мы создаём премиальные интерфейсы и архитектурные решения, которые задают будущее цифрового мира.',
+        hero_eyebrow:'HIGH-END РАЗРАБОТКА И АВТОМАТИЗАЦИЯ БИЗНЕСА',
+        hero_title:'Архитектура цифрового превосходства: от идеи до High-End продукта',
+        hero_sub:'Разработка сложных веб-сервисов и автоматизация бизнеса с фокусом на конверсию и безупречный UX.',
         btn_projects:'Смотреть проекты →', btn_contact:'Связаться с нами',
-        feat1_title:'Инновации',   feat1_desc:'Используем передовые технологии для лучших результатов.',
-        feat2_title:'Надёжность',  feat2_desc:'Гарантируем стабильность и безопасность каждого решения.',
-        feat3_title:'Качество',    feat3_desc:'Внимание к деталям и высочайшие стандарты в каждом проекте.',
-        feat4_title:'Скорость',    feat4_desc:'Быстрая реализация проектов без потери качества.',
+        feat1_title:'Чистый код',      feat1_desc:'Читаемая архитектура, которую легко масштабировать и поддерживать.',
+        feat2_title:'Гарантия 1 год',  feat2_desc:'Исправляю баги бесплатно в течение года после сдачи проекта.',
+        feat3_title:'Дедлайны',        feat3_desc:'Соблюдение сроков — не исключение, а стандарт работы.',
+        feat4_title:'Прямой контакт',  feat4_desc:'Общение напрямую с разработчиком без менеджеров и посредников.',
         nb_title:'НАШИ ПОКАЗАТЕЛИ',
-        nb_m1:'Довольных клиентов', nb_m2:'Завершённых проектов',
-        nb_m3:'Лет опыта', nb_m4:'Поддержка клиентов', nb_years:' лет',
+        nb_m1:'Клиентов возвращаются', nb_m2:'Индивидуальных решений',
+        nb_m3:'В High-End разработке', nb_m4:'LTV-сопровождение',
+        nb_years:' года',
         carousel_title:'НАШИ СОТРУДНИКИ',
         status_online:'В СЕТИ', status_busy:'ЗАНЯТ', status_offline:'ОФЛАЙН',
         open_site:'Открыть сайт ➔',
-        about_name:'Михаил «Faraday» Романов',
+        about_name:'Artem Lee',
         about_role:'Full-Stack Dev · Digital Alchemist · Cat Enthusiast',
-        about_bio1:'Привет. Я тот самый человек, который в 3 часа ночи спорит с компилятором, держа на коленях кота.',
-        about_bio2:'Более 7 лет я превращаю хаос требований в элегантные цифровые решения.',
-        about_bio3:'Я верю, что каждый интерфейс должен быть живым — как хороший котик.',
+        about_bio1:'Привет. Я тот самый человек, который в 3 часа ночи спорит с компилятором, держа на коленях кота. Победитель в этом споре всегда кот — но код в итоге работает.',
+        about_bio2:'Более 3 лет я строю High-End решения: от микросервисных архитектур до анимаций, от которых у дизайнеров перехватывает дыхание. React, Firebase, Node.js и бесконечная любовь к деталям.',
+        about_bio3:'Я верю, что каждый интерфейс должен быть живым — как хороший котик: тёплым, отзывчивым и немного непредсказуемым. Если ваш проект скучный — я его починю.',
         about_quote:'«Ничто не слишком прекрасно, чтобы быть истинным» — Майкл Фарадей.',
-        svc1_title:'Веб-разработка',      svc1_desc:'Премиальные сайты и веб-приложения с нуля до деплоя.',
-        svc2_title:'UI/UX Дизайн',        svc2_desc:'Интерфейсы, которые не просто красивы, но и работают идеально.',
-        svc3_title:'Автоматизация',        svc3_desc:'Боты, скрипты и интеграции, которые экономят ваше время.',
-        svc4_title:'Облачные решения',     svc4_desc:'Архитектура, масштабирование, Firebase, AWS — выберем лучшее.',
-        svc5_title:'Всё что нужно в цифровой реальности',
-        svc5_desc:'Нестандартная задача? Именно это нас и вдохновляет. Опишите проблему — мы найдём решение.',
-        contacts_desc:'Напишите мне прямо здесь — мессенджер синхронизирован с личными каналами.',
+        svc1_title:'Веб-разработка',
+        svc1_desc:'Создание масштабируемых платформ. Высоконагруженные системы, которые растут вместе с вашим бизнесом без багов и тормозов.',
+        svc2_title:'UI/UX Дизайн',
+        svc2_desc:'Интерфейсы, которые конвертируют. Не просто красиво — каждый элемент работает на результат.',
+        svc3_title:'Автоматизация',
+        svc3_desc:'Освобождение 40+ рабочих часов в месяц. Умные боты и n8n-сценарии, которые заменяют целый отдел рутинных сотрудников.',
+        svc4_title:'Облачные решения',
+        svc4_desc:'Архитектура под нагрузку. Firebase, AWS — выбираю то, что даст максимум надёжности при минимуме затрат.',
+        svc5_title:'Нестандартная задача?',
+        svc5_desc:'Именно это вдохновляет больше всего. Опишите проблему — найдём решение, о котором вы не думали.',
+        contacts_desc:'Напишите мне прямо здесь — мессенджер синхронизирован с личными каналами для мгновенного ответа.',
         system_synced:'SYSTEM SYNCED', statusOnline:'В СЕТИ',
         chatTitle:'Личный мессенджер', chatPlaceholder:'Написать сообщение...',
         email_ph:'Email', pass_ph:'Пароль', loginBtn:'Авторизоваться',
@@ -42,33 +47,37 @@ var T = {
     en: {
         nav_projects:'My Projects', nav_about:'About', nav_services:'Services', nav_contacts:'Contacts',
         back:'Back', btn_contact_short:'Contact', nav_login:'Sign In', nav_logout:'Sign Out',
-        hero_eyebrow:'PREMIUM INTERFACES AND ARCHITECTURE',
-        hero_title:'NEW STANDARD OF DIGITAL EXPERIENCE',
-        hero_sub:'We build premium interfaces and architectural solutions that shape the future of the digital world.',
+        hero_eyebrow:'HIGH-END DEVELOPMENT AND BUSINESS AUTOMATION',
+        hero_title:'Architecture of Digital Excellence: from idea to High-End product',
+        hero_sub:'Complex web service development and business automation focused on conversion and flawless UX.',
         btn_projects:'View Projects →', btn_contact:'Contact Us',
-        feat1_title:'Innovation',  feat1_desc:'We use cutting-edge technologies for the best results.',
-        feat2_title:'Reliability', feat2_desc:'We guarantee stability and security in every solution.',
-        feat3_title:'Quality',     feat3_desc:'Attention to detail and the highest standards in every project.',
-        feat4_title:'Speed',       feat4_desc:'Fast project delivery without compromising quality.',
+        feat1_title:'Clean Code',       feat1_desc:'Readable architecture that\'s easy to scale and maintain.',
+        feat2_title:'1-Year Guarantee', feat2_desc:'I fix bugs for free within a year after project delivery.',
+        feat3_title:'Deadlines',        feat3_desc:'Meeting deadlines isn\'t an exception — it\'s the standard.',
+        feat4_title:'Direct Contact',   feat4_desc:'Talk directly to the developer — no managers, no middlemen.',
         nb_title:'OUR METRICS',
-        nb_m1:'Happy Clients', nb_m2:'Projects Completed', nb_m3:'Years of Experience', nb_m4:'Client Support',
+        nb_m1:'Clients come back', nb_m2:'Custom solutions', nb_m3:'In High-End dev', nb_m4:'LTV support',
         nb_years:' yrs',
         carousel_title:'OUR TEAM',
         status_online:'ONLINE', status_busy:'BUSY', status_offline:'OFFLINE',
         open_site:'Open Site ➔',
-        about_name:'Michael «Faraday» Romanov',
+        about_name:'Artem Lee',
         about_role:'Full-Stack Dev · Digital Alchemist · Cat Enthusiast',
-        about_bio1:'Hi. I\'m the person who argues with the compiler at 3am with a cat on their lap.',
-        about_bio2:'For over 7 years I\'ve been turning chaotic requirements into elegant digital solutions.',
-        about_bio3:'I believe every interface should be alive — like a good cat.',
+        about_bio1:'Hi. I\'m the person who argues with the compiler at 3am with a cat on their lap. The cat always wins — but the code works in the end.',
+        about_bio2:'For over 3 years I\'ve been building High-End solutions: from microservice architectures to animations that take designers\' breath away. React, Firebase, Node.js and endless attention to detail.',
+        about_bio3:'I believe every interface should be alive — like a good cat: warm, responsive, and a little unpredictable.',
         about_quote:'"Nothing is too wonderful to be true" — Michael Faraday.',
-        svc1_title:'Web Development',   svc1_desc:'Premium websites and web apps from scratch to deployment.',
-        svc2_title:'UI/UX Design',      svc2_desc:'Interfaces that aren\'t just beautiful, but work perfectly.',
-        svc3_title:'Automation',        svc3_desc:'Bots, scripts and integrations that save your time.',
-        svc4_title:'Cloud Solutions',   svc4_desc:'Architecture, scaling, Firebase, AWS — we\'ll choose the best.',
-        svc5_title:'Everything in Digital Reality',
-        svc5_desc:'Non-standard task? That\'s exactly what inspires us. Describe the problem — we\'ll find a solution.',
-        contacts_desc:'Message me right here — the messenger is synced with my private channels.',
+        svc1_title:'Web Development',
+        svc1_desc:'Building scalable platforms. High-load systems that grow with your business — no bugs, no lag.',
+        svc2_title:'UI/UX Design',
+        svc2_desc:'Interfaces that convert. Not just beautiful — every element works toward a result.',
+        svc3_title:'Automation',
+        svc3_desc:'Free up 40+ work hours per month. Smart bots and n8n workflows that replace an entire routine department.',
+        svc4_title:'Cloud Solutions',
+        svc4_desc:'Architecture built for load. Firebase, AWS — I pick what gives maximum reliability at minimum cost.',
+        svc5_title:'Unusual challenge?',
+        svc5_desc:'That\'s exactly what inspires me most. Describe the problem — we\'ll find a solution you haven\'t thought of.',
+        contacts_desc:'Message me right here — synced with my private channels for instant response.',
         system_synced:'SYSTEM SYNCED', statusOnline:'ONLINE',
         chatTitle:'Personal Messenger', chatPlaceholder:'Type a message...',
         email_ph:'Email', pass_ph:'Password', loginBtn:'Authorize',
@@ -525,6 +534,49 @@ function getFaradayMood() {
     if (h < 18)   return 'Все системы в норме. Производительность оптимальна.';
     if (h < 22)   return 'Вечерний режим. Снижаю приоритет фоновых задач.';
     return 'Поздний протокол. Системы ожидают команд.';
+}
+
+/* ── ОТЗЫВЫ → bridge_queue → Telegram ── */
+function submitReview() {
+    var nameEl = document.getElementById('review-name-input');
+    var textEl = document.getElementById('review-text-input');
+    var note   = document.getElementById('review-form-note');
+    if (!nameEl || !textEl) return;
+
+    var name = nameEl.value.trim();
+    var text = textEl.value.trim();
+
+    if (!name || !text) {
+        if (note) { note.style.display = 'block'; note.style.color = '#ff6666'; note.textContent = 'Пожалуйста, заполните имя и текст отзыва.'; }
+        return;
+    }
+
+    var content = '[ОТЗЫВ НА МОДЕРАЦИЮ]\nИмя: ' + name + '\nОтзыв: ' + text;
+
+    /* Отправляем через bridge_queue — тот же канал что и личный мессенджер */
+    if (window.db) {
+        window.db.collection('bridge_queue').add({
+            content:   content,
+            uid:       'review_anonymous',
+            email:     'review@nitro-hub',
+            chatType:  'direct',
+            status:    'pending',
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(function() {
+            nameEl.value = '';
+            textEl.value = '';
+            if (note) { note.style.display = 'block'; note.style.color = 'var(--accent)'; note.textContent = '✓ Спасибо! Отзыв отправлен на модерацию.'; }
+        }).catch(function(err) {
+            if (note) { note.style.display = 'block'; note.style.color = '#ff6666'; note.textContent = 'Ошибка отправки. Попробуйте ещё раз.'; }
+            console.error('[Review]', err.message);
+        });
+    } else {
+        /* Fallback — прямой POST если Firestore недоступен */
+        sendTelegramMessage(content, 'review@nitro-hub');
+        nameEl.value = '';
+        textEl.value = '';
+        if (note) { note.style.display = 'block'; note.style.color = 'var(--accent)'; note.textContent = '✓ Отзыв отправлен!'; }
+    }
 }
 
 window.onload = function() {

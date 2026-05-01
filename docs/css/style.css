@@ -890,3 +890,93 @@ button { font-family: var(--font-b); }
     .nav-center { gap: 28px; }
     .hero-title { font-size: clamp(52px, 5vw, 76px); }
 }
+
+/* ════════════════════════════════════════════════
+   ОТЗЫВЫ
+════════════════════════════════════════════════ */
+.reviews-section {
+    padding: 56px var(--page-px) 48px;
+    border-top: 1px solid var(--border);
+}
+.reviews-inner { max-width: 1100px; margin: 0 auto; }
+.reviews-title {
+    font-family: var(--font-d);
+    font-size: clamp(20px, 4vw, 32px);
+    font-weight: 900; text-align: center;
+    margin-bottom: 36px;
+}
+.reviews-grid {
+    display: flex; flex-direction: column; gap: 16px;
+    margin-bottom: 32px;
+}
+.review-card { display: flex; flex-direction: column; gap: 14px; }
+.review-stars { color: #ffcc00; font-size: 16px; letter-spacing: 2px; }
+.review-text {
+    font-size: 14px; line-height: 1.8;
+    color: rgba(255,255,255,0.82);
+    font-style: italic; margin: 0;
+    border-left: 2px solid var(--accent);
+    padding-left: 14px;
+}
+.review-author { display: flex; align-items: center; gap: 12px; }
+.review-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--accent-dim); border: 1px solid var(--border-accent);
+    color: var(--accent); font-weight: 900; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.review-name { font-size: 13px; font-weight: 800; margin-bottom: 2px; }
+.review-role { font-size: 11px; color: var(--text-muted); letter-spacing: 0.5px; }
+
+/* Форма отзыва */
+.review-form-wrap { max-width: 560px; margin: 0 auto; }
+.review-form-title { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+.review-form-sub { font-size: 11px; color: var(--text-muted); margin-bottom: 16px; }
+.review-form-fields { display: flex; flex-direction: column; gap: 10px; }
+.review-textarea { resize: vertical; min-height: 80px; font-family: var(--font-b); }
+
+/* ════════════════════════════════════════════════
+   О НАС — стек и кейсы
+════════════════════════════════════════════════ */
+.about-stack { margin-top: 24px; }
+.about-stack-label {
+    font-size: 9px; font-weight: 800; letter-spacing: 3px;
+    color: var(--accent); margin-bottom: 12px; text-transform: uppercase;
+}
+.stack-items { display: flex; flex-direction: column; gap: 10px; }
+.stack-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 14px;
+    background: var(--accent-dim); border: 1px solid var(--border-accent);
+    border-radius: 12px;
+}
+.stack-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.stack-item strong { display: block; font-size: 13px; font-weight: 800; margin-bottom: 2px; }
+.stack-item span { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+
+.about-cases { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
+.case-card {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 14px 16px;
+    background: rgba(0,255,136,0.04);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: border-color 0.2s;
+}
+.case-card:hover { border-color: var(--border-accent); }
+.case-num {
+    font-family: var(--font-d); font-size: 18px; font-weight: 900;
+    color: var(--accent); flex-shrink: 0; min-width: 36px;
+    text-shadow: 0 0 12px rgba(0,255,136,0.4);
+}
+.case-card strong { display: block; font-size: 13px; font-weight: 800; margin-bottom: 4px; }
+.case-card p { font-size: 12px; color: var(--text-muted); line-height: 1.6; margin: 0; }
+
+@media (min-width: 600px) {
+    .reviews-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .stack-items { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+}
+@media (min-width: 900px) {
+    .reviews-grid { grid-template-columns: repeat(3, 1fr); }
+}
