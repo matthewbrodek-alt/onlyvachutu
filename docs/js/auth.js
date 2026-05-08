@@ -296,6 +296,41 @@ function handleLogout() {
     });
 }
 
+async function handleRegister() {
+    var e = document.getElementById('auth-email');
+    var p = document.getElementById('auth-pass');
+    if (!e || !p) return;
+    
+    var email = e.value.trim();
+    var pass  = p.value;
+    
+    if (!email || !pass) {
+        alert('Введите email и пароль');
+        return;
+    }
+    if (pass.length < 6) {
+        alert('Пароль должен быть не менее 6 символов');
+        return;
+    }
+    
+    try {
+        var currentUser = window.auth.currentUser;
+        var credential  = firebase.auth.EmailAuthProvider.credential(email, pass);
+        
+        if (currentUser && currentUser.isAnonymous) {
+            await currentUser.linkWithCredential(credential);
+        } else {
+            await window.auth.createUserWithEmailAndPassword(email, pass);
+        }
+        console.log('[Auth] Регистрация успешна');
+    } catch (err) {
+        if (err.code === 'auth/email-already-in-use') {
+            alert('Этот email уже зарегистрирован. Войдите.');
+        } else {
+            alert('Ошибка регистрации: ' + err.message);
+        }
+    }
+}
 
 
 /* ── analyzeCurrentContext ── */

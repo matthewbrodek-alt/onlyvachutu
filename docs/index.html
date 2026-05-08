@@ -517,10 +517,17 @@
                 <!-- Форма входа -->
                 <div id="login-form" class="auth-box">
                     <input type="email" id="auth-email" class="n-input"
-                           data-lang-ph="email_ph" placeholder="Email" autocomplete="email">
+                           placeholder="Email" autocomplete="email">
                     <input type="password" id="auth-pass" class="n-input"
-                           data-lang-ph="pass_ph" placeholder="Пароль" autocomplete="current-password">
-                    <button onclick="handleLogin()" class="btn-primary w-full" data-lang="loginBtn">Авторизоваться</button>
+                           placeholder="Пароль" autocomplete="current-password">
+                    
+                    <!-- Две кнопки вместо одной -->
+                    <button onclick="handleLogin()" class="btn-primary w-full">
+                        Войти
+                    </button>
+                    <button onclick="handleRegister()" class="btn-outline w-full" style="margin-top:8px;">
+                        Зарегистрироваться
+                    </button>
                 </div>
 
                 <!-- Чат после входа -->
