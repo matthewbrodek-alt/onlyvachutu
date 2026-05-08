@@ -314,20 +314,16 @@ async function handleRegister() {
     }
     
     try {
-        var currentUser = window.auth.currentUser;
-        var credential  = firebase.auth.EmailAuthProvider.credential(email, pass);
-        
-        if (currentUser && currentUser.isAnonymous) {
-            await currentUser.linkWithCredential(credential);
-        } else {
-            await window.auth.createUserWithEmailAndPassword(email, pass);
-        }
+        // Всегда создаём новый аккаунт напрямую
+        await window.auth.createUserWithEmailAndPassword(email, pass);
         console.log('[Auth] Регистрация успешна');
     } catch (err) {
         if (err.code === 'auth/email-already-in-use') {
-            alert('Этот email уже зарегистрирован. Войдите.');
+            alert('Этот email уже зарегистрирован. Нажмите "Войти".');
+        } else if (err.code === 'auth/invalid-email') {
+            alert('Неверный формат email.');
         } else {
-            alert('Ошибка регистрации: ' + err.message);
+            alert('Ошибка: ' + err.message);
         }
     }
 }
