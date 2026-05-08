@@ -66,6 +66,10 @@ function bridgeSaveMemory(content, email) {
    НЕ используется для сообщений пользователя.
 ══════════════════════════════════════════════ */
 async function callBackend(endpoint, payload) {
+    if (!BRIDGE_URL) {
+        console.log('[Bridge] URL не задан, пропускаем:', endpoint);
+        return null;
+    }
     var body = Object.assign({}, payload || {});
     var user = window.auth && window.auth.currentUser;
     if (user && !user.isAnonymous) {
